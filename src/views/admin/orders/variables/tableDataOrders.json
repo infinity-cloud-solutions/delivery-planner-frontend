@@ -1,0 +1,24 @@
+[
+  {
+    "name":"Cliente 1",
+    "address": "Avila Camacho 44, Col Jardines del Country, 45150",
+    "delivery_time": "9-1",
+    "delivery_date": "2023-12-15",
+    "order": "Ver detalle",
+    "cart_items": [{"product": "Berry", "price": 10.50, "quantity": 1}],
+    "payment_method": "Transferencia",
+    "phone_number": "3312721827",
+    "status": "Creada"
+  },
+  {
+    "name":"Cliente 2",
+    "address": "Avila Camacho 44, Col Jardines del Country, 45150",
+    "delivery_time": "1-5",
+    "delivery_date": "2023-12-17",
+    "order": "Ver detalle",
+    "cart_items": [{"product": "Berry", "price": 10.50, "quantity": 2}, {"product": "Fresa", "price": 12.50, "quantity": 3}],
+    "payment_method": "Efectivo",
+    "phone_number": "3312721827",
+    "status": "Creada"
+  }
+]
