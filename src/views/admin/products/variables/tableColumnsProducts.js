@@ -1,11 +1,11 @@
 export const tableColumnsProducts = [
   {
     Header: "Nombre",
-    accessor: "Nombre",
+    accessor: "name",
   },
   {
     Header: "Precio",
-    accessor: "Precio",
+    accessor: "price",
   }
 
 ];
