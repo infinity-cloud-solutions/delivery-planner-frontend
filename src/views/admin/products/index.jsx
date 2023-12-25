@@ -16,7 +16,6 @@ import Products from "views/admin/products/components/Products";
 
 import { tableColumnsProducts } from "views/admin/products/variables/tableColumnsProducts";
 
-
 export default function ProductView() {
   const [tableDataProducts, setTableDataProducts] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null);

@@ -19,10 +19,15 @@ import {
     useColorModeValue
 } from '@chakra-ui/react';
 
-const CreateOrderModal = ({ isOpen, onClose }) => {
+const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
+    const [clientName, setClientName] = useState('');
+    const [deliveryTime, setDeliveryTime] = useState('');
+    const [deliveryAddress, setDeliveryAddress] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [cartItems, setCartItems] = useState([{ product: '', quantity: 0, price: 0 }]);
-
     const [deliveryDate, setDeliveryDate] = useState('');
+    const [totalAmount, setTotalAmount] = useState(0.0)
+    const [paymentMethod, setPaymentMethod] = useState('')
 
     const addCartItem = () => {
         setCartItems([...cartItems, { product: '', quantity: 0, price: 0 }]);
@@ -32,8 +37,32 @@ const CreateOrderModal = ({ isOpen, onClose }) => {
     const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
     let menuBg = useColorModeValue("white", "navy.900");
 
+    const createOrder = async () => {
+
+        const newOrder = {
+            client_name: clientName,
+            delivery_address: deliveryAddress,
+            delivery_date: deliveryAddress,
+            delivery_time: deliveryTime,
+            phone_number: phoneNumber,
+            total_amount: totalAmount,
+            cart_items: cartItems,
+            payment_method: paymentMethod,
+            status: "Creada",
+            order: "Ver detalles"
+        };
+        onCreate(newOrder);
+        setClientName('');
+        setDeliveryTime('');
+        setDeliveryAddress('');
+        setPhoneNumber('');
+        setTotalAmount('');
+        setPaymentMethod('');
+        onClose();
+
+    };
+
     const calculateTotalAmount = () => {
-        // Check if cartItems is not empty before calculating total amount
         if (cartItems.length > 0) {
             return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
                 .toLocaleString('es-MX', {
@@ -41,7 +70,7 @@ const CreateOrderModal = ({ isOpen, onClose }) => {
                     currency: 'MXN',
                 });
         } else {
-            return "0.00"; // or any default value when there are no products
+            return "0.00";
         }
     };
 
@@ -55,17 +84,20 @@ const CreateOrderModal = ({ isOpen, onClose }) => {
                     <VStack spacing="4">
                         <FormControl>
                             <FormLabel>Nombre</FormLabel>
-                            <Input type="text" color={textColor} borderColor={borderColor} placeholder="Ingresa el nombre del cliente" />
+                            <Input type="text" color={textColor} borderColor={borderColor} placeholder="Ingresa el nombre del cliente" value={clientName}
+                                onChange={(e) => setClientName(e.target.value)} />
                         </FormControl>
 
                         <FormControl>
                             <FormLabel>Dirección</FormLabel>
-                            <Textarea type="text" color={textColor} borderColor={borderColor} placeholder="Ingresa la dirección del cliente" />
+                            <Textarea type="text" color={textColor} rows="2" borderColor={borderColor} placeholder="Ingresa la dirección del cliente" value={deliveryAddress}
+                            onChange={(e) => setDeliveryAddress(e.target.value)}/>
                         </FormControl>
 
                         <FormControl>
                             <FormLabel>Teléfono</FormLabel>
-                            <Textarea type="text" color={textColor} rows="1" borderColor={borderColor} placeholder="Ingresa el teléfono del cliente" />
+                            <Textarea type="text" color={textColor} rows="1" borderColor={borderColor} placeholder="Ingresa el teléfono del cliente" value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}/>
                         </FormControl>
 
                         <FormControl>
@@ -81,7 +113,8 @@ const CreateOrderModal = ({ isOpen, onClose }) => {
 
                         <FormControl>
                             <FormLabel>Horario de entrega</FormLabel>
-                            <Select placeholder="Selecciona un horario">
+                            <Select placeholder="Selecciona un horario" value={deliveryTime}
+                            onChange={(e) => setDeliveryTime(e.target.value)}>
                                 <option value="9-1">9-1</option>
                                 <option value="1-5">1-5</option>
                             </Select>
@@ -89,7 +122,8 @@ const CreateOrderModal = ({ isOpen, onClose }) => {
 
                         <FormControl>
                             <FormLabel>Método de pago</FormLabel>
-                            <Select placeholder="Selecciona un método de pago">
+                            <Select placeholder="Selecciona un método de pago" value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}>
                                 <option value="Tarjeta">Tarjeta</option>
                                 <option value="Efectivo">Efectivo</option>
                                 <option value="Transferencia">Transferencia</option>
@@ -147,7 +181,7 @@ const CreateOrderModal = ({ isOpen, onClose }) => {
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="brand">Crear</Button>
+                    <Button variant="brand" onClick={createOrder}>Crear</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
