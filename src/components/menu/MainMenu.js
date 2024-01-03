@@ -14,15 +14,47 @@ import {
 } from "@chakra-ui/react";
 // Assets
 import {
-  MdOutlineMoreHoriz,
-  MdOutlinePerson,
-  MdOutlineCardTravel,
-  MdOutlineLightbulb,
-  MdOutlineSettings,
+  MdOutlineMoreHoriz
 } from "react-icons/md";
 
+import { format, addDays } from "date-fns";
+import es from "date-fns/locale/es";
+import { useHistory } from "react-router-dom";
+
+const capitalizeFirstLetter = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+const generateDateOptions = () => {
+  const today = new Date();
+  const dateOptions = [];
+
+  for (let i = 0; i < 7; i++) {
+    const currentDate = addDays(today, i);
+    const formattedDate = format(currentDate, "d 'de' MMMM", { locale: es });
+    const capitalizedDate = capitalizeFirstLetter(formattedDate.split(" ")[2]); // Capitalize the month
+    const finalDate = `${formattedDate.split(" ")[0]} de ${capitalizedDate}`;
+
+    const dateObject = {
+      label: finalDate,
+      value: format(currentDate, "yyyyMMdd"),
+    };
+
+    dateOptions.push(dateObject);
+  }
+
+  return dateOptions;
+};
+
 export default function Banner(props) {
-  const { ...rest } = props;
+  const { onDateSelect, ...rest } = props;
+  const history = useHistory();
+
+  const handleDateSelect = (date) => {
+    onDateSelect(date);
+    history.push(`/admin/orders?date=${date.value}`);
+    onClose1();
+  };
 
   const textColor = useColorModeValue("secondaryGray.500", "white");
   const textHover = useColorModeValue(
@@ -52,6 +84,8 @@ export default function Banner(props) {
     onClose: onClose1,
   } = useDisclosure();
 
+  const dateOptions = generateDateOptions();
+
   return (
     <Menu isOpen={isOpen1} onClose={onClose1}>
       <MenuButton
@@ -79,85 +113,29 @@ export default function Banner(props) {
         boxShadow={bgShadow}
         borderRadius='20px'
         p='15px'>
-        <MenuItem
-          transition='0.2s linear'
-          color={textColor}
-          _hover={textHover}
-          p='0px'
-          borderRadius='8px'
-          _active={{
-            bg: "transparent",
-          }}
-          _focus={{
-            bg: "transparent",
-          }}
-          mb='10px'>
-          <Flex align='center'>
-            {/* <Icon as={MdOutlinePerson} h='16px' w='16px' me='8px' /> */}
-            <Text fontSize='sm' fontWeight='400'>
-              3 de Dic
-            </Text>
-          </Flex>
-        </MenuItem>
-        <MenuItem
-          transition='0.2s linear'
-          p='0px'
-          borderRadius='8px'
-          color={textColor}
-          _hover={textHover}
-          _active={{
-            bg: "transparent",
-          }}
-          _focus={{
-            bg: "transparent",
-          }}
-          mb='10px'>
-          <Flex align='center'>
-            {/* <Icon as={MdOutlineCardTravel} h='16px' w='16px' me='8px' /> */}
-            <Text fontSize='sm' fontWeight='400'>
-              4 de Dic
-            </Text>
-          </Flex>
-        </MenuItem>
-        <MenuItem
-          transition='0.2s linear'
-          p='0px'
-          borderRadius='8px'
-          color={textColor}
-          _hover={textHover}
-          _active={{
-            bg: "transparent",
-          }}
-          _focus={{
-            bg: "transparent",
-          }}
-          mb='10px'>
-          <Flex align='center'>
-            {/* <Icon as={MdOutlineLightbulb} h='16px' w='16px' me='8px' /> */}
-            <Text fontSize='sm' fontWeight='400'>
-              5 de Dic
-            </Text>
-          </Flex>
-        </MenuItem>
-        <MenuItem
-          transition='0.2s linear'
-          color={textColor}
-          _hover={textHover}
-          p='0px'
-          borderRadius='8px'
-          _active={{
-            bg: "transparent",
-          }}
-          _focus={{
-            bg: "transparent",
-          }}>
-          <Flex align='center'>
-            {/* <Icon as={MdOutlineSettings} h='16px' w='16px' me='8px' /> */}
-            <Text fontSize='sm' fontWeight='400'>
-              6 de Dic
-            </Text>
-          </Flex>
-        </MenuItem>
+        {dateOptions.map((date, index) => (
+          <MenuItem
+            key={index}
+            transition='0.2s linear'
+            color={textColor}
+            _hover={textHover}
+            p='0px'
+            borderRadius='8px'
+            _active={{
+              bg: "transparent",
+            }}
+            _focus={{
+              bg: "transparent",
+            }}
+            mb='10px'
+            onClick={() => handleDateSelect(date)}>
+            <Flex align='center'>
+              <Text fontSize='sm' fontWeight='400'>
+                {date.label}
+              </Text>
+            </Flex>
+          </MenuItem>
+        ))}
       </MenuList>
     </Menu>
   );
