@@ -14,6 +14,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import React, { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   useGlobalFilter,
   usePagination,
@@ -25,13 +26,15 @@ import {
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
 import UpdateOrderModal from "./UpdateOrderModal";
-import CreateOrderModal from "./CreateOrderModal"; // Import the new modal component
+import CreateOrderModal from "./CreateOrderModal";
 
 // Assets
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated } = props;
+  const { columnsData, tableData, onOrderCreated, onDateSelect } = props;
+  const location = useLocation();
+
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
@@ -41,7 +44,7 @@ function Orders(props) {
   };
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // State for CreateOrderModal
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const [selectedRowData, setSelectedRowData] = useState(null);
 
@@ -95,10 +98,10 @@ function Orders(props) {
     >
       <Flex px="25px" justify="space-between" mb="20px" align="center">
         <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-          2 de Dic
+        {location.search}
         </Text>
         <Flex align="center">
-          <Menu />
+          <Menu onDateSelect={onDateSelect} />
           <Button variant="action" ml="4" onClick={openCreateModal}>
             Crear
           </Button>

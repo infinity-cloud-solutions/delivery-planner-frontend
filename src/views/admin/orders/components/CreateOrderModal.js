@@ -28,6 +28,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
     const [deliveryDate, setDeliveryDate] = useState('');
     const [totalAmount, setTotalAmount] = useState(0.0)
     const [paymentMethod, setPaymentMethod] = useState('')
+    const [dateError, setDateError] = useState(null);
 
     const addCartItem = () => {
         setCartItems([...cartItems, { product: '', quantity: 0, price: 0 }]);
@@ -74,6 +75,20 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
         }
     };
 
+    const handleDateChange = (selectedDate) => {
+        setDeliveryDate(selectedDate);
+
+        const currentDate = new Date();
+        const selectedDateObj = new Date(selectedDate);
+
+        if (selectedDateObj < currentDate) {
+            setDateError('La fecha de entrega no puede ser en el pasado');
+        } else {
+            setDateError(null);
+        }
+    };
+
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
             <ModalOverlay />
@@ -91,13 +106,13 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
                         <FormControl>
                             <FormLabel>Dirección</FormLabel>
                             <Textarea type="text" color={textColor} rows="2" borderColor={borderColor} placeholder="Ingresa la dirección del cliente" value={deliveryAddress}
-                            onChange={(e) => setDeliveryAddress(e.target.value)}/>
+                                onChange={(e) => setDeliveryAddress(e.target.value)} />
                         </FormControl>
 
                         <FormControl>
                             <FormLabel>Teléfono</FormLabel>
                             <Textarea type="text" color={textColor} rows="1" borderColor={borderColor} placeholder="Ingresa el teléfono del cliente" value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}/>
+                                onChange={(e) => setPhoneNumber(e.target.value)} />
                         </FormControl>
 
                         <FormControl>
@@ -107,14 +122,20 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
                                 borderColor={borderColor}
                                 type="date"
                                 value={deliveryDate}
-                                onChange={(e) => setDeliveryDate(e.target.value)}
+                                onChange={(e) => handleDateChange(e.target.value)}
                             />
+                            {dateError && (
+                                <Text color="red.500" fontSize="sm" mt="2">
+                                    {dateError}
+                                </Text>
+                            )}
                         </FormControl>
+
 
                         <FormControl>
                             <FormLabel>Horario de entrega</FormLabel>
                             <Select placeholder="Selecciona un horario" value={deliveryTime}
-                            onChange={(e) => setDeliveryTime(e.target.value)}>
+                                onChange={(e) => setDeliveryTime(e.target.value)}>
                                 <option value="9-1">9-1</option>
                                 <option value="1-5">1-5</option>
                             </Select>
@@ -123,7 +144,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
                         <FormControl>
                             <FormLabel>Método de pago</FormLabel>
                             <Select placeholder="Selecciona un método de pago" value={paymentMethod}
-                            onChange={(e) => setPaymentMethod(e.target.value)}>
+                                onChange={(e) => setPaymentMethod(e.target.value)}>
                                 <option value="Tarjeta">Tarjeta</option>
                                 <option value="Efectivo">Efectivo</option>
                                 <option value="Transferencia">Transferencia</option>

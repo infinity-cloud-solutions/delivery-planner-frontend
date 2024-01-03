@@ -12,7 +12,7 @@ import {
 import MainDashboard from "views/admin/default";
 import Product from "views/admin/products";
 import Routes from "views/admin/routes";
-import OrdersTable from "views/admin/orders";
+import Orders from "views/admin/orders";
 
 // Auth Imports
 // import SignInCentered from "views/auth/signIn";
@@ -28,7 +28,7 @@ const routes = [
   {
     name: "Productos",
     layout: "/admin",
-    path: "/productos",
+    path: "/products",
     icon: (
       <Icon
         as={MdOutlineShoppingCart}
@@ -44,8 +44,8 @@ const routes = [
     name: "Ordenes",
     layout: "/admin",
     icon: <Icon as={MdOutlineReceiptLong} width='20px' height='20px' color='inherit' />,
-    path: "/data-tables",
-    component: OrdersTable,
+    path: "/orders",
+    component: Orders,
   },
   {
     name: "Rutas",
