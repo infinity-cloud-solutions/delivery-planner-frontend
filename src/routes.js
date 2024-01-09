@@ -41,7 +41,7 @@ const routes = [
     secondary: true,
   },
   {
-    name: "Ordenes",
+    name: "Órdenes",
     layout: "/admin",
     icon: <Icon as={MdOutlineReceiptLong} width='20px' height='20px' color='inherit' />,
     path: "/orders",
