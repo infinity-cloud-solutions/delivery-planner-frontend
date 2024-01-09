@@ -73,14 +73,12 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod]);
 
     const checkFormValidity = () => {
-        // Add your validation logic here based on the required fields
         const isCartItemsValid = cartItems.length > 1;
         const isClientNameValid = clientName.trim() !== '';
         const isDeliveryAddressValid = deliveryAddress.trim() !== '';
         const isPhoneNumberValid = phoneNumber.trim() !== '';
         const isDeliveryDateValid = !dateError;
 
-        // Set form validity based on all conditions
         setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid);
     };
 
