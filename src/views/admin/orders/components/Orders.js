@@ -14,7 +14,6 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import React, { useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
 import {
   useGlobalFilter,
   usePagination,
@@ -32,9 +31,7 @@ import CreateOrderModal from "./CreateOrderModal";
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated, onDateSelect } = props;
-  const location = useLocation();
-
+  const { columnsData, tableData, onOrderCreated, onDateSelect, productsAvailable } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
@@ -98,7 +95,7 @@ function Orders(props) {
     >
       <Flex px="25px" justify="space-between" mb="20px" align="center">
         <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-        {location.search}
+        Pedidos para hoy
         </Text>
         <Flex align="center">
           <Menu onDateSelect={onDateSelect} />
@@ -280,6 +277,7 @@ function Orders(props) {
           isOpen={isCreateModalOpen}
           onClose={closeCreateModal}
           onCreate={onOrderCreatedCallback}
+          productsAvailable={productsAvailable}
         />
       )}
     </Card>
