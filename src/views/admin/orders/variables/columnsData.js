@@ -1,7 +1,7 @@
 export const columnsDataOrders = [
   {
-    Header: "NOMBRE",
-    accessor: "client_name",
+    Header: "FECHA",
+    accessor: "delivery_date",
   },
   {
     Header: "HORARIO",
@@ -9,7 +9,19 @@ export const columnsDataOrders = [
   },
   {
     Header: "DIRECCIÓN",
-    accessor: "delivery_address",
+    accessor: "address",
+  },
+  {
+    Header: "REPARTIDOR",
+    accessor: "driver",
+  },
+  {
+    Header: "SECUENCIA",
+    accessor: "delivery_sequence",
+  },
+  {
+    Header: "NOMBRE",
+    accessor: "client_name",
   },
   {
     Header: "PEDIDO",

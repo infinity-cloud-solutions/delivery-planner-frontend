@@ -38,7 +38,33 @@ export default function OrdersView() {
     const dateAsQueryParam = `${year}${month}${day}`
 
     const apiURL = `https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders?date=${dateAsQueryParam}`;
-    console.log(apiURL)
+    setLoading(true);
+
+    axios.get(apiURL)
+      .then(response => {
+        const responseData = response.data;
+
+        if (responseData.length === 0) {
+          setTableDataOrders([]);
+        } else {
+          const updatedResponseData = responseData.map(obj => {
+            return { ...obj, order: "Ver detalles" };
+          });
+          console.log(updatedResponseData)
+          setTableDataOrders(updatedResponseData);
+        }
+      })
+      .catch(error => {
+        console.error('API error:', error);
+      }).finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+
+    const apiURL = `https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders?date=${date.value}`;
     setLoading(true);
 
     axios.get(apiURL)
@@ -56,27 +82,6 @@ export default function OrdersView() {
         console.error('API error:', error);
       }).finally(() => {
         setLoading(false);
-      });
-  }, []);
-
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-
-    const apiURL = `https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders?date=${date.value}`;
-    console.log(apiURL)
-    axios.get(apiURL)
-      .then(response => {
-        console.log(response.data)
-        const responseData = response.data;
-
-        if (responseData.length === 0) {
-          setTableDataOrders([]);
-        } else {
-          setTableDataOrders(responseData);
-        }
-      })
-      .catch(error => {
-        console.error('API error:', error);
       });
   };
 
