@@ -1,4 +1,6 @@
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   Flex,
@@ -13,8 +15,9 @@ import {
   Tr,
   useColorModeValue,
 } from "@chakra-ui/react";
+import axios from 'axios';
+import { motion } from 'framer-motion';
 import React, { useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
 import {
   useGlobalFilter,
   usePagination,
@@ -32,15 +35,40 @@ import CreateOrderModal from "./CreateOrderModal";
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated, onDateSelect } = props;
-  const location = useLocation();
-
+  const { columnsData, tableData, onOrderCreated, onDateSelect, productsAvailable } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
+
 
   const onOrderCreatedCallback = (newOrder) => {
     onOrderCreated(newOrder);
+  };
+
+  const isButtonDisabled = () => {
+    return data.some(row => row.status !== 'Creada' || row.errors.length > 0);
+  };
+
+  const handleScheduleButtonClick = async () => {
+    setIsScheduling(true);
+
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+
+    try {
+      const response = await axios.post('https://vas516y582.execute-api.us-east-1.amazonaws.com/development/schedule-orders', { date: formattedDate });
+      console.log('Scheduled successfully:', response.data);
+      setAlertMessage({ type: 'success', text: 'Las ordenes fueron programadas con éxito' });
+      setTimeout(() => setAlertMessage(null), 3000);
+    } catch (error) {
+      console.error('Error scheduling:', error);
+      setAlertMessage({ type: 'error', text: 'Error al programar ordenes. Intenta de nuevo.' });
+      setTimeout(() => setAlertMessage(null), 3000);
+    } finally {
+      setIsScheduling(false);
+    }
   };
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -90,6 +118,24 @@ function Orders(props) {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
   return (
+    <>
+      {alertMessage && (
+        <motion.div
+          initial={{ x: '100%', right: '8px', top: '20%' }}
+          animate={{ x: 0, right: '8px', top: '20%' }}
+          exit={{ x: '100%' }}
+          transition={{ duration: 0.5 }}
+          style={{
+            position: 'fixed',
+            zIndex: 1000,
+          }}
+        >
+          <Alert status={alertMessage.type} mb={4}>
+            <AlertIcon />
+            {alertMessage.text}
+          </Alert>
+        </motion.div>
+      )}
     <Card
       direction="column"
       w="100%"
@@ -98,7 +144,7 @@ function Orders(props) {
     >
       <Flex px="25px" justify="space-between" mb="20px" align="center">
         <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-        {location.search}
+          Pedidos para hoy
         </Text>
         <Flex align="center">
           <Menu onDateSelect={onDateSelect} />
@@ -171,6 +217,22 @@ function Orders(props) {
                   </Tbody>
                 </Table>
               );
+              const tooltipErrorContent = (
+                <Table variant="simple" key={index}>
+                  <Thead>
+                    <Tr>
+                      <Th>Errores</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {row.original.errors.map((error, errorIndex) => (
+                      <Tr key={errorIndex}>
+                        <Td>{error}</Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              );
               return (
                 <Tr
                   {...row.getRowProps()}
@@ -212,9 +274,17 @@ function Orders(props) {
                                     : null
                             }
                           />
-                          <Text color={textColor} fontSize="sm" fontWeight="700">
-                            {cell.value}
-                          </Text>
+                          {cell.value === "Error" ? (
+                            <Tooltip label={tooltipErrorContent} hasArrow placement="top" arrowSize={10}>
+                              <Text color={textColor} fontSize="sm" fontWeight="700">
+                                {cell.value}
+                              </Text>
+                            </Tooltip>
+                          ) : (
+                            <Text color={textColor} fontSize="sm" fontWeight="700">
+                              {cell.value}
+                            </Text>
+                          )}
                         </Flex>
                       );
                     } else if (cell.column.Header === "HORARIO") {
@@ -249,6 +319,28 @@ function Orders(props) {
                           {cell.value}
                         </Text>
                       );
+                    } else if (cell.column.Header === "FECHA") {
+                      data = (
+                        <Text color={textColor} fontSize="sm" fontWeight="700">
+                          {cell.value}
+                        </Text>
+                      );
+                    } else if (cell.column.Header === "REPARTIDOR") {
+                      data = (
+                        <Text color={textColor} fontSize="sm" fontWeight="700">
+                          {cell.value}
+                        </Text>
+                      );
+                    } else if (cell.column.Header === "SECUENCIA") {
+                      data = (
+                        <Text color={textColor} fontSize="sm" fontWeight="700">
+                          {cell.value !== null ? (
+                            <>{cell.value}</>
+                          ) : (
+                            <>---</>
+                          )}
+                        </Text>
+                      );
                     }
                     return (
                       <Td
@@ -280,9 +372,21 @@ function Orders(props) {
           isOpen={isCreateModalOpen}
           onClose={closeCreateModal}
           onCreate={onOrderCreatedCallback}
+          productsAvailable={productsAvailable}
         />
       )}
+      <Button
+        variant="action"
+        mt="4"
+        onClick={handleScheduleButtonClick}
+        isDisabled={isScheduling || isButtonDisabled()}
+        isLoading={isScheduling}
+        spinnerPlacement="end"
+      >
+        Programar pedidos para ir a ruta
+      </Button>
     </Card>
+    </>
   );
 }
 

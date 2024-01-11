@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Button,
     Modal,
@@ -18,74 +18,203 @@ import {
     HStack,
     useColorModeValue
 } from '@chakra-ui/react';
+import ReactSelect from 'react-select'
+import { FaTrash } from 'react-icons/fa';
 
-const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
+const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
+
     const [clientName, setClientName] = useState('');
     const [deliveryTime, setDeliveryTime] = useState('');
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [cartItems, setCartItems] = useState([{ product: '', quantity: 0, price: 0 }]);
     const [deliveryDate, setDeliveryDate] = useState('');
-    const [totalAmount, setTotalAmount] = useState(0.0)
     const [paymentMethod, setPaymentMethod] = useState('')
+    const [cartItemsSelection, setCartItemsSelection] = useState([{ product: null, quantity: null }]);
+    const [cartItems, setCartItems] = useState([{ product: '', quantity: '', price: '' }]);
     const [dateError, setDateError] = useState(null);
-
-    const addCartItem = () => {
-        setCartItems([...cartItems, { product: '', quantity: 0, price: 0 }]);
-    };
+    const [totalAmountDisplay, setTotalAmountDisplay] = useState("0.00");
+    const [isFormValid, setIsFormValid] = useState(false);
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
     let menuBg = useColorModeValue("white", "navy.900");
+
+    const customStyles = {
+        control: (provided) => ({
+            ...provided,
+            borderColor: borderColor,
+            boxShadow: 'none',
+            backgroundColor: '#2D3748',
+            width: '200px',
+            maxWidth: '200px'
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : '#2D3748',
+            color: state.isFocused ? 'white' : 'white',
+        }),
+        menu: (provided) => ({
+            ...provided,
+            backgroundColor: '#2D3748',
+        }),
+        input: (provided) => ({
+            ...provided,
+            color: 'white',
+        }),
+        singleValue: (provided) => ({
+            ...provided,
+            color: 'white',
+        }),
+    };
+
+    useEffect(() => {
+        calculateTotalAmount();
+        checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
+    }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod]);
+
+    const checkFormValidity = () => {
+        const isCartItemsValid = cartItems.length > 1;
+        const isClientNameValid = clientName.trim() !== '';
+        const isDeliveryAddressValid = deliveryAddress.trim() !== '';
+        const isPhoneNumberValid = phoneNumber.trim() !== '';
+        const isDeliveryDateValid = !dateError;
+
+        setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid);
+    };
+
+    const addCartItem = () => {
+        const isProductSelected = cartItemsSelection.every(item => item.product !== null);
+        const isQuantitySelected = cartItemsSelection.every(item => item.quantity !== null);
+
+        if (isProductSelected && isQuantitySelected) {
+            const newCartItem = {
+                sku: "asd",
+                product: cartItemsSelection[0].product.value,
+                quantity: cartItemsSelection[0].quantity,
+                price: cartItemsSelection[0].product.price || 0,
+            };
+
+            setCartItems(prevCartItems => [...prevCartItems, newCartItem]);
+
+            setCartItemsSelection(prevCartItemsSelection => [
+                { product: null, quantity: null },
+                ...prevCartItemsSelection
+            ]);
+
+            calculateTotalAmount();
+            checkFormValidity();
+        } else {
+            console.log("Please select a product and quantity before adding to the cart.");
+        }
+    };
+
+
+    const removeCartItem = (index) => {
+        setCartItems((prevCartItems) => {
+            const updatedCartItems = [...prevCartItems];
+            updatedCartItems.splice(index, 1);
+            return updatedCartItems;
+        });
+
+        setCartItemsSelection((prevCartItemsSelection) => {
+            const updatedCartItemsSelection = [...prevCartItemsSelection];
+            const currentSelection = updatedCartItemsSelection[index]?.product;
+
+            const isObjectProduct = currentSelection && typeof currentSelection === 'object' && currentSelection.label && currentSelection.value;
+
+            if (isObjectProduct) {
+                updatedCartItemsSelection.splice(index, 1);
+            } else {
+                updatedCartItemsSelection.splice(index - 1, 1);
+            }
+
+            return updatedCartItemsSelection;
+        });
+
+        calculateTotalAmount();
+    };
+
+
+
+    const handleProductSelect = (selectedOption, index) => {
+        setCartItemsSelection(prevCartItemsSelection => {
+            const updatedCartItemsSelection = [...prevCartItemsSelection];
+            updatedCartItemsSelection[index] = { ...updatedCartItemsSelection[index], product: selectedOption };
+            return updatedCartItemsSelection;
+        });
+    };
+
+    const handleQuantityChange = (index, newQuantity) => {
+        setCartItemsSelection(prevCartItemsSelection => {
+            const updatedCartItemsSelection = [...prevCartItemsSelection];
+            updatedCartItemsSelection[index] = { ...updatedCartItemsSelection[index], quantity: newQuantity };
+            return updatedCartItemsSelection;
+        });
+    };
+
+    const calculateTotalAmount = () => {
+        if (cartItems.length > 0) {
+            const calculatedTotalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+                .toLocaleString('es-MX', {
+                    style: 'currency',
+                    currency: 'MXN',
+                });
+            setTotalAmountDisplay(calculatedTotalAmount);
+        } else {
+            setTotalAmountDisplay("0.00");
+        }
+    };
 
     const createOrder = async () => {
 
         const newOrder = {
             client_name: clientName,
             delivery_address: deliveryAddress,
-            delivery_date: deliveryAddress,
+            delivery_date: deliveryDate,
             delivery_time: deliveryTime,
             phone_number: phoneNumber,
-            total_amount: totalAmount,
+            geolocation: {
+                "latitude": 20.4761256,
+                "longitude": -103.3687407,
+            },
+            total_amount: parseFloat(totalAmountDisplay.replace('$', '')),
             cart_items: cartItems,
             payment_method: paymentMethod,
             status: "Creada",
             order: "Ver detalles"
         };
+        newOrder.cart_items = newOrder.cart_items.filter(item => item.product !== "");
+        newOrder.cart_items.forEach(item => {
+        if (item.price !== undefined) {
+            item.price = Number(item.price) || 0;
+        }
+        });
         onCreate(newOrder);
         setClientName('');
         setDeliveryTime('');
         setDeliveryAddress('');
         setPhoneNumber('');
-        setTotalAmount('');
+        setTotalAmountDisplay('');
         setPaymentMethod('');
         onClose();
 
-    };
-
-    const calculateTotalAmount = () => {
-        if (cartItems.length > 0) {
-            return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-                .toLocaleString('es-MX', {
-                    style: 'currency',
-                    currency: 'MXN',
-                });
-        } else {
-            return "0.00";
-        }
     };
 
     const handleDateChange = (selectedDate) => {
         setDeliveryDate(selectedDate);
 
         const currentDate = new Date();
-        const selectedDateObj = new Date(selectedDate);
+        currentDate.setHours(6, 59, 0, 0);
+
+        const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+        selectedDateObj.setMinutes(selectedDateObj.getTimezoneOffset());
 
         if (selectedDateObj < currentDate) {
             setDateError('La fecha de entrega no puede ser en el pasado');
         } else {
             setDateError(null);
         }
+        checkFormValidity();
     };
 
 
@@ -97,25 +226,25 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing="4">
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Nombre</FormLabel>
                             <Input type="text" color={textColor} borderColor={borderColor} placeholder="Ingresa el nombre del cliente" value={clientName}
                                 onChange={(e) => setClientName(e.target.value)} />
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Dirección</FormLabel>
                             <Textarea type="text" color={textColor} rows="2" borderColor={borderColor} placeholder="Ingresa la dirección del cliente" value={deliveryAddress}
                                 onChange={(e) => setDeliveryAddress(e.target.value)} />
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Teléfono</FormLabel>
                             <Textarea type="text" color={textColor} rows="1" borderColor={borderColor} placeholder="Ingresa el teléfono del cliente" value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)} />
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Fecha de entrega</FormLabel>
                             <Input
                                 color={textColor}
@@ -131,17 +260,16 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
                             )}
                         </FormControl>
 
-
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Horario de entrega</FormLabel>
                             <Select placeholder="Selecciona un horario" value={deliveryTime}
                                 onChange={(e) => setDeliveryTime(e.target.value)}>
-                                <option value="9-1">9-1</option>
-                                <option value="1-5">1-5</option>
+                                <option value="8 AM - 1 PM">8 AM - 1 PM</option>
+                                <option value="1 PM - 5 PM">1 PM - 5 PM</option>
                             </Select>
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl isRequired>
                             <FormLabel>Método de pago</FormLabel>
                             <Select placeholder="Selecciona un método de pago" value={paymentMethod}
                                 onChange={(e) => setPaymentMethod(e.target.value)}>
@@ -151,43 +279,47 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
                             </Select>
                         </FormControl>
 
-                        <FormLabel>Lista de productos en pedido</FormLabel>
+                        <FormLabel
+                            color={textColor}
+                            fontSize='18px'
+                            fontWeight='700'
+                            lineHeight='100%'
+                        >Lista de productos en pedido</FormLabel>
                         {cartItems.map((item, index) => (
                             <HStack key={index} spacing="4">
-                                <FormControl>
+                                <FormControl isRequired>
                                     <FormLabel>Producto</FormLabel>
-                                    <Input
-                                        type="text"
-                                        placeholder="Ingresa el nombre del producto"
-                                        value={item.product}
-                                        color={textColor} borderColor={borderColor}
-                                        onChange={(e) => {
-                                            const updatedItems = [...cartItems];
-                                            updatedItems[index].product = e.target.value;
-                                            setCartItems(updatedItems);
-                                        }}
+                                    <ReactSelect
+                                        isSearchable={true}
+                                        styles={customStyles}
+                                        options={productsAvailable}
+                                        placeholder="Busca producto"
+                                        noOptionsMessage={() => "No hay opción"}
+                                        value={cartItemsSelection[index]?.product || null}
+                                        onChange={(selectedOption) => handleProductSelect(selectedOption, index)}
                                     />
                                 </FormControl>
-
-                                <FormControl>
+                                <FormControl isRequired>
                                     <FormLabel>Cantidad</FormLabel>
                                     <Input
                                         type="number"
                                         placeholder="Ingresa la cantidad"
-                                        value={item.quantity}
-                                        color={textColor} borderColor={borderColor}
-                                        onChange={(e) => {
-                                            const updatedItems = [...cartItems];
-                                            updatedItems[index].quantity = parseInt(e.target.value, 10);
-                                            setCartItems(updatedItems);
-                                        }}
+                                        color={textColor}
+                                        borderColor={borderColor}
+                                        value={cartItemsSelection[index]?.quantity ?? ''}
+                                        onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}
                                     />
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Acción</FormLabel>
+                                    <Button variant="outline" onClick={() => removeCartItem(index)} isDisabled={cartItems[index]?.product === ""} leftIcon={<FaTrash />}>
+                                    </Button>
                                 </FormControl>
                             </HStack>
                         ))}
 
                         <Button variant="outline" onClick={addCartItem}>
-                            Agregar más al carrito
+                            Agregar al carrito
                         </Button>
 
                         <Text
@@ -195,14 +327,14 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate }) => {
                             fontSize='18px'
                             fontWeight='700'
                             lineHeight='100%'>
-                            Monto total: {calculateTotalAmount()}
+                            Monto total: {totalAmountDisplay}
                         </Text>
 
                     </VStack>
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="brand" onClick={createOrder}>Crear</Button>
+                    <Button variant="brand" onClick={createOrder} isDisabled={!isFormValid}>Crear</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
