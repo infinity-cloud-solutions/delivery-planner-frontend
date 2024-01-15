@@ -24,14 +24,16 @@ export default function ProductView() {
   const textColorBrand = useColorModeValue("brand.500", "white");
 
   useEffect(() => {
-    axios.get('https://webhook.site/89b2c7e9-26d4-4052-aa87-f9b742a98370')
-      .then(response => {
+    const productsMock = [{"sku": "001FAB", "name": "Fresas", "price": 195.00}, {"sku": "001AAE", "name": "Mix Berries", "price": 210.00}, {"sku": "001ACF", "name": "Bluberry - Arandano", "price": 210.00}, {"sku": "001EAF", "name": "Mango", "price": 160.00}, {"sku": "001EBB", "name": "Mix Verde", "price": 210.00}, {"sku": "001ACC", "name": "Frambuesa", "price": 240.00}, {"sku": "001ECF", "name": "Mix Fresa + Mango", "price": 190.00}]
+    setTableDataProducts(productsMock);
+    // axios.get('https://webhook.site/89b2c7e9-26d4-4052-aa87-f9b742a98370')
+    //   .then(response => {
 
-        setTableDataProducts([]);
-      })
-      .catch(error => {
-        console.error('API error:', error);
-      });
+    //     setTableDataProducts([]);
+    //   })
+    //   .catch(error => {
+    //     console.error('API error:', error);
+    //   });
   }, []);
 
   const handleProductCreated = (newProduct) => {

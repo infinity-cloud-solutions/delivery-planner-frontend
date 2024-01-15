@@ -74,7 +74,7 @@ function Products(props) {
           boxShadow='0px 40px 58px -20px rgba(112, 144, 176, 0.26)'
         >
           <Text color={textColor} fontSize='xl' fontWeight='600'>
-            Productos
+            Catálogo
           </Text>
           <Button variant="action" onClick={openCreateModal}>
             Crear
@@ -149,7 +149,19 @@ function Products(props) {
                             {formattedPrice}
                           </Text>
                         );
-                      }
+                      } else if (cell.column.Header === "SKU") {
+                        data = (
+                            <Flex align='center'>
+                                <Text
+                                    color={textColor}
+                                    fontSize='sm'
+                                    fontWeight='600'
+                                >
+                                    {cell.value}
+                                </Text>
+                            </Flex>
+                        );
+                    }
                       return (
                         <Td
                           {...cell.getCellProps()}

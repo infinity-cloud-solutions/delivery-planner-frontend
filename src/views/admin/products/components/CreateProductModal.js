@@ -44,6 +44,17 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }) => {
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing="4">
+                    <FormControl>
+                            <FormLabel>SKU</FormLabel>
+                            <Input
+                                type="text"
+                                color={textColor}
+                                borderColor={borderColor}
+                                placeholder="SKU debe coincidir con el SKU en Shopify"
+                                value={productName}
+                                onChange={(e) => setProductName(e.target.value)}
+                            />
+                        </FormControl>
                         <FormControl>
                             <FormLabel>Nombre del Producto</FormLabel>
                             <Input
@@ -71,9 +82,6 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }) => {
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="outline" onClick={onClose}>
-                        Cancelar
-                    </Button>
                     <Button variant="brand" onClick={createProduct}>
                         Crear Producto
                     </Button>
