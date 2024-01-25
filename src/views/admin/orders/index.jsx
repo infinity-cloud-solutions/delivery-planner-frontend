@@ -22,6 +22,7 @@ export default function OrdersView() {
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const products = [{ "label": "Cuatro", "value": "Cuatro", "price": 40.00 }, { "label": "Tres", "value": "Tres", "price": 30.00 }, { "label": "Fresas", "value": "Fresas", "price": 20.00 }, { "label": "Mango", "value": "Mango", "price": 10.00 }]
+  const productsMock = [{"label": "Fresas", "value": "Fresas", "price": 195.00}, {"label": "Mix Berries", "value": "Mix Berries", "price": 210.00}, {"label": "Bluberry - Arandano", "value": "Bluberry - Arandano", "price": 210.00}, {"label": "Mango", "value": "Mango", "price": 160.00}, {"label": "Mix Verde", "value": "Mix Verde", "price": 210.00}, {"label": "Frambuesa", "value": "Frambuesa", "price": 240.00}, {"label": "Mix Fresa + Mango", "value": "Mix Fresa + Mango", "price": 190.00}]
 
   // Chakra Color Mode
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -96,6 +97,7 @@ export default function OrdersView() {
       });
 
       newOrder.status = response.data.status;
+      newOrder.errors = response.data.errors;
 
       // Check if the delivery_date is the same as today so we can add the record to the todays table
       const currentDate = new Date();
@@ -162,7 +164,7 @@ export default function OrdersView() {
               tableData={tableDataOrders}
               onOrderCreated={handleOrderCreated}
               onDateSelect={handleDateChange}
-              productsAvailable={products}
+              productsAvailable={productsMock}
             />
           )}
         </SimpleGrid>

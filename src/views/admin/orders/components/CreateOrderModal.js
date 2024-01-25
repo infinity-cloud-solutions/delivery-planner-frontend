@@ -173,10 +173,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
             delivery_date: deliveryDate,
             delivery_time: deliveryTime,
             phone_number: phoneNumber,
-            geolocation: {
-                "latitude": 20.4761256,
-                "longitude": -103.3687407,
-            },
             total_amount: parseFloat(totalAmountDisplay.replace('$', '')),
             cart_items: cartItems,
             payment_method: paymentMethod,
