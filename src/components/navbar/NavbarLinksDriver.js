@@ -15,6 +15,8 @@ import {
 } from '@chakra-ui/react';
 // Custom Components
 
+import { useHistory } from "react-router-dom";
+
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -32,6 +34,16 @@ export default function DriverHeaderLinks(props) {
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.18)',
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
 	);
+
+	const history = useHistory();
+	const handleLogout = () => {
+		localStorage.removeItem('accessToken');
+		localStorage.removeItem('idToken');
+		localStorage.removeItem('refreshToken');
+
+		history.push('/auth');
+	};
+
 	return (
 		<Flex
 			w={{ sm: '100%', md: 'auto' }}
@@ -81,7 +93,8 @@ export default function DriverHeaderLinks(props) {
 							_focus={{ bg: 'none' }}
 							color="red.400"
 							borderRadius="8px"
-							px="14px">
+							px="14px"
+							onClick={handleLogout}>
 							<Text fontSize="sm">Cerrar sesión</Text>
 						</MenuItem>
 					</Flex>

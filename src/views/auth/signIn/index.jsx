@@ -90,7 +90,7 @@ function SignIn() {
         localStorage.setItem('idToken', idToken);
         localStorage.setItem('refreshToken', refreshToken);
         setIsLoading(false)
-        const isInDriverGroup = isDriver(); // Assuming isDriver is a function to check the group
+        const isInDriverGroup = isDriver();
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
 
       history.push(redirectToPath);
