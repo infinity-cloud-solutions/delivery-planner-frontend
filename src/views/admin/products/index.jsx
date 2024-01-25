@@ -9,12 +9,14 @@ import {
   Box,
   Flex,
   Icon,
+  Link,
   useColorModeValue,
   SimpleGrid
 } from "@chakra-ui/react";
 import {
   MdNoAccounts
 } from "react-icons/md";
+import { Link as RouterLink } from "react-router-dom";
 
 // Custom components
 import Products from "views/admin/products/components/Products";
@@ -23,6 +25,7 @@ import { isDriver } from 'security.js';
 import { tableColumnsProducts } from "views/admin/products/variables/tableColumnsProducts";
 
 export default function ProductView() {
+  const brandColor = useColorModeValue("brand.500", "white");
   const [tableDataProducts, setTableDataProducts] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null);
   // Chakra Color Mode
@@ -71,6 +74,9 @@ export default function ProductView() {
           <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
             El contenido está restringido para administradores y mesa de control.
           </Box>
+          <Link as={RouterLink} to="/driver" color={brandColor} fontWeight="bold" mt={ "20px" }>
+              Volver a la sección de repartidor
+            </Link>
         </Flex>
       </Box>
     );

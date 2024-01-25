@@ -9,6 +9,7 @@ import {
   Box,
   Flex,
   Icon,
+  Link,
   useColorModeValue,
   SimpleGrid,
   Spinner
@@ -16,6 +17,8 @@ import {
 import {
   MdNoAccounts
 } from "react-icons/md";
+import { Link as RouterLink } from "react-router-dom";
+
 
 import Orders from "views/admin/orders/components/Orders";
 import {
@@ -24,6 +27,7 @@ import {
 import { isDriver } from 'security.js';
 
 export default function OrdersView() {
+  const brandColor = useColorModeValue("brand.500", "white");
   const [tableDataOrders, setTableDataOrders] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -138,6 +142,9 @@ export default function OrdersView() {
           <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
             El contenido está restringido para administradores y mesa de control.
           </Box>
+          <Link as={RouterLink} to="/driver" color={brandColor} fontWeight="bold" mt={ "20px" }>
+              Volver a la sección de repartidor
+            </Link>
         </Flex>
       </Box>
     );

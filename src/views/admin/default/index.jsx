@@ -2,6 +2,7 @@ import {
   Box,
   Flex,
   Icon,
+  Link,
   SimpleGrid,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -24,6 +25,7 @@ import {
 } from "views/admin/default/variables/columnsData";
 import tableDataOrderDashboard from "views/admin/default/variables/tableDataOrderDashboard.json";
 import { isDriver } from 'security.js';
+import { Link as RouterLink } from "react-router-dom";
 
 export default function Dashboard() {
   // Chakra Color Mode
@@ -39,6 +41,9 @@ export default function Dashboard() {
           <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
             El contenido está restringido para administradores y mesa de control.
           </Box>
+          <Link as={RouterLink} to="/driver" color={brandColor} fontWeight="bold" mt={ "20px" }>
+              Volver a la sección de repartidor
+            </Link>
         </Flex>
       </Box>
     );
