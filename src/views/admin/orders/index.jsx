@@ -7,17 +7,27 @@ import {
   Alert,
   AlertIcon,
   Box,
+  Flex,
+  Icon,
+  Link,
   useColorModeValue,
   SimpleGrid,
   Spinner
 } from "@chakra-ui/react";
+import {
+  MdNoAccounts
+} from "react-icons/md";
+import { Link as RouterLink } from "react-router-dom";
+
 
 import Orders from "views/admin/orders/components/Orders";
 import {
   columnsDataOrders,
 } from "views/admin/orders/variables/columnsData";
+import { isDriver } from 'security.js';
 
 export default function OrdersView() {
+  const brandColor = useColorModeValue("brand.500", "white");
   const [tableDataOrders, setTableDataOrders] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -38,7 +48,7 @@ export default function OrdersView() {
     const day = String(today.getDate()).padStart(2, '0');
     const dateAsQueryParam = `${year}${month}${day}`
 
-    const apiURL = `https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders?date=${dateAsQueryParam}`;
+    const apiURL = `https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders?date=${dateAsQueryParam}`;
     setLoading(true);
 
     axios.get(apiURL)
@@ -65,7 +75,7 @@ export default function OrdersView() {
   const handleDateChange = (date) => {
     setSelectedDate(date);
 
-    const apiURL = `https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders?date=${date.value}`;
+    const apiURL = `https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders?date=${date.value}`;
     setLoading(true);
 
     axios.get(apiURL)
@@ -90,7 +100,7 @@ export default function OrdersView() {
     console.log('Order created:', newOrder);
 
     try {
-      const response = await axios.post('https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders', newOrder, {
+      const response = await axios.post('https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders', newOrder, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -120,6 +130,24 @@ export default function OrdersView() {
       setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
       setTimeout(() => setAlertMessage(null), 3000);
     }
+  }
+
+  const userIsDriver = isDriver();
+
+  if (userIsDriver) {
+    return (
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Flex align="center" justify="center" direction="column">
+          <Icon as={MdNoAccounts} color="red.500" boxSize={12} />
+          <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
+            El contenido está restringido para administradores y mesa de control.
+          </Box>
+          <Link as={RouterLink} to="/driver" color={brandColor} fontWeight="bold" mt={ "20px" }>
+              Volver a la sección de repartidor
+            </Link>
+        </Flex>
+      </Box>
+    );
   }
 
   return (

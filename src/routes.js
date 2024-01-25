@@ -6,16 +6,17 @@ import {
   MdOutlineReceiptLong,
   MdOutlineRoute,
   MdOutlineShoppingCart,
+  MdLock
 } from "react-icons/md";
 
 // Admin Imports
 import MainDashboard from "views/admin/default";
 import Product from "views/admin/products";
-import Routes from "views/admin/routes";
+import Deliveries from "views/driver/deliveries";
 import Orders from "views/admin/orders";
 
 // Auth Imports
-// import SignInCentered from "views/auth/signIn";
+import SignInCentered from "views/auth/signIn";
 
 const routes = [
   {
@@ -46,13 +47,6 @@ const routes = [
     icon: <Icon as={MdOutlineReceiptLong} width='20px' height='20px' color='inherit' />,
     path: "/orders",
     component: Orders,
-  },
-  {
-    name: "Rutas",
-    layout: "/admin",
-    path: "/routes",
-    icon: <Icon as={MdOutlineRoute} width='20px' height='20px' color='inherit' />,
-    component: Routes,
   }
 ];
 

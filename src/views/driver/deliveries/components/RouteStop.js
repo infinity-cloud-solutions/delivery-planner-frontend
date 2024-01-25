@@ -13,7 +13,7 @@ import {
 import Card from "components/card/Card.js";
 import React from "react";
 
-export default function RouteStop(props) {
+export default function DeliveryInitialState(props) {
   const { used, total, ...rest } = props;
   // Chakra Color Mode
   const textColorPrimary = useColorModeValue("secondaryGray.900", "white");

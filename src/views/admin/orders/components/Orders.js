@@ -58,7 +58,7 @@ function Orders(props) {
     const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
     try {
-      const response = await axios.post('https://vas516y582.execute-api.us-east-1.amazonaws.com/development/schedule-orders', { date: formattedDate });
+      const response = await axios.post('https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/schedule-orders', { date: formattedDate });
       console.log('Scheduled successfully:', response.data);
       setAlertMessage({ type: 'success', text: 'Las ordenes fueron programadas con éxito' });
       setTimeout(() => setAlertMessage(null), 3000);
