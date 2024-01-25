@@ -7,15 +7,21 @@ import {
   Alert,
   AlertIcon,
   Box,
+  Flex,
+  Icon,
   useColorModeValue,
   SimpleGrid,
   Spinner
 } from "@chakra-ui/react";
+import {
+  MdNoAccounts
+} from "react-icons/md";
 
 import Orders from "views/admin/orders/components/Orders";
 import {
   columnsDataOrders,
 } from "views/admin/orders/variables/columnsData";
+import { isDriver } from 'security.js';
 
 export default function OrdersView() {
   const [tableDataOrders, setTableDataOrders] = useState([]);
@@ -120,6 +126,21 @@ export default function OrdersView() {
       setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
       setTimeout(() => setAlertMessage(null), 3000);
     }
+  }
+
+  const userIsDriver = isDriver();
+
+  if (userIsDriver) {
+    return (
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Flex align="center" justify="center" direction="column">
+          <Icon as={MdNoAccounts} color="red.500" boxSize={12} />
+          <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
+            El contenido está restringido para administradores y mesa de control.
+          </Box>
+        </Flex>
+      </Box>
+    );
   }
 
   return (

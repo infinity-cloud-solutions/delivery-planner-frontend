@@ -16,17 +16,34 @@ import {
   MdAttachMoney,
   MdBarChart,
   MdFileCopy,
+  MdNoAccounts
 } from "react-icons/md";
 import OrdersDashboard from "views/admin/default/components/OrdersDashboard";
 import {
   columnsOrdersDashboard,
 } from "views/admin/default/variables/columnsData";
 import tableDataOrderDashboard from "views/admin/default/variables/tableDataOrderDashboard.json";
+import { isDriver } from 'security.js';
 
-export default function UserReports() {
+export default function Dashboard() {
   // Chakra Color Mode
   const brandColor = useColorModeValue("brand.500", "white");
   const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
+  const userIsDriver = isDriver();
+
+  if (userIsDriver) {
+    return (
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Flex align="center" justify="center" direction="column">
+          <Icon as={MdNoAccounts} color="red.500" boxSize={12} />
+          <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
+            El contenido está restringido para administradores y mesa de control.
+          </Box>
+        </Flex>
+      </Box>
+    );
+  }
+
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
       <SimpleGrid

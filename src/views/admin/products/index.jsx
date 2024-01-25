@@ -7,12 +7,18 @@ import {
   Alert,
   AlertIcon,
   Box,
+  Flex,
+  Icon,
   useColorModeValue,
   SimpleGrid
 } from "@chakra-ui/react";
+import {
+  MdNoAccounts
+} from "react-icons/md";
 
 // Custom components
 import Products from "views/admin/products/components/Products";
+import { isDriver } from 'security.js';
 
 import { tableColumnsProducts } from "views/admin/products/variables/tableColumnsProducts";
 
@@ -54,6 +60,21 @@ export default function ProductView() {
         setTimeout(() => setAlertMessage(null), 3000);
       });
   };
+
+  const userIsDriver = isDriver();
+
+  if (userIsDriver) {
+    return (
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Flex align="center" justify="center" direction="column">
+          <Icon as={MdNoAccounts} color="red.500" boxSize={12} />
+          <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
+            El contenido está restringido para administradores y mesa de control.
+          </Box>
+        </Flex>
+      </Box>
+    );
+  }
 
   return (
     <>

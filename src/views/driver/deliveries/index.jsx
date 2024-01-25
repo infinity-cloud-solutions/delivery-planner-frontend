@@ -1,7 +1,7 @@
 import { Box, Grid, Spinner, Text } from "@chakra-ui/react";
 
-import RouteStop from "views/admin/deliveries/components/RouteStop";
-import DeliveryCard from "views/admin/deliveries/components/Delivery";
+import RouteStop from "views/driver/deliveries/components/RouteStop";
+import DeliveryCard from "views/driver/deliveries/components/Delivery";
 
 import React, { useState, useEffect } from "react";
 import axios from 'axios';

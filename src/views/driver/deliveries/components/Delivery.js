@@ -125,7 +125,7 @@ export default function DeliveryCard(props) {
             <Flex maxW={{ base: "sm", lg: "2xl", "2xl": "2xl" }} direction={{ base: "column", "2xl": "row" }}>
 
                 <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p="6" flex="1">
-                    <Box>
+                    <Box mb='21px'>
                         <APIProvider apiKey={API_KEY} libraries={['marker']}>
                             <Map
                                 mapId={'bf51a910020fa25a'}
