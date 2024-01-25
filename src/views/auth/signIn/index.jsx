@@ -1,10 +1,9 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-// Chakra imports
+import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+
 import {
   Box,
   Button,
-  Checkbox,
   Flex,
   FormControl,
   FormLabel,
@@ -16,34 +15,138 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-// Custom components
-import { HSeparator } from "components/separator/Separator";
+
 import DefaultAuth from "layouts/auth/Default";
-// Assets
+
 import illustration from "assets/img/auth/auth.png";
-import { FcGoogle } from "react-icons/fc";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
+import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
+import jwt from 'jsonwebtoken';
 
 function SignIn() {
-  // Chakra color mode
+  const history = useHistory();
+
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
-  const textColorDetails = useColorModeValue("navy.700", "secondaryGray.600");
-  const textColorBrand = useColorModeValue("brand.500", "white");
+
   const brandStars = useColorModeValue("brand.500", "brand.400");
-  const googleBg = useColorModeValue("secondaryGray.300", "whiteAlpha.200");
-  const googleText = useColorModeValue("navy.700", "white");
-  const googleHover = useColorModeValue(
-    { bg: "gray.200" },
-    { bg: "whiteAlpha.300" }
-  );
-  const googleActive = useColorModeValue(
-    { bg: "secondaryGray.300" },
-    { bg: "whiteAlpha.200" }
-  );
-  const [show, setShow] = React.useState(false);
+
+  const [show, setShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const handleClick = () => setShow(!show);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    console.log(accessToken)
+    const isTokenValid = accessToken && validateJWT(accessToken);
+    console.log(isTokenValid)
+
+    if (isTokenValid) {
+      const isInDriverGroup = isDriver(); // Assuming isDriver is a function to check the group
+      const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
+
+      history.push(redirectToPath);
+    } else {
+      setError("No estás autenticado. Inicia sesión para entrar al sistema");
+
+    }
+  }, [history]);
+
+  function validateJWT(token) {
+    try {
+      const decodedToken = jwt.decode(token, { complete: true })
+      console.log(decodedToken)
+
+      // change for prod
+      const expectedIssuer = "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_lw1SPkTV6"
+      if (decodedToken.payload.iss !== expectedIssuer) {
+        console.log(decodedToken.payload.iss, expectedIssuer)
+        throw new Error('Invalid issuer');
+      }
+      console.log(decodedToken.payload.exp)
+      if (new Date(decodedToken.payload.exp * 1000) < new Date()) {
+        throw new Error('Token has expired');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('JWT validation error:', error.message);
+      return false;
+    }
+  }
+
+  const isDriver = () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        return false;
+    }
+
+    try {
+        const decodedToken = jwt.decode(token, { complete: true });
+        const groups = decodedToken.payload['cognito:groups'];
+        const response = groups && groups.includes('Repartidor');
+        console.log("is Driver ", response)
+        return response
+    } catch (error) {
+        console.error('Error decoding token:', error.message);
+        return false;
+    }
+};
+
+  const signIn = () => {
+    setIsLoading(true)
+    const poolData = {
+      UserPoolId: 'us-east-1_lw1SPkTV6',
+      ClientId: '2kfbk5ff78en39uf7qen5lq7sc',
+    };
+
+    const userPool = new CognitoUserPool(poolData);
+
+    const authenticationData = {
+      Username: email,
+      Password: password,
+    };
+
+    const authenticationDetails = new AuthenticationDetails(authenticationData);
+
+    const userData = {
+      Username: email,
+      Pool: userPool,
+    };
+
+    const cognitoUser = new CognitoUser(userData);
+
+    cognitoUser.authenticateUser(authenticationDetails, {
+      onSuccess: (session) => {
+        console.log('Authentication Successful!', session);
+        const accessToken = session.getAccessToken().getJwtToken();
+        const idToken = session.getIdToken().getJwtToken();
+        const refreshToken = session.getRefreshToken().getToken();
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('idToken', idToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        setIsLoading(false)
+        const isInDriverGroup = isDriver(); // Assuming isDriver is a function to check the group
+        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
+
+      history.push(redirectToPath);
+
+      },
+      onFailure: (err) => {
+        console.error('Authentication failed:', err);
+        setError("Credenciales erróneas");
+        setIsLoading(false)
+      },
+    });
+
+  };
+
+
   return (
     <DefaultAuth illustrationBackground={illustration} image={illustration}>
       <Flex
@@ -60,7 +163,7 @@ function SignIn() {
         flexDirection='column'>
         <Box me='auto'>
           <Heading color={textColor} fontSize='36px' mb='10px'>
-            Sign In
+            Iniciar sesión
           </Heading>
           <Text
             mb='36px'
@@ -68,7 +171,7 @@ function SignIn() {
             color={textColorSecondary}
             fontWeight='400'
             fontSize='md'>
-            Enter your email and password to sign in!
+            Ingresa tu correo y contraseña para entrar al sistema
           </Text>
         </Box>
         <Flex
@@ -81,29 +184,6 @@ function SignIn() {
           mx={{ base: "auto", lg: "unset" }}
           me='auto'
           mb={{ base: "20px", md: "auto" }}>
-          <Button
-            fontSize='sm'
-            me='0px'
-            mb='26px'
-            py='15px'
-            h='50px'
-            borderRadius='16px'
-            bg={googleBg}
-            color={googleText}
-            fontWeight='500'
-            _hover={googleHover}
-            _active={googleActive}
-            _focus={googleActive}>
-            <Icon as={FcGoogle} w='20px' h='20px' me='10px' />
-            Sign in with Google
-          </Button>
-          <Flex align='center' mb='25px'>
-            <HSeparator />
-            <Text color='gray.400' mx='14px'>
-              or
-            </Text>
-            <HSeparator />
-          </Flex>
           <FormControl>
             <FormLabel
               display='flex'
@@ -112,18 +192,21 @@ function SignIn() {
               fontWeight='500'
               color={textColor}
               mb='8px'>
-              Email<Text color={brandStars}>*</Text>
+              Correo electrónico<Text color={brandStars}>*</Text>
             </FormLabel>
             <Input
+              id="email"
               isRequired={true}
               variant='auth'
               fontSize='sm'
               ms={{ base: "0px", md: "0px" }}
               type='email'
-              placeholder='mail@simmmple.com'
+              placeholder='email@ejemplo.com'
               mb='24px'
               fontWeight='500'
               size='lg'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <FormLabel
               ms='4px'
@@ -131,16 +214,18 @@ function SignIn() {
               fontWeight='500'
               color={textColor}
               display='flex'>
-              Password<Text color={brandStars}>*</Text>
+              Contraseña<Text color={brandStars}>*</Text>
             </FormLabel>
             <InputGroup size='md'>
               <Input
                 isRequired={true}
                 fontSize='sm'
-                placeholder='Min. 8 characters'
+                placeholder=''
                 mb='24px'
                 size='lg'
+                value={password}
                 type={show ? "text" : "password"}
+                onChange={(e) => setPassword(e.target.value)}
                 variant='auth'
               />
               <InputRightElement display='flex' alignItems='center' mt='4px'>
@@ -152,61 +237,26 @@ function SignIn() {
                 />
               </InputRightElement>
             </InputGroup>
-            <Flex justifyContent='space-between' align='center' mb='24px'>
-              <FormControl display='flex' alignItems='center'>
-                <Checkbox
-                  id='remember-login'
-                  colorScheme='brandScheme'
-                  me='10px'
-                />
-                <FormLabel
-                  htmlFor='remember-login'
-                  mb='0'
-                  fontWeight='normal'
-                  color={textColor}
-                  fontSize='sm'>
-                  Keep me logged in
-                </FormLabel>
-              </FormControl>
-              <NavLink to='/auth/forgot-password'>
-                <Text
-                  color={textColorBrand}
-                  fontSize='sm'
-                  w='124px'
-                  fontWeight='500'>
-                  Forgot password?
-                </Text>
-              </NavLink>
-            </Flex>
             <Button
               fontSize='sm'
               variant='brand'
               fontWeight='500'
               w='100%'
               h='50'
-              mb='24px'>
-              Sign In
+              mb='24px'
+              isLoading={isLoading}
+              loadingText='Cargando'
+              _hover={!isLoading ? { bg: brandStars, color: "white" } : {}}
+              onClick={signIn
+              }>
+              Iniciar sesión
             </Button>
+            {error && (
+              <Text color="red.500" mt="2" textAlign="center">
+                {error}
+              </Text>
+            )}
           </FormControl>
-          <Flex
-            flexDirection='column'
-            justifyContent='center'
-            alignItems='start'
-            maxW='100%'
-            mt='0px'>
-            <Text color={textColorDetails} fontWeight='400' fontSize='14px'>
-              Not registered yet?
-              <NavLink to='/auth/sign-up'>
-                <Text
-                  color={textColorBrand}
-                  as='span'
-                  ms='5px'
-                  fontWeight='500'>
-                  Create an Account
-                </Text>
-              </NavLink>
-            </Text>
-          </Flex>
         </Flex>
       </Flex>
     </DefaultAuth>

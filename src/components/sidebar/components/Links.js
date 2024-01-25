@@ -48,6 +48,7 @@ export function SidebarLinks(props) {
         );
       } else if (
         route.layout === "/admin" ||
+        route.layout === "/driver" ||
         route.layout === "/auth"
       ) {
         return (

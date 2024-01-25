@@ -1,7 +1,11 @@
 // Chakra Imports
 import {
 	Avatar,
+	Button,
 	Flex,
+	Icon,
+	Image,
+	Link,
 	Menu,
 	MenuButton,
 	MenuItem,
@@ -9,27 +13,25 @@ import {
 	Text,
 	useColorModeValue
 } from '@chakra-ui/react';
+// Custom Components
 
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import routes from 'routes.js';
+import routes from 'driverRoutes.js';
 import { ThemeEditor } from './ThemeEditor';
-export default function HeaderLinks(props) {
+export default function DriverHeaderLinks(props) {
 	const { secondary } = props;
 	// Chakra Color Mode
 	const navbarIcon = useColorModeValue('gray.400', 'white');
 	let menuBg = useColorModeValue('white', 'navy.800');
 	const textColor = useColorModeValue('secondaryGray.900', 'white');
-
 	const borderColor = useColorModeValue('#E6ECFA', 'rgba(135, 140, 189, 0.3)');
-
 	const shadow = useColorModeValue(
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.18)',
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
 	);
-
 	return (
 		<Flex
 			w={{ sm: '100%', md: 'auto' }}
@@ -89,7 +91,7 @@ export default function HeaderLinks(props) {
 	);
 }
 
-HeaderLinks.propTypes = {
+DriverHeaderLinks.propTypes = {
 	variant: PropTypes.string,
 	fixed: PropTypes.bool,
 	secondary: PropTypes.bool,

@@ -38,7 +38,7 @@ export default function OrdersView() {
     const day = String(today.getDate()).padStart(2, '0');
     const dateAsQueryParam = `${year}${month}${day}`
 
-    const apiURL = `https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders?date=${dateAsQueryParam}`;
+    const apiURL = `https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders?date=${dateAsQueryParam}`;
     setLoading(true);
 
     axios.get(apiURL)
@@ -65,7 +65,7 @@ export default function OrdersView() {
   const handleDateChange = (date) => {
     setSelectedDate(date);
 
-    const apiURL = `https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders?date=${date.value}`;
+    const apiURL = `https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders?date=${date.value}`;
     setLoading(true);
 
     axios.get(apiURL)
@@ -90,7 +90,7 @@ export default function OrdersView() {
     console.log('Order created:', newOrder);
 
     try {
-      const response = await axios.post('https://vas516y582.execute-api.us-east-1.amazonaws.com/development/orders', newOrder, {
+      const response = await axios.post('https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders', newOrder, {
         headers: {
           'Content-Type': 'application/json',
         },
