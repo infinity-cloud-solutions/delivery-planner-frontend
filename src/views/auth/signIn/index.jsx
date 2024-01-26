@@ -46,7 +46,7 @@ function SignIn() {
     console.log(isTokenValid)
 
     if (isTokenValid) {
-      const isInDriverGroup = isDriver(); // Assuming isDriver is a function to check the group
+      const isInDriverGroup = isDriver();
       const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
 
       history.push(redirectToPath);
@@ -58,9 +58,10 @@ function SignIn() {
 
   const signIn = () => {
     setIsLoading(true)
+    console.log("values ",process.env.REACT_APP_COGNITO_USER_POOL_ID )
     const poolData = {
-      UserPoolId: 'us-east-1_lw1SPkTV6',
-      ClientId: '2kfbk5ff78en39uf7qen5lq7sc',
+      UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+      ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
     };
 
     const userPool = new CognitoUserPool(poolData);
