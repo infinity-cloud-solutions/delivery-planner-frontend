@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from 'axios';
 import { motion } from 'framer-motion';
 
@@ -11,7 +11,8 @@ import {
   Icon,
   Link,
   useColorModeValue,
-  SimpleGrid
+  SimpleGrid,
+  Spinner
 } from "@chakra-ui/react";
 import {
   MdNoAccounts
@@ -20,7 +21,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 // Custom components
 import Products from "views/admin/products/components/Products";
-import { isDriver } from 'security.js';
+import { isDriver, getAccessToken } from 'security.js';
 
 import { tableColumnsProducts } from "views/admin/products/variables/tableColumnsProducts";
 
@@ -31,26 +32,47 @@ export default function ProductView() {
   // Chakra Color Mode
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const textColorBrand = useColorModeValue("brand.500", "white");
+  const [loading, setLoading] = useState(false);
+  const productsURL = `${process.env.REACT_APP_PRODUCTS_BASE_URL}`;
+  const jwtToken = useMemo(() => {
+    return getAccessToken();
+  }, []);
 
   useEffect(() => {
-    const productsMock = [{"sku": "001FAB", "name": "Fresas", "price": 195.00}, {"sku": "001AAE", "name": "Mix Berries", "price": 210.00}, {"sku": "001ACF", "name": "Bluberry - Arandano", "price": 210.00}, {"sku": "001EAF", "name": "Mango", "price": 160.00}, {"sku": "001EBB", "name": "Mix Verde", "price": 210.00}, {"sku": "001ACC", "name": "Frambuesa", "price": 240.00}, {"sku": "001ECF", "name": "Mix Fresa + Mango", "price": 190.00}]
-    setTableDataProducts(productsMock);
-    // axios.get('https://webhook.site/89b2c7e9-26d4-4052-aa87-f9b742a98370')
-    //   .then(response => {
+    setLoading(true);
 
-    //     setTableDataProducts([]);
-    //   })
-    //   .catch(error => {
-    //     console.error('API error:', error);
-    //   });
+    axios.get(productsURL, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+    })
+      .then(response => {
+        const responseData = response.data;
+        console.log(responseData)
+
+        if (responseData.length === 0) {
+          setTableDataProducts([]);
+        } else {
+
+          setTableDataProducts(responseData);
+        }
+
+      })
+      .catch(error => {
+        console.error('API error:', error);
+      }).finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const handleProductCreated = (newProduct) => {
     console.log('Product created:', newProduct);
 
-    axios.post('https://webhook.site/89b2c7e9-26d4-4052-aa87-f9b742a98370', newProduct, {
+    axios.post(productsURL, newProduct, {
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
       },
     })
       .then(response => {
@@ -110,11 +132,25 @@ export default function ProductView() {
           mb='20px'
           columns={{ sm: 1, md: 1 }}
           spacing={{ base: "20px", xl: "20px" }}>
-          <Products
+                      {loading ? (
+            <Spinner
+              thickness="4px"
+              speed="0.65s"
+              emptyColor="gray.200"
+              color="blue.500"
+              size="xl"
+              position="fixed"
+              top="50%"
+              left="50%"
+              transform="translate(-50%, -50%)"
+            />
+          ) : (
+            <Products
             tableData={tableDataProducts}
             columnsData={tableColumnsProducts}
             onProductCreated={handleProductCreated}
           />
+          )}
         </SimpleGrid>
       </Box>
     </>

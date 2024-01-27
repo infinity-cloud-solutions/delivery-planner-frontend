@@ -22,7 +22,7 @@ import illustration from "assets/img/auth/auth.png";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
-import { validateJWT, isDriver } from 'security.js';
+import { validateJWT, isDriver, getAccessToken } from 'security.js';
 
 function SignIn() {
   const history = useHistory();
@@ -40,9 +40,7 @@ function SignIn() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    console.log(accessToken)
-    const isTokenValid = accessToken && validateJWT(accessToken);
+    const isTokenValid = getAccessToken() && validateJWT();
     console.log(isTokenValid)
 
     if (isTokenValid) {

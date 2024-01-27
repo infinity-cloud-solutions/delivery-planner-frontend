@@ -149,18 +149,18 @@ function Products(props) {
                             {formattedPrice}
                           </Text>
                         );
-                      } else if (cell.column.Header === "SKU") {
-                        data = (
-                            <Flex align='center'>
-                                <Text
-                                    color={textColor}
-                                    fontSize='sm'
-                                    fontWeight='600'
-                                >
-                                    {cell.value}
-                                </Text>
-                            </Flex>
-                        );
+                      // } else if (cell.column.Header === "SKU") {
+                      //   data = (
+                      //       <Flex align='center'>
+                      //           <Text
+                      //               color={textColor}
+                      //               fontSize='sm'
+                      //               fontWeight='600'
+                      //           >
+                      //               {cell.value}
+                      //           </Text>
+                      //       </Flex>
+                      //   );
                     }
                       return (
                         <Td

@@ -1,8 +1,13 @@
 import jwt from 'jsonwebtoken';
 
-export function validateJWT(token) {
+
+export function getAccessToken() {
+    return localStorage.getItem('idToken');
+}
+
+export function validateJWT() {
     try {
-        const decodedToken = jwt.decode(token, { complete: true });
+        const decodedToken = jwt.decode(getAccessToken(), { complete: true });
         console.log(decodedToken);
 
         // change for prod
@@ -53,7 +58,7 @@ export function getFullNameFromLocalStorage() {
 
     try {
         console.log(decodedToken.payload)
-        console.log(decodedToken.payload.given_name, decodedToken.family_name)
+        console.log(decodedToken.payload.given_name, decodedToken.payload.family_name)
         const givenName = decodedToken.payload.given_name || '';
         const familyName = decodedToken.payload.family_name || '';
 

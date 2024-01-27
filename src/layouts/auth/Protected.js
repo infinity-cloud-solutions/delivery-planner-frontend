@@ -1,10 +1,9 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { validateJWT } from 'security.js';
+import { validateJWT, getAccessToken } from 'security.js';
 
 const isAuthenticated = () => {
-    const token = localStorage.getItem('accessToken');
-    return token && validateJWT(token);
+    return getAccessToken() && validateJWT();
 };
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
