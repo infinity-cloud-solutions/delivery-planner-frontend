@@ -110,7 +110,7 @@ export default function DeliveryCard(props) {
     };
 
     const screenSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'lg' });
-    const API_KEY = "GOOGLE API KEY"
+    const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
     const handleClickMarker = () => {
         // Open Google Maps with the order address
         const addressQuery = encodeURIComponent(order.address);

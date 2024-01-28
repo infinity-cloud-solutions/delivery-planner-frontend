@@ -22,6 +22,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import routes from 'driverRoutes.js';
+import { getFullNameFromLocalStorage } from 'security.js'
 import { ThemeEditor } from './ThemeEditor';
 export default function DriverHeaderLinks(props) {
 	const { secondary } = props;
@@ -43,6 +44,7 @@ export default function DriverHeaderLinks(props) {
 
 		history.push('/auth');
 	};
+	const firstName = getFullNameFromLocalStorage().split(' ');
 
 	return (
 		<Flex
@@ -65,7 +67,7 @@ export default function DriverHeaderLinks(props) {
 					<Avatar
 						_hover={{ cursor: 'pointer' }}
 						color="white"
-						name="Marco Burgos"
+						name={getFullNameFromLocalStorage()}
 						bg="#11047A"
 						size="sm"
 						w="40px"
@@ -84,7 +86,7 @@ export default function DriverHeaderLinks(props) {
 							fontSize="sm"
 							fontWeight="700"
 							color={textColor}>
-							👋&nbsp; Hola, Marco
+							👋&nbsp; Hola, {firstName}
 						</Text>
 					</Flex>
 					<Flex flexDirection="column" p="10px">

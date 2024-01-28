@@ -22,7 +22,7 @@ import illustration from "assets/img/auth/auth.png";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
-import { validateJWT, isDriver } from 'security.js';
+import { validateJWT, isDriver, getAccessToken } from 'security.js';
 
 function SignIn() {
   const history = useHistory();
@@ -40,13 +40,11 @@ function SignIn() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    console.log(accessToken)
-    const isTokenValid = accessToken && validateJWT(accessToken);
+    const isTokenValid = getAccessToken() && validateJWT();
     console.log(isTokenValid)
 
     if (isTokenValid) {
-      const isInDriverGroup = isDriver(); // Assuming isDriver is a function to check the group
+      const isInDriverGroup = isDriver();
       const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
 
       history.push(redirectToPath);
@@ -58,9 +56,10 @@ function SignIn() {
 
   const signIn = () => {
     setIsLoading(true)
+    console.log("values ",process.env.REACT_APP_COGNITO_USER_POOL_ID )
     const poolData = {
-      UserPoolId: 'us-east-1_lw1SPkTV6',
-      ClientId: '2kfbk5ff78en39uf7qen5lq7sc',
+      UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+      ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
     };
 
     const userPool = new CognitoUserPool(poolData);

@@ -16,7 +16,9 @@ import React from 'react';
 import { useHistory } from "react-router-dom";
 
 import routes from 'routes.js';
+import { getFullNameFromLocalStorage } from 'security.js'
 import { ThemeEditor } from './ThemeEditor';
+
 export default function HeaderLinks(props) {
 	const { secondary } = props;
 	// Chakra Color Mode
@@ -40,6 +42,8 @@ export default function HeaderLinks(props) {
 		history.push('/auth');
 	};
 
+	const firstName = getFullNameFromLocalStorage().split(' ');
+
 	return (
 		<Flex
 			w={{ sm: '100%', md: 'auto' }}
@@ -61,7 +65,7 @@ export default function HeaderLinks(props) {
 					<Avatar
 						_hover={{ cursor: 'pointer' }}
 						color="white"
-						name="Marco Burgos"
+						name={getFullNameFromLocalStorage()}
 						bg="#11047A"
 						size="sm"
 						w="40px"
@@ -80,7 +84,7 @@ export default function HeaderLinks(props) {
 							fontSize="sm"
 							fontWeight="700"
 							color={textColor}>
-							👋&nbsp; Hola, Marco
+							👋&nbsp; Hola, {firstName}
 						</Text>
 					</Flex>
 					<Flex flexDirection="column" p="10px">

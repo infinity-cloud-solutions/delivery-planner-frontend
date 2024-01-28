@@ -24,15 +24,17 @@ import Orders from "views/admin/orders/components/Orders";
 import {
   columnsDataOrders,
 } from "views/admin/orders/variables/columnsData";
-import { isDriver } from 'security.js';
+import { isDriver, getAccessToken } from 'security.js';
 
 export default function OrdersView() {
   const brandColor = useColorModeValue("brand.500", "white");
   const [tableDataOrders, setTableDataOrders] = useState([]);
+  const [products, setProducts] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  const products = [{ "label": "Cuatro", "value": "Cuatro", "price": 40.00 }, { "label": "Tres", "value": "Tres", "price": 30.00 }, { "label": "Fresas", "value": "Fresas", "price": 20.00 }, { "label": "Mango", "value": "Mango", "price": 10.00 }]
-  const productsMock = [{"label": "Fresas", "value": "Fresas", "price": 195.00}, {"label": "Mix Berries", "value": "Mix Berries", "price": 210.00}, {"label": "Bluberry - Arandano", "value": "Bluberry - Arandano", "price": 210.00}, {"label": "Mango", "value": "Mango", "price": 160.00}, {"label": "Mix Verde", "value": "Mix Verde", "price": 210.00}, {"label": "Frambuesa", "value": "Frambuesa", "price": 240.00}, {"label": "Mix Fresa + Mango", "value": "Mix Fresa + Mango", "price": 190.00}]
+  const jwtToken = getAccessToken();
+  // const products = [{ "label": "Cuatro", "value": "Cuatro", "price": 40.00 }, { "label": "Tres", "value": "Tres", "price": 30.00 }, { "label": "Fresas", "value": "Fresas", "price": 20.00 }, { "label": "Mango", "value": "Mango", "price": 10.00 }]
+  // const productsMock = [{"label": "Fresas", "value": "Fresas", "price": 195.00}, {"label": "Mix Berries", "value": "Mix Berries", "price": 210.00}, {"label": "Bluberry - Arandano", "value": "Bluberry - Arandano", "price": 210.00}, {"label": "Mango", "value": "Mango", "price": 160.00}, {"label": "Mix Verde", "value": "Mix Verde", "price": 210.00}, {"label": "Frambuesa", "value": "Frambuesa", "price": 240.00}, {"label": "Mix Fresa + Mango", "value": "Mix Fresa + Mango", "price": 190.00}]
 
   // Chakra Color Mode
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -47,11 +49,18 @@ export default function OrdersView() {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     const dateAsQueryParam = `${year}${month}${day}`
+    console.log(dateAsQueryParam)
 
-    const apiURL = `https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders?date=${dateAsQueryParam}`;
+    const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${dateAsQueryParam}`;
+    const productsURL = `${process.env.REACT_APP_PRODUCTS_BASE_URL}`;
     setLoading(true);
 
-    axios.get(apiURL)
+    axios.get(ordersURL, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+    })
       .then(response => {
         const responseData = response.data;
 
@@ -70,15 +79,52 @@ export default function OrdersView() {
       }).finally(() => {
         setLoading(false);
       });
+
+    axios.get(productsURL, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+    })
+      .then(response => {
+        const responseData = response.data;
+        console.log("Productos disponibles")
+        console.log(responseData)
+
+        if (responseData.length === 0) {
+          setProducts([]);
+        } else {
+          const transformedData = responseData.map(item => ({
+            ...item,
+            label: item.name,
+            value: item.name,
+          }));
+
+          setProducts(transformedData);
+        }
+      })
+      .catch(error => {
+        console.error('API error:', error);
+      }).finally(() => {
+        setLoading(false);
+      });
+
   }, []);
 
   const handleDateChange = (date) => {
-    setSelectedDate(date);
+    setSelectedDate(date.value);
 
-    const apiURL = `https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders?date=${date.value}`;
     setLoading(true);
+    console.log(selectedDate)
+    const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${selectedDate}`;
+    console.log(ordersURL)
 
-    axios.get(apiURL)
+    axios.get(ordersURL, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+    })
       .then(response => {
         console.log(response.data)
         const responseData = response.data;
@@ -100,9 +146,10 @@ export default function OrdersView() {
     console.log('Order created:', newOrder);
 
     try {
-      const response = await axios.post('https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders', newOrder, {
+      const response = await axios.post(process.env.REACT_APP_ORDERS_BASE_URL, newOrder, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
         },
       });
 
@@ -142,9 +189,9 @@ export default function OrdersView() {
           <Box mt={4} color="red.500" fontSize="lg" textAlign="center">
             El contenido está restringido para administradores y mesa de control.
           </Box>
-          <Link as={RouterLink} to="/driver" color={brandColor} fontWeight="bold" mt={ "20px" }>
-              Volver a la sección de repartidor
-            </Link>
+          <Link as={RouterLink} to="/driver" color={brandColor} fontWeight="bold" mt={"20px"}>
+            Volver a la sección de repartidor
+          </Link>
         </Flex>
       </Box>
     );
@@ -170,7 +217,7 @@ export default function OrdersView() {
         </motion.div>
       )}
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      <SimpleGrid
+        <SimpleGrid
           mb='20px'
           columns={{ sm: 1, md: 1 }}
           spacing={{ base: "20px", xl: "20px" }}>
@@ -192,7 +239,7 @@ export default function OrdersView() {
               tableData={tableDataOrders}
               onOrderCreated={handleOrderCreated}
               onDateSelect={handleDateChange}
-              productsAvailable={productsMock}
+              productsAvailable={products}
             />
           )}
         </SimpleGrid>
