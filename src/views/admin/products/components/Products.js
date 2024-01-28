@@ -20,15 +20,25 @@ import {
 } from "react-table";
 
 import CreateProductModal from "views/admin/products/components/CreateProductModal";
+import UpdateProductModal from "views/admin/products/components/UpdateProductModal";
+
 
 function Products(props) {
-  const { columnsData, tableData, onProductCreated } = props;
+  const { columnsData, tableData, onProductCreated, onProductUpdated, onProductDeleted } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
 
   const onProductCreatedCallback = (newProduct) => {
     onProductCreated(newProduct);
+  };
+
+  const onProductUpdatedCallback = (updatedProduct) => {
+    onProductUpdated(updatedProduct);
+  };
+
+  const onProductDeletedCallback = (product) => {
+    onProductDeleted(product);
   };
 
   const tableInstance = useTable(
@@ -48,9 +58,21 @@ function Products(props) {
   const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedRowData, setSelectedRowData] = useState(null);
 
   const openCreateModal = () => {
     setCreateModalOpen(true);
+  };
+
+  const openUpdateModal = (row, rowIndex) => {
+    setSelectedRowData({ row: row, index: rowIndex });
+    setIsUpdateModalOpen(true);
+  };
+
+  const closeUpdateModal = () => {
+    setSelectedRowData(null);
+    setIsUpdateModalOpen(false);
   };
 
   const closeCreateModal = () => {
@@ -116,7 +138,7 @@ function Products(props) {
               {page.map((row, index) => {
                 prepareRow(row);
                 return (
-                  <Tr {...row.getRowProps()} key={index}>
+                  <Tr {...row.getRowProps()} key={index} onClick={() => openUpdateModal(row.original, index)} >
                     {row.cells.map((cell, index) => {
                       let data = "";
                       if (cell.column.Header === "Nombre") {
@@ -149,19 +171,7 @@ function Products(props) {
                             {formattedPrice}
                           </Text>
                         );
-                      // } else if (cell.column.Header === "SKU") {
-                      //   data = (
-                      //       <Flex align='center'>
-                      //           <Text
-                      //               color={textColor}
-                      //               fontSize='sm'
-                      //               fontWeight='600'
-                      //           >
-                      //               {cell.value}
-                      //           </Text>
-                      //       </Flex>
-                      //   );
-                    }
+                      }
                       return (
                         <Td
                           {...cell.getCellProps()}
@@ -181,11 +191,23 @@ function Products(props) {
           </Table>
         )}
       </Flex>
-      <CreateProductModal
-        isOpen={isCreateModalOpen}
-        onClose={closeCreateModal}
-        onCreate={onProductCreatedCallback}
-      />
+      {isUpdateModalOpen && (
+        <UpdateProductModal
+          isOpen={isUpdateModalOpen}
+          onClose={closeUpdateModal}
+          onUpdate={onProductUpdatedCallback}
+          onDelete={onProductDeletedCallback}
+          rowData={selectedRowData}
+        />
+      )}
+      {isCreateModalOpen && (
+        <CreateProductModal
+          isOpen={isCreateModalOpen}
+          onClose={closeCreateModal}
+          onCreate={onProductCreatedCallback}
+        />
+      )}
+
     </>
   );
 }

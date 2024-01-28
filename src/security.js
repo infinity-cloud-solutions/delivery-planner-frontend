@@ -1,13 +1,19 @@
 import jwt from 'jsonwebtoken';
 
+let jsonWebToken = ""
 
 export function getAccessToken() {
-    return localStorage.getItem('idToken');
+    if (!jsonWebToken){
+        jsonWebToken = localStorage.getItem('idToken');
+        return jsonWebToken
+    }
+    return jsonWebToken
 }
 
 export function validateJWT() {
+    const token = localStorage.getItem('accessToken')
     try {
-        const decodedToken = jwt.decode(getAccessToken(), { complete: true });
+        const decodedToken = jwt.decode(token, { complete: true });
         console.log(decodedToken);
 
         // change for prod
@@ -24,12 +30,15 @@ export function validateJWT() {
         return true;
     } catch (error) {
         console.error('JWT validation error:', error.message);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('idToken');
+        localStorage.removeItem('refreshToken');
         return false;
     }
 }
 
 export const isDriver = () => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken()
     if (!token) {
         return false;
     }
@@ -46,9 +55,27 @@ export const isDriver = () => {
     }
 };
 
+export const isAdmin = () => {
+    const token = getAccessToken()
+    if (!token) {
+        return false;
+    }
+
+    try {
+        const decodedToken = jwt.decode(token, { complete: true });
+        const groups = decodedToken.payload['cognito:groups'];
+        const response = groups && groups.includes('Admin');
+        console.log("is Admin ", response);
+        return response;
+    } catch (error) {
+        console.error('Error decoding token:', error.message);
+        return false;
+    }
+};
+
 export function getFullNameFromLocalStorage() {
-    const idToken = localStorage.getItem('idToken');
-    const decodedToken = jwt.decode(idToken, { complete: true });
+    const token = getAccessToken()
+    const decodedToken = jwt.decode(token, { complete: true });
     console.log(decodedToken);
 
     if (!decodedToken) {
