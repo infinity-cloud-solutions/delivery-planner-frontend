@@ -16,7 +16,7 @@ import React from 'react';
 import { useHistory } from "react-router-dom";
 
 import routes from 'routes.js';
-import { getFullNameFromLocalStorage } from 'security.js'
+import { getFullNameFromLocalStorage, logout } from 'security.js'
 import { ThemeEditor } from './ThemeEditor';
 
 export default function HeaderLinks(props) {
@@ -35,10 +35,7 @@ export default function HeaderLinks(props) {
 
 	const history = useHistory();
 	const handleLogout = () => {
-		localStorage.removeItem('accessToken');
-		localStorage.removeItem('idToken');
-		localStorage.removeItem('refreshToken');
-
+		logout()
 		history.push('/auth');
 	};
 

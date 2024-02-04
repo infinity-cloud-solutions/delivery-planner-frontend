@@ -37,13 +37,13 @@ export default function ProductView() {
   const jwtToken = getAccessToken();
 	const history = useHistory();
 
-  console.log(jwtToken)
-
   useEffect(() => {
-    setLoading(true);
+
     if (!validateJWT) {
       history.push('/auth');
     }
+
+    setLoading(true);
 
     axios.get(productsURL, {
       headers: {
@@ -53,7 +53,6 @@ export default function ProductView() {
     })
       .then(response => {
         const responseData = response.data;
-        console.log(responseData)
 
         if (responseData.length === 0) {
           setTableDataProducts([]);
@@ -71,7 +70,11 @@ export default function ProductView() {
   }, []);
 
   const handleProductCreate = (product) => {
-    console.log('Product generated:', product);
+
+    if (!validateJWT) {
+      history.push('/auth');
+    }
+    setLoading(true);
 
     axios.post(productsURL, product, {
       headers: {
@@ -87,15 +90,18 @@ export default function ProductView() {
       .catch(error => {
         setAlertMessage({ type: 'error', text: 'Error al crear producto. Intenta de nuevo.' });
         setTimeout(() => setAlertMessage(null), 3000);
+      }).finally(() => {
+        setLoading(false);
       });
   };
 
   const handleProductUpdate = (product) => {
-    console.log('Product Updated:', product);
 
     if (!validateJWT) {
       history.push('/auth');
     }
+
+    setLoading(true);
 
     axios.post(productsURL, product.item, {
       headers: {
@@ -109,7 +115,6 @@ export default function ProductView() {
 
         updatedTableData.splice(product.index, 0, product.item);
         setTableDataProducts(updatedTableData);
-        console.log(tableDataProducts)
 
         setAlertMessage({ type: 'success', text: 'Producto guardado en la base de datos' });
         setTimeout(() => setAlertMessage(null), 3000);
@@ -117,15 +122,18 @@ export default function ProductView() {
       .catch(error => {
         setAlertMessage({ type: 'error', text: 'Error al crear producto. Intenta de nuevo.' });
         setTimeout(() => setAlertMessage(null), 3000);
+      }).finally(() => {
+        setLoading(false);
       });
   };
 
   const handleProductDelete = (product) => {
-    console.log('Product to be eliminated:', product);
 
     if (!validateJWT) {
       history.push('/auth');
     }
+
+    setLoading(true);
 
     axios.delete(`${productsURL}?name=${product.item.name}`, {
       headers: {
@@ -140,7 +148,6 @@ export default function ProductView() {
 
         setTableDataProducts(updatedTableData);
 
-        console.log(updatedTableData);
         setAlertMessage({ type: 'success', text: 'Producto eliminado en la base de datos' });
         setTimeout(() => setAlertMessage(null), 3000);
       })
@@ -148,6 +155,8 @@ export default function ProductView() {
         console.error(error)
         setAlertMessage({ type: 'error', text: 'Error al eliminar producto. Intenta de nuevo.' });
         setTimeout(() => setAlertMessage(null), 3000);
+      }).finally(() => {
+        setLoading(false);
       });
   };
 

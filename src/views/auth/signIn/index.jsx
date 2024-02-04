@@ -40,17 +40,19 @@ function SignIn() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const isTokenValid = getAccessToken() && validateJWT();
-    console.log(isTokenValid)
-
+    let isTokenValid = getAccessToken()
     if (isTokenValid) {
-      const isInDriverGroup = isDriver();
-      const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
+      isTokenValid = validateJWT();
 
-      history.push(redirectToPath);
-    } else {
-      setError("No estás autenticado. Inicia sesión para entrar al sistema");
+      if (isTokenValid) {
+        const isInDriverGroup = isDriver();
+        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
 
+        history.push(redirectToPath);
+      } else {
+        setError("No estás autenticado. Inicia sesión para entrar al sistema");
+
+      }
     }
   }, [history]);
 
@@ -91,7 +93,7 @@ function SignIn() {
         const isInDriverGroup = isDriver();
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
 
-      history.push(redirectToPath);
+        history.push(redirectToPath);
 
       },
       onFailure: (err) => {

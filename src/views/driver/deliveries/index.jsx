@@ -5,11 +5,28 @@ import DeliveryCard from "views/driver/deliveries/components/Delivery";
 
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
+import { isDriver, getAccessToken, validateJWT, getEmailFromToken } from 'security.js';
+import { Link as RouterLink, useHistory } from "react-router-dom";
+
+const getDriverValue = () => {
+  const driverEnvValue = process.env.REACT_APP_DRIVERS_MAP || {};
+  const driversMap = JSON.parse(driverEnvValue || '{}');
+  const userEmail = getEmailFromToken()
+  if (userEmail in driversMap) {
+    return driversMap[userEmail];
+  } else {
+    return 999;
+  }
+
+};
 
 export default function DeliveriesView() {
   const [tableDataOrders, setTableDataOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [coolerInfo, setCoolerInfo] = useState({});
+  const [initialLoading, setInitialLoading] = useState(false);
+  const jwtToken = getAccessToken();
+  const history = useHistory();
 
   useEffect(() => {
 
@@ -17,21 +34,34 @@ export default function DeliveriesView() {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    const dateAsQueryParam = `${year}${month}${day}`
+    const dateAsQueryParam = `${year}-${month}-${day}`
 
-    // const apiURL = `https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/orders?date=${dateAsQueryParam}`;
-    const apiURL = "https://webhook.site/1153f212-1d3e-44a7-a249-0b3cd544c6f9";
+    // const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${dateAsQueryParam}`;
+    const ordersURL = "https://webhook.site/c9b30832-828b-4e9d-b80b-af6ad243f52d"
+    setInitialLoading(true);
 
-    axios.get(apiURL)
+    axios.get(ordersURL, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
+      },
+    })
       .then(response => {
         const responseData = response.data;
-        console.log(responseData)
 
-        if (responseData.length === 0) {
+        const filteredData = responseData.filter(order =>
+          (order.status === "Programada" || order.status === "En ruta") &&
+          order.delivery_date === dateAsQueryParam &&
+          order.driver === getDriverValue()
+        );
+
+        const sortedData = filteredData.sort((a, b) => a.delivery_sequence - b.delivery_sequence);
+
+        if (sortedData.length === 0) {
           setTableDataOrders([]);
         } else {
-          console.log(responseData)
-          setTableDataOrders(responseData);
+          setTableDataOrders(sortedData);
+
         }
       })
       .catch(error => {
@@ -43,15 +73,16 @@ export default function DeliveriesView() {
 
   const handleUpdateDelivery = async (order, orderId, statusText) => {
     try {
-      setLoading(true);
 
-      const response = await axios.post('https://webhook.site/1153f212-1d3e-44a7-a249-0b3cd544c6f9', {
-        order
+      const response = await axios.put(process.env.REACT_APP_ORDERS_BASE_URL, order, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
       });
 
       if (response.status === 200) {
         let updatedOrders;
-
         if (statusText === 'Entregada' || statusText === 'Reprogramada') {
           updatedOrders = tableDataOrders.filter((order) => order.id !== orderId);
           const { [orderId]: removedCooler, ...restCoolerInfo } = coolerInfo;
@@ -73,10 +104,9 @@ export default function DeliveriesView() {
     } catch (error) {
       console.error('Error updating order:', error);
     } finally {
-      setLoading(false);
+
     }
   };
-
 
   if (loading) {
     return (

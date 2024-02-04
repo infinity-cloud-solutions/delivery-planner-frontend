@@ -69,7 +69,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
 
     useEffect(() => {
         calculateTotalAmount();
-        checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
+        checkFormValidity();
     }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod]);
 
     const checkFormValidity = () => {
@@ -88,7 +88,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
 
         if (isProductSelected && isQuantitySelected) {
             const newCartItem = {
-                sku: "asd",
                 product: cartItemsSelection[0].product.value,
                 quantity: cartItemsSelection[0].quantity,
                 price: cartItemsSelection[0].product.price || 0,
@@ -133,8 +132,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
 
         calculateTotalAmount();
     };
-
-
 
     const handleProductSelect = (selectedOption, index) => {
         setCartItemsSelection(prevCartItemsSelection => {

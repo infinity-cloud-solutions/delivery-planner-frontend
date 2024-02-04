@@ -1,28 +1,40 @@
-import jwt from 'jsonwebtoken';
+import { jwt } from 'jsonwebtoken';
+import jwt_decode from 'jsonwebtoken/decode';
+import { CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
 
-let jsonWebToken = ""
+export const logout = () => {
+    const poolData = {
+        UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
+        ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
+    };
+
+    const userPool = new CognitoUserPool(poolData);
+    const cognitoUser = userPool.getCurrentUser();
+
+    if (cognitoUser) {
+        cognitoUser.signOut();
+    }
+
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('idToken');
+    localStorage.removeItem('refreshToken');
+};
 
 export function getAccessToken() {
-    if (!jsonWebToken){
-        jsonWebToken = localStorage.getItem('idToken');
-        return jsonWebToken
-    }
-    return jsonWebToken
+    return localStorage.getItem('idToken');
+
 }
 
 export function validateJWT() {
     const token = localStorage.getItem('accessToken')
     try {
-        const decodedToken = jwt.decode(token, { complete: true });
-        console.log(decodedToken);
+        const decodedToken = jwt_decode(token, { complete: true });
 
         // change for prod
         const expectedIssuer = process.env.REACT_APP_COGNITO_ISS;
         if (decodedToken.payload.iss !== expectedIssuer) {
-            console.log(decodedToken.payload.iss, expectedIssuer);
             throw new Error('Invalid issuer');
         }
-        console.log(decodedToken.payload.exp);
         if (new Date(decodedToken.payload.exp * 1000) < new Date()) {
             throw new Error('Token has expired');
         }
@@ -30,9 +42,7 @@ export function validateJWT() {
         return true;
     } catch (error) {
         console.error('JWT validation error:', error.message);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('idToken');
-        localStorage.removeItem('refreshToken');
+        logout()
         return false;
     }
 }
@@ -44,10 +54,9 @@ export const isDriver = () => {
     }
 
     try {
-        const decodedToken = jwt.decode(token, { complete: true });
+        const decodedToken = jwt_decode(token, { complete: true });
         const groups = decodedToken.payload['cognito:groups'];
         const response = groups && groups.includes('Repartidor');
-        console.log("is Driver ", response);
         return response;
     } catch (error) {
         console.error('Error decoding token:', error.message);
@@ -62,10 +71,9 @@ export const isAdmin = () => {
     }
 
     try {
-        const decodedToken = jwt.decode(token, { complete: true });
+        const decodedToken = jwt_decode(token, { complete: true });
         const groups = decodedToken.payload['cognito:groups'];
         const response = groups && groups.includes('Admin');
-        console.log("is Admin ", response);
         return response;
     } catch (error) {
         console.error('Error decoding token:', error.message);
@@ -75,8 +83,7 @@ export const isAdmin = () => {
 
 export function getFullNameFromLocalStorage() {
     const token = getAccessToken()
-    const decodedToken = jwt.decode(token, { complete: true });
-    console.log(decodedToken);
+    const decodedToken = jwt_decode(token, { complete: true });
 
     if (!decodedToken) {
         console.error('idToken not found in local storage');
@@ -84,15 +91,31 @@ export function getFullNameFromLocalStorage() {
     }
 
     try {
-        console.log(decodedToken.payload)
-        console.log(decodedToken.payload.given_name, decodedToken.payload.family_name)
         const givenName = decodedToken.payload.given_name || '';
         const familyName = decodedToken.payload.family_name || '';
 
         const fullName = `${givenName} ${familyName}`.trim();
-        console.log(fullName)
 
         return fullName;
+    } catch (error) {
+        console.error('Error parsing idToken payload:', error.message);
+        return null;
+    }
+};
+
+export function getEmailFromToken() {
+    const token = getAccessToken()
+    const decodedToken = jwt_decode(token, { complete: true });
+
+    if (!decodedToken) {
+        console.error('idToken not found in local storage');
+        return null;
+    }
+
+    try {
+        const userEmail = decodedToken.payload.email || '';
+
+        return userEmail;
     } catch (error) {
         console.error('Error parsing idToken payload:', error.message);
         return null;

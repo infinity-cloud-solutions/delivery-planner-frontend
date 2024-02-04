@@ -17,14 +17,14 @@ import {
 import {
   MdNoAccounts
 } from "react-icons/md";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useHistory } from "react-router-dom";
 
 
 import Orders from "views/admin/orders/components/Orders";
 import {
   columnsDataOrders,
 } from "views/admin/orders/variables/columnsData";
-import { isDriver, getAccessToken } from 'security.js';
+import { isDriver, getAccessToken, validateJWT } from 'security.js';
 
 export default function OrdersView() {
   const brandColor = useColorModeValue("brand.500", "white");
@@ -33,23 +33,26 @@ export default function OrdersView() {
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const jwtToken = getAccessToken();
-  // const products = [{ "label": "Cuatro", "value": "Cuatro", "price": 40.00 }, { "label": "Tres", "value": "Tres", "price": 30.00 }, { "label": "Fresas", "value": "Fresas", "price": 20.00 }, { "label": "Mango", "value": "Mango", "price": 10.00 }]
-  // const productsMock = [{"label": "Fresas", "value": "Fresas", "price": 195.00}, {"label": "Mix Berries", "value": "Mix Berries", "price": 210.00}, {"label": "Bluberry - Arandano", "value": "Bluberry - Arandano", "price": 210.00}, {"label": "Mango", "value": "Mango", "price": 160.00}, {"label": "Mix Verde", "value": "Mix Verde", "price": 210.00}, {"label": "Frambuesa", "value": "Frambuesa", "price": 240.00}, {"label": "Mix Fresa + Mango", "value": "Mix Fresa + Mango", "price": 190.00}]
+	const history = useHistory();
 
   // Chakra Color Mode
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const textColorBrand = useColorModeValue("brand.500", "white");
 
   const [loading, setLoading] = useState(false);
+  const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL
 
   useEffect(() => {
+
+    if (!validateJWT) {
+      history.push('/auth');
+    }
 
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    const dateAsQueryParam = `${year}${month}${day}`
-    console.log(dateAsQueryParam)
+    const dateAsQueryParam = `${year}-${month}-${day}`
 
     const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${dateAsQueryParam}`;
     const productsURL = `${process.env.REACT_APP_PRODUCTS_BASE_URL}`;
@@ -70,14 +73,12 @@ export default function OrdersView() {
           const updatedResponseData = responseData.map(obj => {
             return { ...obj, order: "Ver detalles" };
           });
-          console.log(updatedResponseData)
           setTableDataOrders(updatedResponseData);
         }
       })
       .catch(error => {
         console.error('API error:', error);
       }).finally(() => {
-        setLoading(false);
       });
 
     axios.get(productsURL, {
@@ -88,8 +89,6 @@ export default function OrdersView() {
     })
       .then(response => {
         const responseData = response.data;
-        console.log("Productos disponibles")
-        console.log(responseData)
 
         if (responseData.length === 0) {
           setProducts([]);
@@ -112,12 +111,15 @@ export default function OrdersView() {
   }, []);
 
   const handleDateChange = (date) => {
-    setSelectedDate(date.value);
+    const year = date.value.substring(0, 4);
+    const month = date.value.substring(4, 6);
+    const day = date.value.substring(6, 8);
+
+    const transformedDate = `${year}-${month}-${day}`;
+    setSelectedDate(transformedDate);
 
     setLoading(true);
-    console.log(selectedDate)
-    const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${selectedDate}`;
-    console.log(ordersURL)
+    const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${transformedDate}`;
 
     axios.get(ordersURL, {
       headers: {
@@ -126,7 +128,6 @@ export default function OrdersView() {
       },
     })
       .then(response => {
-        console.log(response.data)
         const responseData = response.data;
 
         if (responseData.length === 0) {
@@ -143,8 +144,12 @@ export default function OrdersView() {
   };
 
   const handleOrderCreated = async (newOrder) => {
-    console.log('Order created:', newOrder);
 
+    if (!validateJWT) {
+      history.push('/auth');
+    }
+
+    setLoading(true);
     try {
       const response = await axios.post(process.env.REACT_APP_ORDERS_BASE_URL, newOrder, {
         headers: {
@@ -176,7 +181,98 @@ export default function OrdersView() {
       console.error("Error creating order:", error);
       setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
       setTimeout(() => setAlertMessage(null), 3000);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  const handleOrderUpdated = async (updatedOrder) => {
+
+    // if (!validateJWT) {
+    //   history.push('/auth');
+    // }
+
+    // setLoading(true);
+    // try {
+    //   const response = await axios.post(process.env.REACT_APP_ORDERS_BASE_URL, newOrder, {
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': `Bearer ${jwtToken}`
+    //     },
+    //   });
+
+    //   updatedOrder.status = response.data.status;
+    //   updatedOrder.errors = response.data.errors;
+
+    //   // Check if the delivery_date is the same as today so we can add the record to the todays table
+    //   const currentDate = new Date();
+    //   currentDate.setHours(7, 0, 0, 0);
+
+    //   const orderDate = new Date(newOrder.delivery_date + 'T00:00:00');
+    //   orderDate.setMinutes(orderDate.getTimezoneOffset());
+
+    //   if (orderDate.toDateString() === currentDate.toDateString()) {
+    //     tableDataOrders.splice(updatedOrder.index, 1);
+    //     const updatedTableData = [...tableDataOrders];
+    //     updatedTableData.splice(updatedOrder.index, 0, updatedOrder.item);
+    //     setTableDataOrders(updatedTableData);
+    //   } else {
+    //     console.log("Delivery date is not today. Skipping adding to the data table.");
+    //   }
+    //   setAlertMessage({ type: 'success', text: 'Orden guardada en la base de datos' });
+    //   setTimeout(() => setAlertMessage(null), 3000);
+
+    // } catch (error) {
+    //   console.error("Error creating order:", error);
+    //   setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
+    //   setTimeout(() => setAlertMessage(null), 3000);
+    // } finally {
+    //   setLoading(false);
+    // }
+  }
+
+  const handleOrderDeleted = async (order) => {
+
+    if (!validateJWT) {
+      history.push('/auth');
+    }
+
+    // setLoading(true);
+    // try {
+    //   const response = await axios.delete(`${ordersURL}?id=${order.item.id}&delivery_date=${order.item.delivery_date}`, {
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': `Bearer ${jwtToken}`
+    //     },
+    //   });
+
+    //   updatedOrder.status = response.data.status;
+    //   updatedOrder.errors = response.data.errors;
+
+    //   // Check if the delivery_date is the same as today so we can add the record to the todays table
+    //   const currentDate = new Date();
+    //   currentDate.setHours(7, 0, 0, 0);
+
+    //   const orderDate = new Date(newOrder.delivery_date + 'T00:00:00');
+    //   orderDate.setMinutes(orderDate.getTimezoneOffset());
+
+    //   if (orderDate.toDateString() === currentDate.toDateString()) {
+    //     const updatedTableData = [...tableDataOrders];
+    //     updatedTableData.splice(updatedOrder.index, 1);
+    //     setTableDataOrders(updatedTableData);
+    //   } else {
+    //     console.log("Delivery date is not today. Skipping adding to the data table.");
+    //   }
+    //   setAlertMessage({ type: 'success', text: 'Orden guardada en la base de datos' });
+    //   setTimeout(() => setAlertMessage(null), 3000);
+
+    // } catch (error) {
+    //   console.error("Error creating order:", error);
+    //   setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
+    //   setTimeout(() => setAlertMessage(null), 3000);
+    // } finally {
+    //   setLoading(false);
+    // }
   }
 
   const userIsDriver = isDriver();
@@ -238,6 +334,8 @@ export default function OrdersView() {
               columnsData={columnsDataOrders}
               tableData={tableDataOrders}
               onOrderCreated={handleOrderCreated}
+              onOrderUpdated={handleOrderUpdated}
+              onOrderDeleted={handleOrderDeleted}
               onDateSelect={handleDateChange}
               productsAvailable={products}
             />
