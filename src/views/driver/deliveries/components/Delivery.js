@@ -7,7 +7,15 @@ import {
     Divider,
     Flex,
     HStack,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
     Text,
+    Textarea,
     Select,
     useColorModeValue,
     Table,
@@ -45,10 +53,14 @@ export default function DeliveryCard(props) {
     const [loadingCompleteDelivery, setLoadingCompleteDelivery] = useState(false);
     const [loadingRescheduleDelivery, setLoadingRescheduleDelivery] = useState(false);
     const [orderStatus, setOrderStatus] = useState(order.status);
+    const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
+    const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
+    const [rescheduleReason, setRescheduleReason] = useState("");
+
 
     useEffect(() => {
-        console.log(order, cooler)
         setOrderStatus(order.status);
+        setCooler(order.cooler)
     }, [order.status]);
 
     const RenderTag = ({ size, paymentMethod }) => {
@@ -82,9 +94,30 @@ export default function DeliveryCard(props) {
 
     const handleAddToDeliveryClick = async () => {
         setLoadingAddToDelivery(true);
+        const updatedOrder = {
+            client_name: order.client_name,
+            delivery_address: order.address,
+            delivery_date: order.delivery_date,
+            delivery_time: order.delivery_time,
+            phone_number: order.phone_number,
+            total_amount: parseFloat(order.total_amount),
+            cart_items: order.cart_items,
+            payment_method: order.payment_method,
+            status: "En ruta",
+            order: "Ver detalles",
+            cooler: cooler,
+            created_at: order.created_at,
+            created_by: order.created_by,
+            delivery_sequence: Number(order.delivery_sequence),
+            driver: Number(order.driver),
+            errors: order.errors,
+            id: order.id,
+            latitud: order.latitude,
+            longitude: order.longitude,
+            notes: order.notes,
+        };
 
-        order.cooler = cooler
-        await onUpdateDelivery(order, order.id, "En ruta");
+        await onUpdateDelivery(updatedOrder, updatedOrder.id, "En ruta");
         setOrderStatus('En ruta');
 
         setLoadingAddToDelivery(false);
@@ -93,8 +126,29 @@ export default function DeliveryCard(props) {
     const handleCompleteDeliveryClick = async () => {
         setLoadingCompleteDelivery(true);
 
-        order.status = "Entregada"
-        await onUpdateDelivery(order, order.id, "Entregada");
+        const updatedOrder = {
+            client_name: order.client_name,
+            delivery_address: order.address,
+            delivery_date: order.delivery_date,
+            delivery_time: order.delivery_time,
+            phone_number: order.phone_number,
+            total_amount: parseFloat(order.total_amount),
+            cart_items: order.cart_items,
+            payment_method: order.payment_method,
+            status: "Entregada",
+            order: "Ver detalles",
+            cooler: cooler,
+            created_at: order.created_at,
+            created_by: order.creaed_by,
+            delivery_sequence: Number(order.delivery_sequence),
+            driver: Number(order.driver),
+            errors: order.errors,
+            id: order.id,
+            latitud: order.latitude,
+            longitude: order.longitude,
+            notes: order.notes,
+        };
+        await onUpdateDelivery(updatedOrder, updatedOrder.id, "Entregada");
         setOrderStatus('Entregada');
 
         setLoadingCompleteDelivery(false);
@@ -102,21 +156,115 @@ export default function DeliveryCard(props) {
 
     const handleRescheduleDeliveryClick = async () => {
         setLoadingRescheduleDelivery(true);
+        const updatedOrder = {
+            client_name: order.client_name,
+            delivery_address: order.address,
+            delivery_date: order.delivery_date,
+            delivery_time: order.delivery_time,
+            phone_number: order.phone_number,
+            total_amount: parseFloat(order.total_amount),
+            cart_items: order.cart_items,
+            payment_method: order.payment_method,
+            status: "Reprogramada",
+            order: "Ver detalles",
+            cooler: cooler,
+            created_at: order.created_at,
+            created_by: order.creaed_by,
+            delivery_sequence: Number(order.delivery_sequence),
+            driver: Number(order.driver),
+            errors: order.errors,
+            id: order.id,
+            latitud: order.latitude,
+            longitude: order.longitude,
+            notes: rescheduleReason,
+        };
 
-        await onUpdateDelivery(order, order.id, "Reprogramada");
+        await onUpdateDelivery(updatedOrder, updatedOrder.id, "Reprogramada");
         setOrderStatus('Reprogramada');
 
         setLoadingRescheduleDelivery(false);
     };
 
+    const CompletedModal = () => {
+        return (
+            <Modal
+                isOpen={isCompletedModalOpen}
+                onClose={() => setIsCompletedModalOpen(false)}
+            >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Confirmar Acción</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        ¿Estás seguro de que deseas marcar la orden como "Entregada"?
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            variant="brand"
+                            mr={3}
+                            onClick={() => {
+                                setIsCompletedModalOpen(false);
+                                handleAddToDeliveryClick();
+                            }}
+                        >
+                            Confirmar
+                        </Button>
+                        <Button variant="ghost" onClick={() => setIsCompletedModalOpen(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        );
+    };
+
+    const RescheduleModal = () => {
+        return (
+            <Modal
+                isOpen={isRescheduleModalOpen}
+                onClose={() => setIsRescheduleModalOpen(false)}
+            >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Confirmar acción</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Textarea
+                            placeholder="Motivo de la reprogramación"
+                            value={rescheduleReason}
+                            onChange={(e) => setRescheduleReason(e.target.value)}
+                        />
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            variant="brand"
+                            mr={3}
+                            onClick={() => {
+                                setIsRescheduleModalOpen(false);
+                                handleRescheduleDeliveryClick();
+                            }}
+                            isDisabled={!rescheduleReason.trim()}
+                        >
+                            Reprogramar
+                        </Button>
+                        <Button variant="ghost" onClick={() => setIsRescheduleModalOpen(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        );
+    };
+
+
+
     const screenSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'lg' });
     const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
     const handleClickMarker = () => {
-        // Open Google Maps with the order address
-        const addressQuery = encodeURIComponent(order.address);
-        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${addressQuery}`;
+        const lat = order.latitude;
+        const long = order.longitude;
+        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${long}`;
 
-        // Open the link in a new tab
         window.open(googleMapsUrl, '_blank');
     };
 
@@ -125,25 +273,9 @@ export default function DeliveryCard(props) {
             <Flex maxW={{ base: "sm", lg: "2xl", "2xl": "2xl" }} direction={{ base: "column", "2xl": "row" }}>
 
                 <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p="6" flex="1">
-                    <Box mb='21px'>
-                        <APIProvider apiKey={API_KEY} libraries={['marker']}>
-                            <Map
-                                mapId={'bf51a910020fa25a'}
-                                zoom={15}
-                                center={{ lat: parseFloat(order.latitude), lng: parseFloat(order.longitude) }}
-                                gestureHandling={'greedy'}
-                                disableDefaultUI={true}
-                                onClick={handleClickMarker}
-                                style={{ height: '100%', minHeight: '150px' }} // Adjust the minHeight as needed
-                            >
-                                <Marker
-                                    position={{ lat: parseFloat(order.latitude), lng: parseFloat(order.longitude) }}
-                                    clickable={true}
-                                    title={'clickable google.maps.Marker'}
-                                />
-                            </Map>
-                        </APIProvider>
-                    </Box>
+                    <Button colorScheme='teal' variant='ghost' onClick={handleClickMarker}>
+                        Ver en Google Maps
+                    </Button>
                     <Box display="flex" alignItems="flex-start" mb="2">
                         <FaMapLocationDot color="gray.500" size={25} />
                         <Box
@@ -152,10 +284,11 @@ export default function DeliveryCard(props) {
                             letterSpacing={{ base: "normal", md: "wide", lg: "wider" }}
                             fontSize={{ base: "xs", sm: "sm", md: "md" }}
                             ml={{ base: "2", md: "4" }}
+                            textAlign="left"
                         >
                             {order.address}
                         </Box>
-                        <Badge ml="auto" colorScheme="green">
+                        <Badge ml={{ base: "10px", md: "20px" }} colorScheme="green">
                             {order.delivery_time}
                         </Badge>
                     </Box>
@@ -266,7 +399,7 @@ export default function DeliveryCard(props) {
                         fontSize='m'
                         mt={{ base: "10px", "xl": "20px" }}
                     >
-                        Orden en hielera: {coolerInfo}
+                        Orden en hielera: {coolerInfo || cooler}
                     </Text>
                 )}
                 {orderStatus === 'Programada' && (
@@ -293,7 +426,7 @@ export default function DeliveryCard(props) {
                                 mt={{ base: 4, md: 6 }}
                                 leftIcon={<FaClipboardCheck />}
                                 variant="brand"
-                                onClick={handleCompleteDeliveryClick}
+                                onClick={() => setIsCompletedModalOpen(true)}
                                 isLoading={loadingCompleteDelivery}
                                 loadingText='Actualizando'
                                 spinnerPlacement='end'
@@ -305,7 +438,7 @@ export default function DeliveryCard(props) {
                                 mt={{ base: 4, md: 6 }}
                                 leftIcon={<FaRegCalendarMinus />}
                                 variant="outline"
-                                onClick={handleRescheduleDeliveryClick}
+                                onClick={() => setIsRescheduleModalOpen(true)}
                                 isLoading={loadingRescheduleDelivery}
                                 loadingText='Actualizando'
                                 spinnerPlacement='end'
@@ -316,6 +449,8 @@ export default function DeliveryCard(props) {
                     </div>
                 )}
             </Flex>
+            <CompletedModal />
+    <RescheduleModal />
         </Card>
     );
 }

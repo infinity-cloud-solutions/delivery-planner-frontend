@@ -35,17 +35,12 @@ import CreateOrderModal from "./CreateOrderModal";
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated, onDateSelect, productsAvailable } = props;
+  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onDateSelect, productsAvailable } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
   const [isScheduling, setIsScheduling] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
-
-
-  const onOrderCreatedCallback = (newOrder) => {
-    onOrderCreated(newOrder);
-  };
 
   const isButtonDisabled = () => {
     return data.length === 0 || data.some(row => row.status !== 'Creada' || row.errors.length > 0);
@@ -76,8 +71,8 @@ function Orders(props) {
 
   const [selectedRowData, setSelectedRowData] = useState(null);
 
-  const openUpdateModal = (row) => {
-    setSelectedRowData(row);
+  const openUpdateModal = (row, rowIndex) => {
+    setSelectedRowData({ row: row, index: rowIndex });
     setIsUpdateModalOpen(true);
   };
 
@@ -92,6 +87,18 @@ function Orders(props) {
 
   const closeCreateModal = () => {
     setIsCreateModalOpen(false);
+  };
+
+  const onOrderCreatedCallback = (newOrder) => {
+    onOrderCreated(newOrder);
+  };
+
+  const onOrderUpdatedCallback = (product) => {
+    onOrderUpdated(product);
+  };
+
+  const onOrderDeletedCallback = (product) => {
+    onOrderDeleted(product);
   };
 
   const tableInstance = useTable(
@@ -244,7 +251,7 @@ function Orders(props) {
                   <Tr
                     {...row.getRowProps()}
                     key={index}
-                    onClick={() => openUpdateModal(row.original)} // Open modal on row click
+                    onClick={() => openUpdateModal(row.original, index)} // Open modal on row click
                     cursor="pointer"
                   >
                     {row.cells.map((cell, index) => {
@@ -371,6 +378,9 @@ function Orders(props) {
           <UpdateOrderModal
             isOpen={isUpdateModalOpen}
             onClose={closeUpdateModal}
+            onUpdate={onOrderUpdatedCallback}
+            onDelete={onOrderDeletedCallback}
+            productsAvailable={productsAvailable}
             rowData={selectedRowData}
           />
         )}

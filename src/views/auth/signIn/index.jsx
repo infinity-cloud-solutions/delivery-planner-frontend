@@ -40,23 +40,24 @@ function SignIn() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const isTokenValid = getAccessToken() && validateJWT();
-    console.log(isTokenValid)
-
+    let isTokenValid = getAccessToken()
     if (isTokenValid) {
-      const isInDriverGroup = isDriver();
-      const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
+      isTokenValid = validateJWT();
 
-      history.push(redirectToPath);
-    } else {
-      setError("No estás autenticado. Inicia sesión para entrar al sistema");
+      if (isTokenValid) {
+        const isInDriverGroup = isDriver();
+        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
 
+        history.push(redirectToPath);
+      } else {
+        setError("No estás autenticado. Inicia sesión para entrar al sistema");
+
+      }
     }
   }, [history]);
 
   const signIn = () => {
     setIsLoading(true)
-    console.log("values ",process.env.REACT_APP_COGNITO_USER_POOL_ID )
     const poolData = {
       UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
       ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
@@ -92,7 +93,7 @@ function SignIn() {
         const isInDriverGroup = isDriver();
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
 
-      history.push(redirectToPath);
+        history.push(redirectToPath);
 
       },
       onFailure: (err) => {

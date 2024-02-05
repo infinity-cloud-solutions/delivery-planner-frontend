@@ -22,7 +22,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import routes from 'driverRoutes.js';
-import { getFullNameFromLocalStorage } from 'security.js'
+import { getFullNameFromLocalStorage, logout } from 'security.js'
 import { ThemeEditor } from './ThemeEditor';
 export default function DriverHeaderLinks(props) {
 	const { secondary } = props;
@@ -38,6 +38,7 @@ export default function DriverHeaderLinks(props) {
 
 	const history = useHistory();
 	const handleLogout = () => {
+		logout()
 		localStorage.removeItem('accessToken');
 		localStorage.removeItem('idToken');
 		localStorage.removeItem('refreshToken');
