@@ -170,7 +170,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
             delivery_date: deliveryDate,
             delivery_time: deliveryTime,
             phone_number: phoneNumber,
-            total_amount: parseFloat(totalAmountDisplay.replace('$', '')),
+            total_amount: parseFloat(totalAmountDisplay.replace(/[^\d.]/g, '')),
             cart_items: cartItems,
             payment_method: paymentMethod,
             status: "Creada",

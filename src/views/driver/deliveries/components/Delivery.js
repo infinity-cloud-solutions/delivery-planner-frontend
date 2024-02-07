@@ -204,7 +204,7 @@ export default function DeliveryCard(props) {
                             mr={3}
                             onClick={() => {
                                 setIsCompletedModalOpen(false);
-                                handleAddToDeliveryClick();
+                                handleCompleteDeliveryClick();
                             }}
                         >
                             Confirmar
