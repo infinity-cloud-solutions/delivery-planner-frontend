@@ -54,8 +54,11 @@ export default function OrdersView() {
     const day = String(today.getDate()).padStart(2, '0');
     const dateAsQueryParam = `${year}-${month}-${day}`
 
-    const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${dateAsQueryParam}`;
-    const productsURL = `${process.env.REACT_APP_PRODUCTS_BASE_URL}`;
+    const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
+    const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL;
+    const queryParams = {
+      date: dateAsQueryParam,
+    };
     setLoading(true);
 
     axios.get(ordersURL, {
@@ -63,6 +66,7 @@ export default function OrdersView() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwtToken}`
       },
+      params: queryParams
     })
       .then(response => {
         const responseData = response.data;
@@ -72,6 +76,17 @@ export default function OrdersView() {
         } else {
           const updatedResponseData = responseData.map(obj => {
             return { ...obj, order: "Ver detalles" };
+          });
+          updatedResponseData.sort((a, b) => {
+            const statusOrder = {
+              "Error": 1,
+              "Reprogramada": 2,
+            };
+            const statusA = a.status || '';
+            const statusB = b.status || '';
+            const orderA = statusOrder[statusA] || 99; // set a high order if status not found
+            const orderB = statusOrder[statusB] || 99;
+            return orderA - orderB;
           });
           setTableDataOrders(updatedResponseData);
         }
@@ -119,13 +134,17 @@ export default function OrdersView() {
     setSelectedDate(transformedDate);
 
     setLoading(true);
-    const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${transformedDate}`;
+    const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
+    const queryParams = {
+      date: transformedDate,
+    };
 
     axios.get(ordersURL, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwtToken}`
       },
+      params: queryParams
     })
       .then(response => {
         const responseData = response.data;
@@ -272,6 +291,27 @@ export default function OrdersView() {
     }
   }
 
+  const consolidateProducts = () => {
+    const consolidatedProducts = [];
+
+    tableDataOrders.forEach(order => {
+      order.cart_items.forEach(item => {
+        const { product, quantity } = item;
+        const existingProductIndex = consolidatedProducts.findIndex(p => p.product === product);
+
+        if (existingProductIndex !== -1) {
+          consolidatedProducts[existingProductIndex].quantity += quantity;
+        } else {
+          consolidatedProducts.push({ product, quantity });
+        }
+      });
+    });
+
+    return consolidatedProducts;
+  };
+
+
+  const consolidatedProducts = consolidateProducts();
   const userIsDriver = isDriver();
 
   if (userIsDriver) {
@@ -335,6 +375,7 @@ export default function OrdersView() {
               onOrderDeleted={handleOrderDeleted}
               onDateSelect={handleDateChange}
               productsAvailable={products}
+              listOfConsolidatedProducts={consolidatedProducts}
             />
           )}
         </SimpleGrid>

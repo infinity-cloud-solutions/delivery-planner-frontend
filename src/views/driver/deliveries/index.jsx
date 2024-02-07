@@ -1,12 +1,11 @@
 import { Box, Grid, Spinner, Text } from "@chakra-ui/react";
 
-import RouteStop from "views/driver/deliveries/components/RouteStop";
 import DeliveryCard from "views/driver/deliveries/components/Delivery";
 
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
-import { isDriver, getAccessToken, validateJWT, getEmailFromToken } from 'security.js';
-import { Link as RouterLink, useHistory } from "react-router-dom";
+import { getAccessToken, validateJWT, getEmailFromToken } from 'security.js';
+import { useHistory } from "react-router-dom";
 
 const getDriverValue = () => {
   const driverEnvValue = process.env.REACT_APP_DRIVERS_MAP || {};
@@ -24,7 +23,6 @@ export default function DeliveriesView() {
   const [tableDataOrders, setTableDataOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [coolerInfo, setCoolerInfo] = useState({});
-  const [initialLoading, setInitialLoading] = useState(false);
   const jwtToken = getAccessToken();
   const history = useHistory();
 
@@ -36,15 +34,18 @@ export default function DeliveriesView() {
     const day = String(today.getDate()).padStart(2, '0');
     const dateAsQueryParam = `${year}-${month}-${day}`
 
-    // const ordersURL = `${process.env.REACT_APP_ORDERS_BASE_URL}?date=${dateAsQueryParam}`;
-    const ordersURL = "https://webhook.site/c9b30832-828b-4e9d-b80b-af6ad243f52d"
-    setInitialLoading(true);
+    const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
+    setLoading(true);
+    const queryParams = {
+      date: dateAsQueryParam,
+    };
 
     axios.get(ordersURL, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwtToken}`
       },
+      params: queryParams
     })
       .then(response => {
         const responseData = response.data;
@@ -72,6 +73,10 @@ export default function DeliveriesView() {
   }, []);
 
   const handleUpdateDelivery = async (order, orderId, statusText) => {
+    if (!validateJWT) {
+      history.push('/auth');
+    }
+
     try {
 
       const response = await axios.put(process.env.REACT_APP_ORDERS_BASE_URL, order, {
