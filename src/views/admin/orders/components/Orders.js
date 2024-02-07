@@ -3,6 +3,7 @@ import {
   AlertIcon,
   Box,
   Button,
+  ButtonGroup,
   Flex,
   Table,
   Icon,
@@ -30,17 +31,19 @@ import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
 import UpdateOrderModal from "./UpdateOrderModal";
 import CreateOrderModal from "./CreateOrderModal";
+import ConsolidatedModal from "./ConsolidatedModal";
 
 // Assets
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onDateSelect, productsAvailable } = props;
+  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onDateSelect, productsAvailable, listOfConsolidatedProducts } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
   const [isScheduling, setIsScheduling] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+  const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
 
   const isButtonDisabled = () => {
     return data.length === 0 || data.some(row => row.status !== 'Creada' || row.errors.length > 0);
@@ -74,7 +77,7 @@ function Orders(props) {
   const openUpdateModal = (row, rowIndex) => {
     if (row.status !== "Creada" && row.status !== "Reprogramada") {
       setAlertMessage({ type: 'error', text: 'No se puede editar una orden con estado diferente a "Creada" o "Reprogramada".' });
-      setTimeout(() => setAlertMessage(null), 3000);
+      setTimeout(() => setAlertMessage(null), 6000);
     } else {
       setSelectedRowData({ row: row, index: rowIndex });
       setIsUpdateModalOpen(true);
@@ -97,6 +100,14 @@ function Orders(props) {
 
   const onOrderCreatedCallback = (newOrder) => {
     onOrderCreated(newOrder);
+  };
+
+  const openConsolidatedModal = () => {
+    setIsConsolidatedModalOpen(true);
+  };
+
+  const closeConsolidatedModal = () => {
+    setIsConsolidatedModalOpen(false);
   };
 
   const onOrderUpdatedCallback = (order) => {
@@ -161,9 +172,14 @@ function Orders(props) {
           </Text>
           <Flex align="center">
             <Menu onDateSelect={onDateSelect} />
-            <Button variant="action" ml="4" onClick={openCreateModal}>
-              Crear
-            </Button>
+            <ButtonGroup spacing="6">
+              <Button variant="action" ml="4" onClick={openCreateModal}>
+                Crear
+              </Button>
+              <Button variant="outline" onClick={openConsolidatedModal}>
+                Ver consolidado
+              </Button>
+            </ButtonGroup>
           </Flex>
         </Flex>
         {data.length === 0 ? (
@@ -280,14 +296,14 @@ function Orders(props) {
                                   ? "green.500"
                                   : cell.value === "Error"
                                     ? "red.500"
-                                    : cell.value === "Reprogramar"
+                                    : cell.value === "Reprogramada"
                                       ? "orange.500"
                                       : null
                               }
                               as={
                                 (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta" || cell.value === "Entregada")
                                   ? MdCheckCircle
-                                  : cell.value === "Reprogramar"
+                                  : cell.value === "Reprogramada"
                                     ? MdOutlineError
                                     : cell.value === "Error"
                                       ? MdCancel
@@ -397,6 +413,13 @@ function Orders(props) {
             onCreate={onOrderCreatedCallback}
             productsAvailable={productsAvailable}
           />
+        )}
+                {isConsolidatedModalOpen && (
+          <ConsolidatedModal
+          isOpen={isConsolidatedModalOpen}
+          onClose={closeConsolidatedModal}
+          products={listOfConsolidatedProducts}
+        />
         )}
         <Button
           variant="action"

@@ -16,7 +16,8 @@ import {
     Select,
     VStack,
     HStack,
-    useColorModeValue
+    useColorModeValue,
+    useTheme
 } from '@chakra-ui/react';
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
@@ -38,24 +39,26 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
     let menuBg = useColorModeValue("white", "navy.900");
+    const theme = useTheme();
+    const bgColor = useColorModeValue(theme.colors.white, theme.colors.gray[800]);
 
     const customStyles = {
-        control: (provided) => ({
+        control: (provided, { theme }) => ({
             ...provided,
-            borderColor: borderColor,
+            borderColor: theme.colors.gray,
             boxShadow: 'none',
-            backgroundColor: '#2D3748',
+            backgroundColor: menuBg,
             width: '200px',
             maxWidth: '200px'
         }),
         option: (provided, state) => ({
             ...provided,
-            backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : '#2D3748',
-            color: state.isFocused ? 'white' : 'white',
+            backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
+            color: state.isFocused ? 'white' : 'gray',
         }),
-        menu: (provided) => ({
+        menu: (provided, { theme }) => ({
             ...provided,
-            backgroundColor: '#2D3748',
+            backgroundColor: bgColor,
         }),
         input: (provided) => ({
             ...provided,
@@ -178,9 +181,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         };
         newOrder.cart_items = newOrder.cart_items.filter(item => item.product !== "");
         newOrder.cart_items.forEach(item => {
-        if (item.price !== undefined) {
-            item.price = Number(item.price) || 0;
-        }
+            if (item.price !== undefined) {
+                item.price = Number(item.price) || 0;
+            }
         });
         onCreate(newOrder);
         setClientName('');
@@ -212,7 +215,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
 
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
+        <Modal isOpen={isOpen} onClose={onClose} bg={bgColor}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>Crear orden</ModalHeader>

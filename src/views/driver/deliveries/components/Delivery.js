@@ -43,7 +43,6 @@ import {
 
 import Card from "components/card/Card.js";
 import React, { useState, useEffect } from 'react';
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
 export default function DeliveryCard(props) {
     const { order, coolerInfo, onUpdateDelivery, ...rest } = props;
@@ -272,7 +271,7 @@ export default function DeliveryCard(props) {
         <Card {...rest} mb='20px' align='center' p='20px'>
             <Flex maxW={{ base: "sm", lg: "2xl", "2xl": "2xl" }} direction={{ base: "column", "2xl": "row" }}>
 
-                <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p="6" flex="1">
+                <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p="6" flex="1" mb={{ base: "10px", sm: "5px", md: "15px" }}>
                     <Button colorScheme='teal' variant='ghost' onClick={handleClickMarker}>
                         Ver en Google Maps
                     </Button>
