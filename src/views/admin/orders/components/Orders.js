@@ -53,7 +53,7 @@ function Orders(props) {
     const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
     try {
-      const response = await axios.post('https://81s54o7mzc.execute-api.us-east-1.amazonaws.com/development/schedule-orders', { date: formattedDate });
+      const response = await axios.post(process.env.REACT_APP_SCHEDULE_ORDERS_BASE_URL, { date: formattedDate });
       console.log('Scheduled successfully:', response.data);
       setAlertMessage({ type: 'success', text: 'Las ordenes fueron programadas con éxito' });
       setTimeout(() => setAlertMessage(null), 3000);
@@ -72,8 +72,14 @@ function Orders(props) {
   const [selectedRowData, setSelectedRowData] = useState(null);
 
   const openUpdateModal = (row, rowIndex) => {
-    setSelectedRowData({ row: row, index: rowIndex });
-    setIsUpdateModalOpen(true);
+    if (row.status !== "Creada" && row.status !== "Reprogramada") {
+      setAlertMessage({ type: 'error', text: 'No se puede editar una orden con estado diferente a "Creada" o "Reprogramada".' });
+      setTimeout(() => setAlertMessage(null), 3000);
+    } else {
+      setSelectedRowData({ row: row, index: rowIndex });
+      setIsUpdateModalOpen(true);
+    }
+
   };
 
   const closeUpdateModal = () => {
@@ -93,12 +99,12 @@ function Orders(props) {
     onOrderCreated(newOrder);
   };
 
-  const onOrderUpdatedCallback = (product) => {
-    onOrderUpdated(product);
+  const onOrderUpdatedCallback = (order) => {
+    onOrderUpdated(order);
   };
 
-  const onOrderDeletedCallback = (product) => {
-    onOrderDeleted(product);
+  const onOrderDeletedCallback = (order) => {
+    onOrderDeleted(order);
   };
 
   const tableInstance = useTable(
@@ -147,7 +153,7 @@ function Orders(props) {
         direction="column"
         w="100%"
         px="0px"
-        overflowX={{ sm: "scroll", lg: "hidden" }}
+        overflowX={{ sm: "scroll", lg: "scroll" }}
       >
         <Flex px="25px" justify="space-between" mb="20px" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
@@ -270,7 +276,7 @@ function Orders(props) {
                               h="24px"
                               me="5px"
                               color={
-                                (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta")
+                                (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta" || cell.value === "Entregada")
                                   ? "green.500"
                                   : cell.value === "Error"
                                     ? "red.500"
@@ -279,7 +285,7 @@ function Orders(props) {
                                       : null
                               }
                               as={
-                                (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta")
+                                (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta" || cell.value === "Entregada")
                                   ? MdCheckCircle
                                   : cell.value === "Reprogramar"
                                     ? MdOutlineError

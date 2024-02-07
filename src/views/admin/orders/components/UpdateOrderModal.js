@@ -23,12 +23,14 @@ import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
 import { isAdmin, } from 'security.js';
 
-const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, productsAvailable }) => {
-  const [clientName, setClientName] = useState('');
-  const [deliveryTime, setDeliveryTime] = useState('');
-  const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('')
+const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, productsAvailable }) => {
+  const [clientName, setClientName] = useState(rowData.row.client_name || '');
+  const [deliveryTime, setDeliveryTime] = useState(rowData.row.delivery_time || '');
+  const [deliveryAddress, setDeliveryAddress] = useState(rowData.row.address || '');
+  const [deliveryLatitude, setDeliveryLatitude] = useState(String(rowData.row.latitude) || '');
+  const [deliveryLongitude, setDeliveryLongitude] = useState(String(rowData.row.longitude) || '');
+  const [phoneNumber, setPhoneNumber] = useState(rowData.row.phone_number || '');
+  const [paymentMethod, setPaymentMethod] = useState(rowData.row.payment_method || '')
   const [cartItemsSelection, setCartItemsSelection] = useState(
     (rowData.row.cart_items || []).map((item) => ({
       product: item.product,
@@ -37,13 +39,20 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
     })) || [{ product: null, quantity: null }]
   );
 
-
-  const [cartItems, setCartItems] = useState(rowData.row.cart_items || [{ product: '', quantity: '', price: '' }]);
+  const [cartItems, setCartItems] = useState(
+    (rowData.row.cart_items || []).map((item) => ({
+      product: item.product,
+      quantity: Number(item.quantity),
+      price: Number(item.price),
+    })) || [{ product: null, quantity: null }]
+  );
   const [dateError, setDateError] = useState(null);
   const [totalAmountDisplay, setTotalAmountDisplay] = useState(rowData.row.total_amount || "0.00");
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const [deliveryDate, setDeliveryDate] = useState(rowData.delivery_date || '');
+  const [deliveryDate, setDeliveryDate] = useState(rowData.row.delivery_date || '');
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+
   let isUserAdmin = false;
   isUserAdmin = isAdmin();
 
@@ -76,48 +85,76 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
   };
 
   const updateOrder = async () => {
-
-
-    // const order = {
-    // };
-    // onUpdate(order);
-    // setProductName('');
-    // setProductPrice('');
-    // onClose();
+    const updOrder = {
+      item: {
+        id: rowData.row.id,
+        client_name: clientName,
+        delivery_address: deliveryAddress,
+        latitude: deliveryLatitude,
+        longitude: deliveryLongitude,
+        delivery_date: deliveryDate,
+        delivery_time: deliveryTime,
+        phone_number: phoneNumber,
+        total_amount: parseFloat(totalAmountDisplay.replace(/[^\d.]/g, '')),
+        cart_items: cartItems,
+        payment_method: paymentMethod,
+        status: "Creada",
+        order: "Ver detalles",
+        original_date: rowData.row.delivery_date
+      },
+      rowIndex: rowData.index
+    };
+    updOrder.item.cart_items = updOrder.item.cart_items.filter(item => item.product !== "");
+    updOrder.item.cart_items.forEach(item => {
+      if (item.price !== undefined) {
+        item.price = Number(item.price) || 0;
+      }
+    });
+    onUpdate(updOrder);
+    setClientName('');
+    setDeliveryTime('');
+    setDeliveryAddress('');
+    setPhoneNumber('');
+    setTotalAmountDisplay('');
+    setPaymentMethod('');
+    onClose();
 
   };
 
   const deleteOrder = async () => {
-    // const updatedProductName = productName || rowData.row.name || '';
-    // const updatedProductPrice = productPrice || rowData.row.price || '';
-
-    // const product = {
-    //   item: {
-    //     name: updatedProductName,
-    //     price: updatedProductPrice,
-    //   },
-    //   rowIndex: rowData.index
-    // };
-    // onDelete(product);
-    // setProductName('');
-    // setProductPrice('');
-    // onClose();
+    const order = {
+      item: {
+        id: rowData.row.id,
+        delivery_date: rowData.row.delivery_date
+      },
+      rowIndex: rowData.index
+    };
+    onDelete(order);
+    setClientName('');
+    setDeliveryTime('');
+    setDeliveryAddress('');
+    setPhoneNumber('');
+    setTotalAmountDisplay('');
+    setPaymentMethod('');
+    onClose();
 
   };
 
   useEffect(() => {
     calculateTotalAmount();
     checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
-  }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod]);
+  }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude]);
 
   const checkFormValidity = () => {
-    const isCartItemsValid = cartItems.length > 1;
+    const isCartItemsValid = cartItems.length >= 1;
     const isClientNameValid = clientName.trim() !== '';
     const isDeliveryAddressValid = deliveryAddress.trim() !== '';
     const isPhoneNumberValid = phoneNumber.trim() !== '';
+    const isLatitudeValid = deliveryLatitude.trim() !== '';
+    const isLongitudeValid = deliveryLongitude.trim() !== '';
     const isDeliveryDateValid = !dateError;
 
-    setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid);
+    setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isLatitudeValid && isLongitudeValid);
   };
 
   const addCartItem = () => {
@@ -157,7 +194,6 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
     }
   };
 
-
   const removeCartItem = (index) => {
     setCartItems((prevCartItems) => {
       const updatedCartItems = [...prevCartItems];
@@ -167,16 +203,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
 
     setCartItemsSelection((prevCartItemsSelection) => {
       const updatedCartItemsSelection = [...prevCartItemsSelection];
-      const currentSelection = updatedCartItemsSelection[index]?.product;
-
-      const isObjectProduct = currentSelection && typeof currentSelection === 'object' && currentSelection.label && currentSelection.value;
-
-      if (isObjectProduct) {
-        updatedCartItemsSelection.splice(index, 1);
-      } else {
-        updatedCartItemsSelection.splice(index - 1, 1);
-      }
-
+      updatedCartItemsSelection.splice(index, 1);
       return updatedCartItemsSelection;
     });
 
@@ -209,21 +236,72 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
 
   const calculateTotalAmount = () => {
     if (cartItems.length > 0) {
-      const calculatedTotalAmount = cartItems.reduce((sum, item) => sum + cartItems.price * cartItems.quantity, 0)
-        .toLocaleString('es-MX', {
-          style: 'currency',
-          currency: 'MXN',
-        });
+      const calculatedTotalAmount = cartItems.reduce((sum, item) => {
+        const itemTotal = item.price * item.quantity;
+        return sum + itemTotal;
+      }, 0).toLocaleString('es-MX', {
+        style: 'currency',
+        currency: 'MXN',
+      });
       setTotalAmountDisplay(calculatedTotalAmount);
     } else {
       setTotalAmountDisplay("0.00");
     }
   };
 
+  const handleDateChange = (selectedDate) => {
+    setDeliveryDate(selectedDate);
+
+    const currentDate = new Date();
+    currentDate.setHours(6, 59, 0, 0);
+
+    const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+    selectedDateObj.setMinutes(selectedDateObj.getTimezoneOffset());
+
+    if (selectedDateObj < currentDate) {
+      setDateError('La fecha de entrega no puede ser en el pasado');
+    } else {
+      setDateError(null);
+    }
+    checkFormValidity();
+  };
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   let menuBg = useColorModeValue("white", "navy.900");
+
+  const ConfirmationModal = () => {
+    return (
+        <Modal
+            isOpen={isConfirmationModalOpen}
+            onClose={() => setIsConfirmationModalOpen(false)}
+        >
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Confirmar Acción</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    Esta acción no se puede deshacer. ¿Estas seguro de que deseas eliminar esta orden?
+                </ModalBody>
+                <ModalFooter>
+                    <Button
+                        variant="brand"
+                        mr={3}
+                        onClick={() => {
+                          setIsConfirmationModalOpen(false);
+                          deleteOrder();
+                        }}
+                    >
+                        Confirmar
+                    </Button>
+                    <Button variant="ghost" onClick={() => setIsConfirmationModalOpen(false)}>
+                        Cancelar
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+};
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
@@ -233,42 +311,65 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing="4">
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Nombre</FormLabel>
               <Input type="text" color={textColor} borderColor={borderColor}
-                defaultValue={rowData.row.client_name} />
+                value={clientName} onChange={(e) => setClientName(e.target.value)} />
             </FormControl>
 
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Direccion</FormLabel>
               <Textarea type="text" color={textColor} borderColor={borderColor}
-                defaultValue={rowData.row.address} />
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)} />
             </FormControl>
 
-            <FormControl>
+            <FormControl isRequired>
+              <FormLabel>Latitud</FormLabel>
+              <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
+                value={deliveryLatitude}
+                onChange={(e) => setDeliveryLatitude(e.target.value)} />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Longitud</FormLabel>
+              <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
+                value={deliveryLongitude}
+                onChange={(e) => setDeliveryLongitude(e.target.value)} />
+            </FormControl>
+
+            <FormControl isRequired>
               <FormLabel>Teléfono</FormLabel>
               <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
-                defaultValue={rowData.row.phone_number} />
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)} />
             </FormControl>
 
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Fecha de entrega </FormLabel>
-              <Input color={textColor} borderColor={borderColor} type="date" defaultValue={rowData.row.delivery_date}
-                onChange={(e) => setDeliveryDate(e.target.value)}
+              <Input color={textColor} borderColor={borderColor} type="date" value={deliveryDate}
+                onChange={(e) => handleDateChange(e.target.value)}
               />
+              {dateError && (
+                <Text color="red.500" fontSize="sm" mt="2">
+                  {dateError}
+                </Text>
+              )}
             </FormControl>
 
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Horario de entrega</FormLabel>
-              <Select defaultValue={rowData.delivery_time}>
+              <Select value={deliveryTime}
+                onChange={(e) => setDeliveryTime(e.target.value)}>
                 <option value="9-1">9-1</option>
                 <option value="1-5">1-5</option>
               </Select>
             </FormControl>
 
-            <FormControl>
+            <FormControl isRequired>
               <FormLabel>Método de pago</FormLabel>
-              <Select defaultValue={rowData.payment_method}>
+              <Select value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}>
                 <option value="Tarjeta">Tarjeta</option>
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
@@ -316,7 +417,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
               fontSize='18px'
               fontWeight='700'
               lineHeight='100%'>
-              Monto total: {rowData.row.total_amount}
+              Monto total: {totalAmountDisplay}
             </Text>
 
           </VStack>
@@ -325,16 +426,17 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, OnDelete, produc
         <ModalFooter>
           <ButtonGroup spacing='6'>
             {isUserAdmin && (
-              <Button colorScheme='red' variant='outline' onClick={deleteOrder}>
+              <Button colorScheme='red' variant='outline' onClick={() => setIsConfirmationModalOpen(true)}>
                 Eliminar
               </Button>
             )}
-            <Button variant="brand" onClick={updateOrder}>
+            <Button variant="brand" onClick={updateOrder} isDisabled={!isFormValid}>
               Actualizar
             </Button>
           </ButtonGroup>
         </ModalFooter>
       </ModalContent>
+      <ConfirmationModal />
     </Modal>
   );
 };

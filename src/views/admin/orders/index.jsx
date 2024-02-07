@@ -33,7 +33,7 @@ export default function OrdersView() {
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const jwtToken = getAccessToken();
-	const history = useHistory();
+  const history = useHistory();
 
   // Chakra Color Mode
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -108,7 +108,7 @@ export default function OrdersView() {
         setLoading(false);
       });
 
-  }, []);
+  }, [jwtToken]);
 
   const handleDateChange = (date) => {
     const year = date.value.substring(0, 4);
@@ -188,47 +188,51 @@ export default function OrdersView() {
 
   const handleOrderUpdated = async (updatedOrder) => {
 
-    // if (!validateJWT) {
-    //   history.push('/auth');
-    // }
+    if (!validateJWT) {
+      history.push('/auth');
+    }
+    const queryParams = {
+      id: updatedOrder.item.id,
+      delivery_date: updatedOrder.item.delivery_date,
+    };
+    setLoading(true);
+    try {
+      const response = await axios.put(process.env.REACT_APP_ORDERS_BASE_URL, updatedOrder.item, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        params: queryParams
+      });
 
-    // setLoading(true);
-    // try {
-    //   const response = await axios.post(process.env.REACT_APP_ORDERS_BASE_URL, newOrder, {
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${jwtToken}`
-    //     },
-    //   });
+      updatedOrder.item.status = response.data.status;
+      updatedOrder.item.errors = response.data.errors;
+      updatedOrder.item.address = updatedOrder.item.delivery_address
+      if (updatedOrder.item.delivery_address === updatedOrder.item.original_date) {
+        setTableDataOrders(prevTableData => {
+          const updatedTableData = [...prevTableData];
+          updatedTableData[updatedOrder.rowIndex] = { ...updatedOrder.item };
+          return updatedTableData;
+        });
+      } else {
+        setTableDataOrders(prevTableData => {
+          const updatedTableData = [...prevTableData];
+          updatedTableData.splice(updatedOrder.rowIndex, 1);
+          return updatedTableData;
+        });
+      }
 
-    //   updatedOrder.status = response.data.status;
-    //   updatedOrder.errors = response.data.errors;
 
-    //   // Check if the delivery_date is the same as today so we can add the record to the todays table
-    //   const currentDate = new Date();
-    //   currentDate.setHours(7, 0, 0, 0);
+      setAlertMessage({ type: 'success', text: 'Orden actualizada en la base de datos' });
+      setTimeout(() => setAlertMessage(null), 3000);
 
-    //   const orderDate = new Date(newOrder.delivery_date + 'T00:00:00');
-    //   orderDate.setMinutes(orderDate.getTimezoneOffset());
-
-    //   if (orderDate.toDateString() === currentDate.toDateString()) {
-    //     tableDataOrders.splice(updatedOrder.index, 1);
-    //     const updatedTableData = [...tableDataOrders];
-    //     updatedTableData.splice(updatedOrder.index, 0, updatedOrder.item);
-    //     setTableDataOrders(updatedTableData);
-    //   } else {
-    //     console.log("Delivery date is not today. Skipping adding to the data table.");
-    //   }
-    //   setAlertMessage({ type: 'success', text: 'Orden guardada en la base de datos' });
-    //   setTimeout(() => setAlertMessage(null), 3000);
-
-    // } catch (error) {
-    //   console.error("Error creating order:", error);
-    //   setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
-    //   setTimeout(() => setAlertMessage(null), 3000);
-    // } finally {
-    //   setLoading(false);
-    // }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      setAlertMessage({ type: 'error', text: 'Error al actualizar la orden. Intenta de nuevo.' });
+      setTimeout(() => setAlertMessage(null), 3000);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleOrderDeleted = async (order) => {
@@ -236,43 +240,36 @@ export default function OrdersView() {
     if (!validateJWT) {
       history.push('/auth');
     }
+    const queryParams = {
+      id: order.item.id,
+      delivery_date: order.item.delivery_date,
+    };
+    setLoading(true);
+    try {
+      const response = await axios.delete(process.env.REACT_APP_ORDERS_BASE_URL, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        params: queryParams
+      });
 
-    // setLoading(true);
-    // try {
-    //   const response = await axios.delete(`${ordersURL}?id=${order.item.id}&delivery_date=${order.item.delivery_date}`, {
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${jwtToken}`
-    //     },
-    //   });
+      setTableDataOrders(prevTableData => {
+        const updatedTableData = [...prevTableData];
+        updatedTableData.splice(order.rowIndex, 1);
+        return updatedTableData;
+      });
 
-    //   updatedOrder.status = response.data.status;
-    //   updatedOrder.errors = response.data.errors;
+      setAlertMessage({ type: 'success', text: 'Orden eliminada en la base de datos' });
+      setTimeout(() => setAlertMessage(null), 3000);
 
-    //   // Check if the delivery_date is the same as today so we can add the record to the todays table
-    //   const currentDate = new Date();
-    //   currentDate.setHours(7, 0, 0, 0);
-
-    //   const orderDate = new Date(newOrder.delivery_date + 'T00:00:00');
-    //   orderDate.setMinutes(orderDate.getTimezoneOffset());
-
-    //   if (orderDate.toDateString() === currentDate.toDateString()) {
-    //     const updatedTableData = [...tableDataOrders];
-    //     updatedTableData.splice(updatedOrder.index, 1);
-    //     setTableDataOrders(updatedTableData);
-    //   } else {
-    //     console.log("Delivery date is not today. Skipping adding to the data table.");
-    //   }
-    //   setAlertMessage({ type: 'success', text: 'Orden guardada en la base de datos' });
-    //   setTimeout(() => setAlertMessage(null), 3000);
-
-    // } catch (error) {
-    //   console.error("Error creating order:", error);
-    //   setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
-    //   setTimeout(() => setAlertMessage(null), 3000);
-    // } finally {
-    //   setLoading(false);
-    // }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      setAlertMessage({ type: 'error', text: 'Error al eliminar la orden. Intenta de nuevo.' });
+      setTimeout(() => setAlertMessage(null), 3000);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const userIsDriver = isDriver();
