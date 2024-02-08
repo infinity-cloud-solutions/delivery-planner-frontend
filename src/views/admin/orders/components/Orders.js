@@ -147,7 +147,7 @@ function Orders(props) {
 
   if (dateQueryParam) {
     const date = new Date(dateQueryParam);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options = { month: 'long', day: 'numeric' };
     displayText = `Pedidos para el ${date.toLocaleDateString('es-ES', options)}`;
   } else {
     displayText = 'Pedidos para hoy';
@@ -182,18 +182,21 @@ function Orders(props) {
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
             {displayText}
           </Text>
-          <Flex align="center">
-            <Menu onDateSelect={onDateSelect} />
+        </Flex>
+        <Flex px="25px" justify="space-between" mb="20px" align="right" justifyContent="flex-end">
+          <Flex align="right">
             <ButtonGroup spacing="6">
-              <Button variant="action" ml="4" onClick={openCreateModal}>
+              <Button variant="action" onClick={openCreateModal}>
                 Crear
               </Button>
-              <Button variant="outline" onClick={openConsolidatedModal}>
+              <Button variant="outline" mr="4" onClick={openConsolidatedModal}>
                 Ver consolidado
               </Button>
             </ButtonGroup>
+            <Menu onDateSelect={onDateSelect} />
           </Flex>
         </Flex>
+
         {data.length === 0 ? (
           <Box mt="4" px="4">
             <Text color={textColor}>
