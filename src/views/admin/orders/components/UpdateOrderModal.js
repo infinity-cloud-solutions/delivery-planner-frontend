@@ -26,7 +26,7 @@ import { isAdmin, } from 'security.js';
 const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, productsAvailable }) => {
   const [clientName, setClientName] = useState(rowData.row.client_name || '');
   const [deliveryTime, setDeliveryTime] = useState(rowData.row.delivery_time || '');
-  const [deliveryAddress, setDeliveryAddress] = useState(rowData.row.address || '');
+  const [deliveryAddress, setDeliveryAddress] = useState(rowData.row.delivery_address || '');
   const [deliveryLatitude, setDeliveryLatitude] = useState(String(rowData.row.latitude) || '');
   const [deliveryLongitude, setDeliveryLongitude] = useState(String(rowData.row.longitude) || '');
   const [phoneNumber, setPhoneNumber] = useState(rowData.row.phone_number || '');
@@ -56,33 +56,38 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   let isUserAdmin = false;
   isUserAdmin = isAdmin();
 
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      borderColor: borderColor,
-      boxShadow: 'none',
-      backgroundColor: '#2D3748',
-      width: '200px',
-      maxWidth: '200px'
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : '#2D3748',
-      color: state.isFocused ? 'white' : 'white',
-    }),
-    menu: (provided) => ({
-      ...provided,
-      backgroundColor: '#2D3748',
-    }),
-    input: (provided) => ({
-      ...provided,
-      color: 'white',
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: 'white',
-    }),
-  };
+  const textColor = useColorModeValue("secondaryGray.900", "white");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  let menuBg = useColorModeValue("white", "navy.900");
+  const bgColor = useColorModeValue('white', '#2D3748');
+
+    const customStyles = {
+        control: (provided) => ({
+            ...provided,
+            borderColor: borderColor,
+            boxShadow: 'none',
+            backgroundColor: menuBg,
+            width: '200px',
+            maxWidth: '200px'
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : bgColor,
+            color: state.isFocused ? textColor : 'grey',
+        }),
+        menu: (provided) => ({
+            ...provided,
+            backgroundColor: bgColor,
+        }),
+        input: (provided) => ({
+            ...provided,
+            color: textColor,
+        }),
+        singleValue: (provided) => ({
+            ...provided,
+            color: textColor,
+        }),
+    };
 
   const updateOrder = async () => {
     const updOrder = {
@@ -266,42 +271,39 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     checkFormValidity();
   };
 
-  const textColor = useColorModeValue("secondaryGray.900", "white");
-  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
-  let menuBg = useColorModeValue("white", "navy.900");
 
   const ConfirmationModal = () => {
     return (
-        <Modal
-            isOpen={isConfirmationModalOpen}
-            onClose={() => setIsConfirmationModalOpen(false)}
-        >
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>Confirmar Acción</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    Esta acción no se puede deshacer. ¿Estas seguro de que deseas eliminar esta orden?
-                </ModalBody>
-                <ModalFooter>
-                    <Button
-                        variant="brand"
-                        mr={3}
-                        onClick={() => {
-                          setIsConfirmationModalOpen(false);
-                          deleteOrder();
-                        }}
-                    >
-                        Confirmar
-                    </Button>
-                    <Button variant="ghost" onClick={() => setIsConfirmationModalOpen(false)}>
-                        Cancelar
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
+      <Modal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirmar Acción</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            Esta acción no se puede deshacer. ¿Estas seguro de que deseas eliminar esta orden?
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="brand"
+              mr={3}
+              onClick={() => {
+                setIsConfirmationModalOpen(false);
+                deleteOrder();
+              }}
+            >
+              Confirmar
+            </Button>
+            <Button variant="ghost" onClick={() => setIsConfirmationModalOpen(false)}>
+              Cancelar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     );
-};
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
