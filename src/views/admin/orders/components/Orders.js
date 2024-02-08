@@ -32,6 +32,7 @@ import Menu from "components/menu/MainMenu";
 import UpdateOrderModal from "./UpdateOrderModal";
 import CreateOrderModal from "./CreateOrderModal";
 import ConsolidatedModal from "./ConsolidatedModal";
+import { useQueryParam } from "utils/Utility"
 
 // Assets
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
@@ -141,6 +142,17 @@ function Orders(props) {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
+  const dateQueryParam = useQueryParam('date');
+  let displayText;
+
+  if (dateQueryParam) {
+    const date = new Date(dateQueryParam);
+    const options = { month: 'long', day: 'numeric' };
+    displayText = `Pedidos para el ${date.toLocaleDateString('es-ES', options)}`;
+  } else {
+    displayText = 'Pedidos para hoy';
+  }
+
   return (
     <>
       {alertMessage && (
@@ -168,20 +180,23 @@ function Orders(props) {
       >
         <Flex px="25px" justify="space-between" mb="20px" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-            Pedidos para hoy
+            {displayText}
           </Text>
-          <Flex align="center">
-            <Menu onDateSelect={onDateSelect} />
+        </Flex>
+        <Flex px="25px" justify="space-between" mb="20px" align="right" justifyContent="flex-end">
+          <Flex align="right">
             <ButtonGroup spacing="6">
-              <Button variant="action" ml="4" onClick={openCreateModal}>
+              <Button variant="action" onClick={openCreateModal}>
                 Crear
               </Button>
-              <Button variant="outline" onClick={openConsolidatedModal}>
+              <Button variant="outline" mr="4" onClick={openConsolidatedModal}>
                 Ver consolidado
               </Button>
             </ButtonGroup>
+            <Menu onDateSelect={onDateSelect} />
           </Flex>
         </Flex>
+
         {data.length === 0 ? (
           <Box mt="4" px="4">
             <Text color={textColor}>
@@ -370,7 +385,7 @@ function Orders(props) {
                       } else if (cell.column.Header === "SECUENCIA") {
                         data = (
                           <Text color={textColor} fontSize="sm" fontWeight="700">
-                            {cell.value !== null ? (
+                            {cell.value !== null && cell.value !== undefined ? (
                               <>{cell.value}</>
                             ) : (
                               <>---</>
@@ -414,12 +429,12 @@ function Orders(props) {
             productsAvailable={productsAvailable}
           />
         )}
-                {isConsolidatedModalOpen && (
+        {isConsolidatedModalOpen && (
           <ConsolidatedModal
-          isOpen={isConsolidatedModalOpen}
-          onClose={closeConsolidatedModal}
-          products={listOfConsolidatedProducts}
-        />
+            isOpen={isConsolidatedModalOpen}
+            onClose={closeConsolidatedModal}
+            products={listOfConsolidatedProducts}
+          />
         )}
         <Button
           variant="action"

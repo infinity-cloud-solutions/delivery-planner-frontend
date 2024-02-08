@@ -1,6 +1,7 @@
 import { Box, Grid, Spinner, Text } from "@chakra-ui/react";
 
 import DeliveryCard from "views/driver/deliveries/components/Delivery";
+import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
@@ -28,16 +29,11 @@ export default function DeliveriesView() {
 
   useEffect(() => {
 
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const dateAsQueryParam = `${year}-${month}-${day}`
-
     const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
+    const dateParam = getDateAsQueryParam()
     setLoading(true);
     const queryParams = {
-      date: dateAsQueryParam,
+      date: dateParam,
     };
 
     axios.get(ordersURL, {
@@ -52,7 +48,7 @@ export default function DeliveriesView() {
 
         const filteredData = responseData.filter(order =>
           (order.status === "Programada" || order.status === "En ruta") &&
-          order.delivery_date === dateAsQueryParam &&
+          order.delivery_date === dateParam &&
           order.driver === getDriverValue()
         );
 

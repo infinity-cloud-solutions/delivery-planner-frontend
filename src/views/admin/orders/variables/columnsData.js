@@ -9,7 +9,7 @@ export const columnsDataOrders = [
   },
   {
     Header: "DIRECCIÓN",
-    accessor: "address",
+    accessor: "delivery_address",
   },
   {
     Header: "REPARTIDOR",

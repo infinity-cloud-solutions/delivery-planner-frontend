@@ -37,7 +37,7 @@ const generateDateOptions = () => {
 
     const dateObject = {
       label: finalDate,
-      value: format(currentDate, "yyyyMMdd"),
+      value: format(currentDate, "yyyy-MM-dd"),
     };
 
     dateOptions.push(dateObject);

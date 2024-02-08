@@ -24,6 +24,7 @@ import Orders from "views/admin/orders/components/Orders";
 import {
   columnsDataOrders,
 } from "views/admin/orders/variables/columnsData";
+import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 import { isDriver, getAccessToken, validateJWT } from 'security.js';
 
 export default function OrdersView() {
@@ -34,6 +35,7 @@ export default function OrdersView() {
   const [selectedDate, setSelectedDate] = useState(null);
   const jwtToken = getAccessToken();
   const history = useHistory();
+  const queryParamDateValue = useQueryParam('date');
 
   // Chakra Color Mode
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -41,6 +43,7 @@ export default function OrdersView() {
 
   const [loading, setLoading] = useState(false);
   const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL
+  const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL;
 
   useEffect(() => {
 
@@ -48,16 +51,8 @@ export default function OrdersView() {
       history.push('/auth');
     }
 
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const dateAsQueryParam = `${year}-${month}-${day}`
-
-    const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
-    const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL;
     const queryParams = {
-      date: dateAsQueryParam,
+      date: getDateAsQueryParam(),
     };
     setLoading(true);
 
@@ -126,17 +121,15 @@ export default function OrdersView() {
   }, [jwtToken]);
 
   const handleDateChange = (date) => {
-    const year = date.value.substring(0, 4);
-    const month = date.value.substring(4, 6);
-    const day = date.value.substring(6, 8);
+    if (!validateJWT) {
+      history.push('/auth');
+    }
 
-    const transformedDate = `${year}-${month}-${day}`;
-    setSelectedDate(transformedDate);
+    setSelectedDate(date.value);
 
     setLoading(true);
-    const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
     const queryParams = {
-      date: transformedDate,
+      date: date.value,
     };
 
     axios.get(ordersURL, {
@@ -170,25 +163,21 @@ export default function OrdersView() {
 
     setLoading(true);
     try {
-      const response = await axios.post(process.env.REACT_APP_ORDERS_BASE_URL, newOrder, {
+      const response = await axios.post(ordersURL, newOrder, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`
         },
       });
 
+
       newOrder.status = response.data.status;
       newOrder.errors = response.data.errors;
+      newOrder.driver = response.data.driver;
+      newOrder.delivery_sequence = null;
+      newOrder.order = "Ver detalles";
 
-      // Check if the delivery_date is the same as today so we can add the record to the todays table
-      const currentDate = new Date();
-      currentDate.setHours(7, 0, 0, 0);
-
-      const orderDate = new Date(newOrder.delivery_date + 'T00:00:00');
-      orderDate.setMinutes(orderDate.getTimezoneOffset());
-
-      if (orderDate.toDateString() === currentDate.toDateString()) {
-        // Add the new order to the data table for todays
+      if (newOrder.delivery_date === queryParamDateValue) {
         setTableDataOrders((prevTableData) => [...prevTableData, newOrder]);
       } else {
         console.log("Delivery date is not today. Skipping adding to the data table.");
@@ -216,7 +205,7 @@ export default function OrdersView() {
     };
     setLoading(true);
     try {
-      const response = await axios.put(process.env.REACT_APP_ORDERS_BASE_URL, updatedOrder.item, {
+      const response = await axios.put(ordersURL, updatedOrder.item, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`
@@ -226,14 +215,18 @@ export default function OrdersView() {
 
       updatedOrder.item.status = response.data.status;
       updatedOrder.item.errors = response.data.errors;
-      updatedOrder.item.address = updatedOrder.item.delivery_address
-      if (updatedOrder.item.delivery_address === updatedOrder.item.original_date) {
+      updatedOrder.item.driver = response.data.driver;
+      updatedOrder.item.delivery_sequence = null;
+      updatedOrder.item.order = "Ver detalles";
+      if (updatedOrder.item.delivery_date === updatedOrder.item.original_date) {
+        // Updating an element, since its in the UI
         setTableDataOrders(prevTableData => {
           const updatedTableData = [...prevTableData];
           updatedTableData[updatedOrder.rowIndex] = { ...updatedOrder.item };
           return updatedTableData;
         });
       } else {
+        // Removing element, since its no longer in the UI, since changed delivery_date
         setTableDataOrders(prevTableData => {
           const updatedTableData = [...prevTableData];
           updatedTableData.splice(updatedOrder.rowIndex, 1);
@@ -265,7 +258,7 @@ export default function OrdersView() {
     };
     setLoading(true);
     try {
-      const response = await axios.delete(process.env.REACT_APP_ORDERS_BASE_URL, {
+      const response = await axios.delete(ordersURL, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`

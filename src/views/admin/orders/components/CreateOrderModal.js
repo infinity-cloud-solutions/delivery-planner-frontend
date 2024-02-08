@@ -39,13 +39,12 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
     let menuBg = useColorModeValue("white", "navy.900");
-    const theme = useTheme();
-    const bgColor = useColorModeValue(theme.colors.white, theme.colors.gray[800]);
+    const bgColor = useColorModeValue('white', '#2D3748');
 
     const customStyles = {
-        control: (provided, { theme }) => ({
+        control: (provided) => ({
             ...provided,
-            borderColor: theme.colors.gray,
+            borderColor: borderColor,
             boxShadow: 'none',
             backgroundColor: menuBg,
             width: '200px',
@@ -53,20 +52,20 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         }),
         option: (provided, state) => ({
             ...provided,
-            backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
-            color: state.isFocused ? 'white' : 'gray',
+            backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : bgColor,
+            color: state.isFocused ? textColor : 'grey',
         }),
-        menu: (provided, { theme }) => ({
+        menu: (provided) => ({
             ...provided,
             backgroundColor: bgColor,
         }),
         input: (provided) => ({
             ...provided,
-            color: 'white',
+            color: textColor,
         }),
         singleValue: (provided) => ({
             ...provided,
-            color: 'white',
+            color: textColor,
         }),
     };
 

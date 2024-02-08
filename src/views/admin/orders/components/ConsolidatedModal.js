@@ -19,7 +19,6 @@ import {
 
 
 function ConsolidatedModal({ isOpen, onClose, products }) {
-    console.log(products)
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
