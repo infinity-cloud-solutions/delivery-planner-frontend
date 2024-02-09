@@ -39,7 +39,7 @@ export default function HeaderLinks(props) {
 		history.push('/auth');
 	};
 
-	const firstName = getFullNameFromLocalStorage().split(' ');
+	const firstName = getFullNameFromLocalStorage();
 
 	return (
 		<Flex

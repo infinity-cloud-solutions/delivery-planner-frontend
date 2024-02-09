@@ -146,12 +146,15 @@ function Orders(props) {
   let displayText;
 
   if (dateQueryParam) {
-    const date = new Date(dateQueryParam);
+    const [year, month, day] = dateQueryParam.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    date.setUTCHours(date.getUTCHours() + 10);
     const options = { month: 'long', day: 'numeric' };
     displayText = `Pedidos para el ${date.toLocaleDateString('es-ES', options)}`;
   } else {
     displayText = 'Pedidos para hoy';
   }
+
 
   return (
     <>
@@ -179,9 +182,10 @@ function Orders(props) {
         overflowX={{ sm: "scroll", lg: "scroll" }}
       >
         <Flex px="25px" justify="space-between" mb="20px" align="center">
-          <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
+          <Text color={textColor} fontSize={{ base: "18px", md: "22px" }} fontWeight="700" lineHeight="100%">
             {displayText}
           </Text>
+          <Menu onDateSelect={onDateSelect} />
         </Flex>
         <Flex px="25px" justify="space-between" mb="20px" align="right" justifyContent="flex-end">
           <Flex align="right">
@@ -189,16 +193,14 @@ function Orders(props) {
               <Button variant="action" onClick={openCreateModal}>
                 Crear
               </Button>
-              <Button variant="outline" mr="4" onClick={openConsolidatedModal}>
+              <Button variant="outline" onClick={openConsolidatedModal}>
                 Ver consolidado
               </Button>
             </ButtonGroup>
-            <Menu onDateSelect={onDateSelect} />
           </Flex>
         </Flex>
-
         {data.length === 0 ? (
-          <Box mt="4" px="4">
+          <Box mt="4" px="4" mb={{ base: '50px', md: '75px', lg: '115px', xl: '130px' }}>
             <Text color={textColor}>
               No hay registros para mostrar.
             </Text>
