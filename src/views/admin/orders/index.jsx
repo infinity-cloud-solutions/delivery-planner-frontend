@@ -89,6 +89,7 @@ export default function OrdersView() {
       .catch(error => {
         console.error('API error:', error);
       }).finally(() => {
+        setLoading(false);
       });
 
     axios.get(productsURL, {

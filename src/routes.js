@@ -10,7 +10,7 @@ import {
 } from "react-icons/md";
 
 // Admin Imports
-import MainDashboard from "views/admin/default";
+import MainDashboard from "views/admin/dashboard";
 import Product from "views/admin/products";
 import Deliveries from "views/driver/deliveries";
 import Orders from "views/admin/orders";
@@ -22,7 +22,7 @@ const routes = [
   {
     name: "Dashboard",
     layout: "/admin",
-    path: "/default",
+    path: "/dashboard",
     icon: <Icon as={MdHome} width='20px' height='20px' color='inherit' />,
     component: MainDashboard,
   },

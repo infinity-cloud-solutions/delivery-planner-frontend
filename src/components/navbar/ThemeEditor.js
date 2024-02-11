@@ -5,7 +5,7 @@ import {
   ThemeEditorColors,
   ThemeEditorFontSizes
 } from '@hypertheme-editor/chakra-ui'
-import { Button, Icon } from '@chakra-ui/react'
+import { Button, Icon, Box } from '@chakra-ui/react'
 import { CgColorPicker } from 'react-icons/cg'
 import { ImFontSize } from 'react-icons/im'
 import { MdPalette } from 'react-icons/md'
@@ -14,7 +14,10 @@ export function ThemeEditor(props) {
     return (
         <ThemeEditorContainer>
           <ThemeEditorButton {...props} />
-          <ThemeEditorDrawer hideUpgradeToPro>
+          <ThemeEditorDrawer hideUpgradeToPro hideCredits footerComponent={
+          <Box>
+          </Box>
+        }>
           </ThemeEditorDrawer>
         </ThemeEditorContainer>
       )
