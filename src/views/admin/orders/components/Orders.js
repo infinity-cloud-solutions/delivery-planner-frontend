@@ -190,11 +190,11 @@ function Orders(props) {
         <Flex px="25px" justify="space-between" mb="20px" align="right" justifyContent="flex-end">
           <Flex align="right">
             <ButtonGroup spacing="6">
-              <Button variant="action" onClick={openCreateModal}>
-                Crear
-              </Button>
               <Button variant="outline" onClick={openConsolidatedModal}>
                 Ver consolidado
+              </Button>
+              <Button variant="action" onClick={openCreateModal}>
+                Crear
               </Button>
             </ButtonGroup>
           </Flex>

@@ -1,0 +1,14 @@
+[
+  {
+    "nombre":"Cliente 1",
+    "status": "Error",
+    "total_amount": 150,
+    "payment_method": "Efectivo"
+  },
+  {
+    "nombre":"Cliente 2",
+    "status": "Reprogramada",
+    "total_amount": 150,
+    "payment_method": "Efectivo"
+  }
+]

@@ -46,7 +46,7 @@ function SignIn() {
 
       if (isTokenValid) {
         const isInDriverGroup = isDriver();
-        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
+        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
 
         history.push(redirectToPath);
       } else {
@@ -91,7 +91,7 @@ function SignIn() {
         localStorage.setItem('refreshToken', refreshToken);
         setIsLoading(false)
         const isInDriverGroup = isDriver();
-        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/default';
+        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
 
         history.push(redirectToPath);
 
