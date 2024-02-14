@@ -146,7 +146,21 @@ export default function OrdersView() {
         if (responseData.length === 0) {
           setTableDataOrders([]);
         } else {
-          setTableDataOrders(responseData);
+          const updatedResponseData = responseData.map(obj => {
+            return { ...obj, order: "Ver detalles" };
+          });
+          updatedResponseData.sort((a, b) => {
+            const statusOrder = {
+              "Error": 1,
+              "Reprogramada": 2,
+            };
+            const statusA = a.status || '';
+            const statusB = b.status || '';
+            const orderA = statusOrder[statusA] || 99; // set a high order if status not found
+            const orderB = statusOrder[statusB] || 99;
+            return orderA - orderB;
+          });
+          setTableDataOrders(updatedResponseData);
         }
       })
       .catch(error => {
@@ -292,11 +306,12 @@ export default function OrdersView() {
       order.cart_items.forEach(item => {
         const { product, quantity } = item;
         const existingProductIndex = consolidatedProducts.findIndex(p => p.product === product);
+        const numericQuantity = parseInt(quantity, 10);
 
         if (existingProductIndex !== -1) {
-          consolidatedProducts[existingProductIndex].quantity += quantity;
+          consolidatedProducts[existingProductIndex].quantity += numericQuantity;
         } else {
-          consolidatedProducts.push({ product, quantity });
+          consolidatedProducts.push({ product, quantity: numericQuantity });
         }
       });
     });

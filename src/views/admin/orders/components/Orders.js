@@ -24,6 +24,11 @@ import {
   usePagination,
   useSortBy,
   useTable,
+  nextPage,
+  previousPage,
+  canNextPage,
+  canPreviousPage,
+  pageOptions
 } from "react-table";
 
 // Custom components
@@ -134,10 +139,16 @@ function Orders(props) {
     getTableBodyProps,
     headerGroups,
     page,
+    nextPage,
+    previousPage,
+    canNextPage,
+    canPreviousPage,
+    pageOptions,
+    state: { pageIndex, pageSize },
     prepareRow,
     initialState,
   } = tableInstance;
-  initialState.pageSize = 5;
+  initialState.pageSize = 10;
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -438,6 +449,22 @@ function Orders(props) {
             products={listOfConsolidatedProducts}
           />
         )}
+        <Flex direction="column" align="center" mt="2" mb="2">
+          <ButtonGroup>
+            <Button variant="outline" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} onClick={() => previousPage()} disabled={!canPreviousPage}>
+              Anterior
+            </Button>
+            <Text mt="auto" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} pb="2">
+              Página{' '}
+              <strong>
+                {pageIndex + 1} de {pageOptions.length}
+              </strong>{' '}
+            </Text>
+            <Button variant="outline" onClick={() => nextPage()} disabled={!canNextPage}>
+              Siguiente
+            </Button>
+          </ButtonGroup>
+        </Flex>
         <Button
           variant="action"
           mt="4"

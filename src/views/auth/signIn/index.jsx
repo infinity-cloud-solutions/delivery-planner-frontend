@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react";
 
 import DefaultAuth from "layouts/auth/Default";
+import NewPasswordModal from "views/auth/components/SetNewPasswordModal"
 
 import illustration from "assets/img/auth/auth.png";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
@@ -37,7 +38,11 @@ function SignIn() {
   const handleClick = () => setShow(!show);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userAtt, setUserAtt] = useState("");
   const [error, setError] = useState(null);
+  const [isNewPasswordRequired, setIsNewPasswordRequired] = useState(false);
+  const [isNewPasswordModalOpen, setNewPasswordModalOpen] = useState(false);
+  const [cognitoUsr, setCognitoUsr] = useState(null);
 
   useEffect(() => {
     let isTokenValid = getAccessToken()
@@ -58,6 +63,7 @@ function SignIn() {
 
   const signIn = () => {
     setIsLoading(true)
+    setIsNewPasswordRequired(false);
     const poolData = {
       UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID,
       ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID,
@@ -78,6 +84,7 @@ function SignIn() {
     };
 
     const cognitoUser = new CognitoUser(userData);
+    setCognitoUsr(cognitoUser);
 
     cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: (session) => {
@@ -92,9 +99,14 @@ function SignIn() {
         setIsLoading(false)
         const isInDriverGroup = isDriver();
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
-
         history.push(redirectToPath);
 
+      },
+      newPasswordRequired: (userAttributes) => {
+        setIsLoading(false);
+        setIsNewPasswordRequired(true);
+        setNewPasswordModalOpen(true);
+        setUserAtt(userAttributes)
       },
       onFailure: (err) => {
         console.error('Authentication failed:', err);
@@ -104,6 +116,37 @@ function SignIn() {
     });
 
   };
+
+  const handleNewPasswordSubmit = (newPassword) => {
+    setIsLoading(true);
+
+    cognitoUsr.completeNewPasswordChallenge(newPassword, null, {
+      onSuccess: (session) => {
+        console.log('New password submitted successfully!', session);
+        const accessToken = session.getAccessToken().getJwtToken();
+        const idToken = session.getIdToken().getJwtToken();
+        const refreshToken = session.getRefreshToken().getToken();
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('idToken', idToken);
+        localStorage.setItem('refreshToken', refreshToken);
+
+        setIsLoading(false);
+
+        const isInDriverGroup = isDriver();
+        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
+        history.push(redirectToPath);
+      },
+      onFailure: (err) => {
+        console.error('Failed to submit new password:', err);
+        setError("Error al guardar la nueva contraseña. Intenta de nuevo.");
+        setIsLoading(false);
+      },
+    });
+
+    setNewPasswordModalOpen(false);
+};
+
 
 
   return (
@@ -218,6 +261,11 @@ function SignIn() {
           </FormControl>
         </Flex>
       </Flex>
+      <NewPasswordModal
+        isOpen={isNewPasswordModalOpen}
+        onClose={() => setNewPasswordModalOpen(false)}
+        onSubmit={handleNewPasswordSubmit}
+      />
     </DefaultAuth>
   );
 }

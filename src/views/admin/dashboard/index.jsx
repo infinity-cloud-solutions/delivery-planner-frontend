@@ -82,7 +82,7 @@ export default function Dashboard() {
             const orderB = statusOrder[statusB] || 99;
             return orderA - orderB;
           });
-          setTableDataOrdersDashboard(responseData.slice(0, 5));
+          setTableDataOrdersDashboard(responseData);
         }
       })
       .catch(error => {
