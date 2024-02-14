@@ -91,8 +91,8 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         if (isProductSelected && isQuantitySelected) {
             const newCartItem = {
                 product: cartItemsSelection[0].product.value,
-                quantity: cartItemsSelection[0].quantity,
-                price: cartItemsSelection[0].product.price || 0,
+                quantity: Number(cartItemsSelection[0].quantity),
+                price: Number(cartItemsSelection[0].product.price) || 0,
             };
 
             setCartItems(prevCartItems => [...prevCartItems, newCartItem]);

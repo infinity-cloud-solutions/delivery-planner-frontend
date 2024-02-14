@@ -1,5 +1,6 @@
 import {
   Button,
+  ButtonGroup,
   Flex,
   Table,
   Tbody,
@@ -51,8 +52,21 @@ function Products(props) {
     usePagination
   );
 
-  const { getTableProps, getTableBodyProps, headerGroups, page, prepareRow } =
+  const { getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    page,
+    nextPage,
+    previousPage,
+    canNextPage,
+    canPreviousPage,
+    pageOptions,
+    state: { pageIndex, pageSize },
+    prepareRow,
+    initialState
+  } =
     tableInstance;
+    initialState.pageSize = 10;
 
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
@@ -207,7 +221,22 @@ function Products(props) {
           onCreate={onProductCreatedCallback}
         />
       )}
-
+        <Flex direction="column" align="center" mt="2" mb="2">
+          <ButtonGroup>
+            <Button variant="outline" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} onClick={() => previousPage()} disabled={!canPreviousPage}>
+              Anterior
+            </Button>
+            <Text mt="auto" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} pb="2">
+              Página{' '}
+              <strong>
+                {pageIndex + 1} de {pageOptions.length}
+              </strong>{' '}
+            </Text>
+            <Button variant="outline" onClick={() => nextPage()} disabled={!canNextPage}>
+              Siguiente
+            </Button>
+          </ButtonGroup>
+        </Flex>
     </>
   );
 }
