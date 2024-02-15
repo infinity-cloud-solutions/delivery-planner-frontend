@@ -52,7 +52,19 @@ export default function DeliveriesView() {
           order.driver === getDriverValue()
         );
 
-        const sortedData = filteredData.sort((a, b) => a.delivery_sequence - b.delivery_sequence);
+        // Sort by delivery_time first
+        const sortedData = filteredData.sort((a, b) => {
+          const is8AMto1PM = time => time === "8 AM - 1 PM";
+
+          // Prioritize orders with delivery_time "8 AM - 1 PM"
+          if (is8AMto1PM(a.delivery_time) && !is8AMto1PM(b.delivery_time)) {
+            return -1;
+          } else if (!is8AMto1PM(a.delivery_time) && is8AMto1PM(b.delivery_time)) {
+            return 1;
+          } else {
+            return a.delivery_sequence - b.delivery_sequence;
+          }
+        });
 
         if (sortedData.length === 0) {
           setTableDataOrders([]);

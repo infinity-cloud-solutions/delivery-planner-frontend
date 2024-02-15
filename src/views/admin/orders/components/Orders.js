@@ -38,6 +38,8 @@ import UpdateOrderModal from "./UpdateOrderModal";
 import CreateOrderModal from "./CreateOrderModal";
 import ConsolidatedModal from "./ConsolidatedModal";
 import { useQueryParam } from "utils/Utility"
+import { getAccessToken, validateJWT } from 'security.js';
+import { useHistory } from "react-router-dom";
 
 // Assets
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
@@ -50,19 +52,34 @@ function Orders(props) {
   const [isScheduling, setIsScheduling] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
   const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
+  const jwtToken = getAccessToken();
+  const history = useHistory();
 
   const isButtonDisabled = () => {
     return data.length === 0 || data.some(row => row.status !== 'Creada' || row.errors.length > 0);
   };
 
   const handleScheduleButtonClick = async () => {
-    setIsScheduling(true);
-
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
+    if (!validateJWT) {
+      history.push('/auth');
+    }
+    const queryParams = {
+      date:formattedDate,
+    };
+
+    setIsScheduling(true);
+
     try {
-      const response = await axios.post(process.env.REACT_APP_SCHEDULE_ORDERS_BASE_URL, { date: formattedDate });
+      const response = await axios.post(process.env.REACT_APP_SCHEDULE_ORDERS_BASE_URL, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        params: queryParams
+      });
       console.log('Scheduled successfully:', response.data);
       setAlertMessage({ type: 'success', text: 'Las ordenes fueron programadas con éxito' });
       setTimeout(() => setAlertMessage(null), 3000);
