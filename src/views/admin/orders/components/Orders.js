@@ -98,7 +98,8 @@ function Orders(props) {
   const [selectedRowData, setSelectedRowData] = useState(null);
 
   const openUpdateModal = (row, rowIndex) => {
-    if (row.status !== "Creada" && row.status !== "Reprogramada") {
+    const allowedStatuses = ["Creada", "Reprogramada", "Error"];
+    if (!allowedStatuses.includes(row.status)) {
       setAlertMessage({ type: 'error', text: 'No se puede editar una orden con estado diferente a "Creada" o "Reprogramada".' });
       setTimeout(() => setAlertMessage(null), 6000);
     } else {
