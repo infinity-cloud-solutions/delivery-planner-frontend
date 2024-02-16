@@ -38,7 +38,8 @@ import {
     FaMoneyBillTransfer,
     FaMoneyBill1Wave,
     FaClipboardCheck,
-    FaRegCalendarMinus
+    FaRegCalendarMinus,
+    FaMoneyCheckDollar
 } from "react-icons/fa6";
 
 import Card from "components/card/Card.js";
@@ -78,6 +79,10 @@ export default function DeliveryCard(props) {
                 icon = FaMoneyBillTransfer;
                 colorScheme = 'blue';
                 break;
+            case 'Paid':
+                    icon = FaMoneyCheckDollar;
+                    colorScheme = 'orange';
+                    break;
             default:
                 icon = FaMoneyBill1Wave;
                 colorScheme = 'green';
@@ -95,7 +100,7 @@ export default function DeliveryCard(props) {
         setLoadingAddToDelivery(true);
         const updatedOrder = {
             client_name: order.client_name,
-            delivery_address: order.address,
+            delivery_address: order.delivery_address,
             delivery_date: order.delivery_date,
             delivery_time: order.delivery_time,
             phone_number: order.phone_number,
@@ -127,7 +132,7 @@ export default function DeliveryCard(props) {
 
         const updatedOrder = {
             client_name: order.client_name,
-            delivery_address: order.address,
+            delivery_address: order.delivery_address,
             delivery_date: order.delivery_date,
             delivery_time: order.delivery_time,
             phone_number: order.phone_number,
@@ -157,7 +162,7 @@ export default function DeliveryCard(props) {
         setLoadingRescheduleDelivery(true);
         const updatedOrder = {
             client_name: order.client_name,
-            delivery_address: order.address,
+            delivery_address: order.delivery_address,
             delivery_date: order.delivery_date,
             delivery_time: order.delivery_time,
             phone_number: order.phone_number,
@@ -285,7 +290,7 @@ export default function DeliveryCard(props) {
                             ml={{ base: "2", md: "4" }}
                             textAlign="left"
                         >
-                            {order.address}
+                            {order.delivery_address}
                         </Box>
                         <Badge ml={{ base: "10px", md: "20px" }} colorScheme="green">
                             {order.delivery_time}
