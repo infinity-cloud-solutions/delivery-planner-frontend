@@ -61,33 +61,33 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   let menuBg = useColorModeValue("white", "navy.900");
   const bgColor = useColorModeValue('white', '#2D3748');
 
-    const customStyles = {
-        control: (provided) => ({
-            ...provided,
-            borderColor: borderColor,
-            boxShadow: 'none',
-            backgroundColor: menuBg,
-            width: '200px',
-            maxWidth: '200px'
-        }),
-        option: (provided, state) => ({
-            ...provided,
-            backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : bgColor,
-            color: state.isFocused ? textColor : 'grey',
-        }),
-        menu: (provided) => ({
-            ...provided,
-            backgroundColor: bgColor,
-        }),
-        input: (provided) => ({
-            ...provided,
-            color: textColor,
-        }),
-        singleValue: (provided) => ({
-            ...provided,
-            color: textColor,
-        }),
-    };
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      borderColor: borderColor,
+      boxShadow: 'none',
+      backgroundColor: menuBg,
+      width: '200px',
+      maxWidth: '200px'
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : bgColor,
+      color: state.isFocused ? textColor : 'grey',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: bgColor,
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: textColor,
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: textColor,
+    }),
+  };
 
   const updateOrder = async () => {
     const updOrder = {
@@ -258,18 +258,41 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     setDeliveryDate(selectedDate);
 
     const currentDate = new Date();
-    currentDate.setHours(6, 59, 0, 0);
-
     const selectedDateObj = new Date(selectedDate + 'T00:00:00');
     selectedDateObj.setMinutes(selectedDateObj.getTimezoneOffset());
 
-    if (selectedDateObj < currentDate) {
-      setDateError('La fecha de entrega no puede ser en el pasado');
-    } else {
-      setDateError(null);
+    const currentTimestamp = currentDate.getTime();
+    const nineAMTimestamp = new Date(currentDate);
+    nineAMTimestamp.setHours(9, 0, 0, 0);
+
+    // scenario 1: date is today
+    if (
+      selectedDateObj.toDateString() === currentDate.toDateString() &&
+      currentTimestamp >= nineAMTimestamp.getTime()
+    ) {
+      setDateError('No puede crear orden después de las 9 am');
+      checkFormValidity();
+      return;
     }
+
+    // scenario 2: order is in the past
+    if (selectedDateObj < currentDate) {
+      setDateError('No se puede programar una orden en el pasado');
+      checkFormValidity();
+      return;
+    }
+
+    // scenario 3: order is on sunday
+    if (selectedDateObj.getDay() === 0) {
+      setDateError('No hay entregas los domingos');
+      checkFormValidity();
+      return;
+    }
+
+    setDateError(null);
     checkFormValidity();
   };
+
 
 
   const ConfirmationModal = () => {
@@ -363,8 +386,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               <FormLabel>Horario de entrega</FormLabel>
               <Select value={deliveryTime}
                 onChange={(e) => setDeliveryTime(e.target.value)}>
-                <option value="9-1">9-1</option>
-                <option value="1-5">1-5</option>
+                <option value="8 AM - 1 PM">8 AM - 1 PM</option>
+                <option value="1 PM - 5 PM">1 PM - 5 PM</option>
               </Select>
             </FormControl>
 

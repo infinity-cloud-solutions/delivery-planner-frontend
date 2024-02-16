@@ -263,6 +263,7 @@ function Orders(props) {
             <Tbody {...getTableBodyProps()}>
               {page.map((row, index) => {
                 prepareRow(row);
+                const actualIndex = index + pageIndex * pageSize;
                 const totalAmount = row.original.cart_items.reduce(
                   (sum, item) => sum + item.price * item.quantity,
                   0
@@ -318,8 +319,8 @@ function Orders(props) {
                 return (
                   <Tr
                     {...row.getRowProps()}
-                    key={index}
-                    onClick={() => openUpdateModal(row.original, index)} // Open modal on row click
+                    key={actualIndex}
+                    onClick={() => openUpdateModal(row.original, actualIndex)} // Open modal on row click
                     cursor="pointer"
                   >
                     {row.cells.map((cell, index) => {

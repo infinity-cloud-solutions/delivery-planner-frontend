@@ -190,6 +190,9 @@ export default function OrdersView() {
       newOrder.errors = response.data.errors;
       newOrder.driver = response.data.driver;
       newOrder.delivery_sequence = null;
+      newOrder.item.latitude = response.data.latitude
+      newOrder.item.longitude = response.data.longitude
+      newOrder.item.id = response.data.id
       newOrder.order = "Ver detalles";
 
       if (newOrder.delivery_date === queryParamDateValue) {
@@ -231,8 +234,11 @@ export default function OrdersView() {
       updatedOrder.item.status = response.data.status;
       updatedOrder.item.errors = response.data.errors;
       updatedOrder.item.driver = response.data.driver;
+      updatedOrder.item.latitude = response.data.latitude
+      updatedOrder.item.longitude = response.data.longitude
       updatedOrder.item.delivery_sequence = null;
       updatedOrder.item.order = "Ver detalles";
+      updatedOrder.item.id = response.data.id
       if (updatedOrder.item.delivery_date === updatedOrder.item.original_date) {
         // Updating an element, since its in the UI
         setTableDataOrders(prevTableData => {

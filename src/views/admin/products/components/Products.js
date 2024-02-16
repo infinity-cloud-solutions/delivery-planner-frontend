@@ -22,6 +22,7 @@ import {
 
 import CreateProductModal from "views/admin/products/components/CreateProductModal";
 import UpdateProductModal from "views/admin/products/components/UpdateProductModal";
+import { isAdmin, } from 'security.js';
 
 
 function Products(props) {
@@ -29,6 +30,8 @@ function Products(props) {
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
+  let isUserAdmin = false;
+  isUserAdmin = isAdmin();
 
   const onProductCreatedCallback = (newProduct) => {
     onProductCreated(newProduct);
@@ -80,8 +83,11 @@ function Products(props) {
   };
 
   const openUpdateModal = (row, rowIndex) => {
-    setSelectedRowData({ row: row, index: rowIndex });
-    setIsUpdateModalOpen(true);
+    if (isUserAdmin){
+      setSelectedRowData({ row: row, index: rowIndex });
+      setIsUpdateModalOpen(true);
+    }
+
   };
 
   const closeUpdateModal = () => {
@@ -112,9 +118,11 @@ function Products(props) {
           <Text color={textColor} fontSize='xl' fontWeight='600'>
             Catálogo
           </Text>
+          {isUserAdmin && (
           <Button variant="action" onClick={openCreateModal}>
             Crear
           </Button>
+          )}
         </Flex>
         {data.length === 0 ? (
           <Box mt="4" px="4">
@@ -151,8 +159,9 @@ function Products(props) {
             <Tbody {...getTableBodyProps()}>
               {page.map((row, index) => {
                 prepareRow(row);
+                const actualIndex = index + pageIndex * pageSize;
                 return (
-                  <Tr {...row.getRowProps()} key={index} onClick={() => openUpdateModal(row.original, index)} >
+                  <Tr {...row.getRowProps()} key={actualIndex} onClick={() => openUpdateModal(row.original, actualIndex)} >
                     {row.cells.map((cell, index) => {
                       let data = "";
                       if (cell.column.Header === "Nombre") {
