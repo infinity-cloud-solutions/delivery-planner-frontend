@@ -35,7 +35,7 @@ export default function ProductView() {
   const [loading, setLoading] = useState(false);
   const productsURL = `${process.env.REACT_APP_PRODUCTS_BASE_URL}`;
   const jwtToken = getAccessToken();
-	const history = useHistory();
+  const history = useHistory();
 
   useEffect(() => {
 
@@ -110,10 +110,8 @@ export default function ProductView() {
       },
     })
       .then(response => {
-        tableDataProducts.splice(product.index, 1)
         const updatedTableData = [...tableDataProducts];
-
-        updatedTableData.splice(product.index, 0, product.item);
+        updatedTableData.splice(product.rowIndex, 1, product.item);
         setTableDataProducts(updatedTableData);
 
         setAlertMessage({ type: 'success', text: 'Producto guardado en la base de datos' });
@@ -144,7 +142,7 @@ export default function ProductView() {
       .then(response => {
         const updatedTableData = [...tableDataProducts];
 
-        updatedTableData.splice(product.index, 1);
+        updatedTableData.splice(product.rowIndex, 1);
 
         setTableDataProducts(updatedTableData);
 

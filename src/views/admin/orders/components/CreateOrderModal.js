@@ -199,18 +199,41 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         setDeliveryDate(selectedDate);
 
         const currentDate = new Date();
-        currentDate.setHours(6, 59, 0, 0);
-
         const selectedDateObj = new Date(selectedDate + 'T00:00:00');
         selectedDateObj.setMinutes(selectedDateObj.getTimezoneOffset());
 
-        if (selectedDateObj < currentDate) {
-            setDateError('La fecha de entrega no puede ser en el pasado');
-        } else {
-            setDateError(null);
+        const currentTimestamp = currentDate.getTime();
+        const nineAMTimestamp = new Date(currentDate);
+        nineAMTimestamp.setHours(9, 0, 0, 0);
+
+        // scenario 1:date is today
+        if (
+            selectedDateObj.toDateString() === currentDate.toDateString() &&
+            currentTimestamp >= nineAMTimestamp.getTime()
+        ) {
+            setDateError('No puede crear orden después de las 9 am');
+            checkFormValidity();
+            return;
         }
+
+        // scenario 2: order is in the past
+        if (selectedDateObj < currentDate) {
+            setDateError('No se puede programar una orden en el pasado');
+            checkFormValidity();
+            return;
+        }
+
+        // scenario 3: Order is on sunday
+        if (selectedDateObj.getDay() === 0) {
+            setDateError('No hay entregas los domingos');
+            checkFormValidity();
+            return;
+        }
+
+        setDateError(null);
         checkFormValidity();
     };
+
 
 
     return (
