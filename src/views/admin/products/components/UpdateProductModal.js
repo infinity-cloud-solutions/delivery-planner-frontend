@@ -34,7 +34,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }) =>
             item: {
                 name: updatedProductName,
                 price: updatedProductPrice,
-                original_name: rowData.row.name
+                id: rowData.row.id || '',
             },
             rowIndex: rowData.index
         };
@@ -53,6 +53,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }) =>
             item: {
                 name: updatedProductName,
                 price: updatedProductPrice,
+                id: rowData.row.id || '',
             },
             rowIndex: rowData.index
         };
