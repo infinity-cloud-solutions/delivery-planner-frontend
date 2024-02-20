@@ -83,7 +83,8 @@ export default function ProductView() {
       },
     })
       .then(response => {
-        setTableDataProducts((prevTableData) => [...prevTableData, product]);
+        const newProduct = { ...product, id: response.data.id };
+        setTableDataProducts((prevTableData) => [...prevTableData, newProduct]);
         setAlertMessage({ type: 'success', text: 'Producto guardado en la base de datos' });
         setTimeout(() => setAlertMessage(null), 3000);
       })
