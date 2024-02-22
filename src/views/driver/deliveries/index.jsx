@@ -57,9 +57,9 @@ export default function DeliveriesView() {
           const is9AMto1PM = time => time === "9 AM - 1 PM";
 
           // Prioritize orders with delivery_time "9 AM - 1 PM"
-          if (is8AMto1PM(a.delivery_time) && !is8AMto1PM(b.delivery_time)) {
+          if (is9AMto1PM(a.delivery_time) && !is9AMto1PM(b.delivery_time)) {
             return -1;
-          } else if (!is8AMto1PM(a.delivery_time) && is8AMto1PM(b.delivery_time)) {
+          } else if (!is9AMto1PM(a.delivery_time) && is9AMto1PM(b.delivery_time)) {
             return 1;
           } else {
             return a.delivery_sequence - b.delivery_sequence;
