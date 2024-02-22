@@ -386,7 +386,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               <FormLabel>Horario de entrega</FormLabel>
               <Select value={deliveryTime}
                 onChange={(e) => setDeliveryTime(e.target.value)}>
-                <option value="8 AM - 1 PM">8 AM - 1 PM</option>
+                <option value="9 AM - 1 PM">9 AM - 1 PM</option>
                 <option value="1 PM - 5 PM">1 PM - 5 PM</option>
               </Select>
             </FormControl>
