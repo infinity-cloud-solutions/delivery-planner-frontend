@@ -282,7 +282,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
                             <FormLabel>Horario de entrega</FormLabel>
                             <Select placeholder="Selecciona un horario" value={deliveryTime}
                                 onChange={(e) => setDeliveryTime(e.target.value)}>
-                                <option value="8 AM - 1 PM">8 AM - 1 PM</option>
+                                <option value="9 AM - 1 PM">9 AM - 1 PM</option>
                                 <option value="1 PM - 5 PM">1 PM - 5 PM</option>
                             </Select>
                         </FormControl>
