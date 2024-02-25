@@ -6,6 +6,8 @@ import {
     Badge,
     Divider,
     Flex,
+    FormControl,
+    FormLabel,
     HStack,
     Modal,
     ModalOverlay,
@@ -43,10 +45,10 @@ import {
 } from "react-icons/fa6";
 
 import Card from "components/card/Card.js";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function DeliveryCard(props) {
-    const { order, coolerInfo, onUpdateDelivery, ...rest } = props;
+    const { order, onUpdateDelivery, ...rest } = props;
     const textColorPrimary = useColorModeValue("secondaryGray.900", "white");
     const [cooler, setCooler] = useState('');
     const [loadingAddToDelivery, setLoadingAddToDelivery] = useState(false);
@@ -55,13 +57,15 @@ export default function DeliveryCard(props) {
     const [orderStatus, setOrderStatus] = useState(order.status);
     const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
-    const [rescheduleReason, setRescheduleReason] = useState("");
-
+    const rescheduleReasonRef = useRef('');
 
     useEffect(() => {
         setOrderStatus(order.status);
         setCooler(order.cooler)
     }, [order.status]);
+
+    useEffect(() => {
+    }, [rescheduleReasonRef]);
 
     const RenderTag = ({ size, paymentMethod }) => {
         let icon, colorScheme;
@@ -80,9 +84,9 @@ export default function DeliveryCard(props) {
                 colorScheme = 'blue';
                 break;
             case 'Paid':
-                    icon = FaMoneyCheckDollar;
-                    colorScheme = 'orange';
-                    break;
+                icon = FaMoneyCheckDollar;
+                colorScheme = 'orange';
+                break;
             default:
                 icon = FaMoneyBill1Wave;
                 colorScheme = 'green';
@@ -102,6 +106,7 @@ export default function DeliveryCard(props) {
             client_name: order.client_name,
             delivery_address: order.delivery_address,
             delivery_date: order.delivery_date,
+            original_date: order.delivery_date,
             delivery_time: order.delivery_time,
             phone_number: order.phone_number,
             total_amount: parseFloat(order.total_amount),
@@ -116,13 +121,11 @@ export default function DeliveryCard(props) {
             driver: Number(order.driver),
             errors: order.errors,
             id: order.id,
-            latitud: order.latitude,
+            latitude: order.latitude,
             longitude: order.longitude,
             notes: order.notes,
         };
-
         await onUpdateDelivery(updatedOrder, updatedOrder.id, "En ruta");
-        setOrderStatus('En ruta');
 
         setLoadingAddToDelivery(false);
     };
@@ -134,6 +137,7 @@ export default function DeliveryCard(props) {
             client_name: order.client_name,
             delivery_address: order.delivery_address,
             delivery_date: order.delivery_date,
+            original_date: order.delivery_date,
             delivery_time: order.delivery_time,
             phone_number: order.phone_number,
             total_amount: parseFloat(order.total_amount),
@@ -143,19 +147,19 @@ export default function DeliveryCard(props) {
             order: "Ver detalles",
             cooler: cooler,
             created_at: order.created_at,
-            created_by: order.creaed_by,
+            created_by: order.created_by,
             delivery_sequence: Number(order.delivery_sequence),
             driver: Number(order.driver),
             errors: order.errors,
             id: order.id,
-            latitud: order.latitude,
+            latitude: order.latitude,
             longitude: order.longitude,
             notes: order.notes,
         };
         await onUpdateDelivery(updatedOrder, updatedOrder.id, "Entregada");
-        setOrderStatus('Entregada');
 
         setLoadingCompleteDelivery(false);
+        setIsCompletedModalOpen(false);
     };
 
     const handleRescheduleDeliveryClick = async () => {
@@ -164,6 +168,7 @@ export default function DeliveryCard(props) {
             client_name: order.client_name,
             delivery_address: order.delivery_address,
             delivery_date: order.delivery_date,
+            original_date: order.delivery_date,
             delivery_time: order.delivery_time,
             phone_number: order.phone_number,
             total_amount: parseFloat(order.total_amount),
@@ -173,20 +178,21 @@ export default function DeliveryCard(props) {
             order: "Ver detalles",
             cooler: cooler,
             created_at: order.created_at,
-            created_by: order.creaed_by,
+            created_by: order.created_by,
             delivery_sequence: Number(order.delivery_sequence),
             driver: Number(order.driver),
             errors: order.errors,
             id: order.id,
-            latitud: order.latitude,
+            latitude: order.latitude,
             longitude: order.longitude,
-            notes: rescheduleReason,
+            notes: rescheduleReasonRef.current
         };
-
+        closeRescheduleModal()
         await onUpdateDelivery(updatedOrder, updatedOrder.id, "Reprogramada");
-        setOrderStatus('Reprogramada');
+    };
 
-        setLoadingRescheduleDelivery(false);
+    const closeRescheduleModal = () => {
+        setIsRescheduleModalOpen(false);
     };
 
     const CompletedModal = () => {
@@ -222,36 +228,46 @@ export default function DeliveryCard(props) {
         );
     };
 
+    const handleOnChange = (e) => {
+        rescheduleReasonRef.current = e.target.value;
+    }
+
     const RescheduleModal = () => {
         return (
             <Modal
                 isOpen={isRescheduleModalOpen}
-                onClose={() => setIsRescheduleModalOpen(false)}
+                onClose={closeRescheduleModal}
             >
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Confirmar acción</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Textarea
-                            placeholder="Motivo de la reprogramación"
-                            value={rescheduleReason}
-                            onChange={(e) => setRescheduleReason(e.target.value)}
-                        />
+                        <FormControl>
+                            <FormLabel>Motivo de la reprogramación</FormLabel>
+                            <Textarea
+
+                                placeholder="Motivo de la reprogramación"
+
+                                onChange={handleOnChange}
+                                type="text"
+                                id="reschedule-reason"
+                                name="reschedule-reason"
+                            />
+                        </FormControl>
                     </ModalBody>
                     <ModalFooter>
                         <Button
                             variant="brand"
                             mr={3}
                             onClick={() => {
-                                setIsRescheduleModalOpen(false);
                                 handleRescheduleDeliveryClick();
                             }}
-                            isDisabled={!rescheduleReason.trim()}
+
                         >
                             Reprogramar
                         </Button>
-                        <Button variant="ghost" onClick={() => setIsRescheduleModalOpen(false)}>
+                        <Button variant="ghost" onClick={closeRescheduleModal}>
                             Cancelar
                         </Button>
                     </ModalFooter>
@@ -263,7 +279,6 @@ export default function DeliveryCard(props) {
 
 
     const screenSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'lg' });
-    const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY
     const handleClickMarker = () => {
         const lat = order.latitude;
         const long = order.longitude;
@@ -403,7 +418,7 @@ export default function DeliveryCard(props) {
                         fontSize='m'
                         mt={{ base: "10px", "xl": "20px" }}
                     >
-                        Orden en hielera: {coolerInfo || cooler}
+                        Orden en hielera: {cooler || ""}
                     </Text>
                 )}
                 {orderStatus === 'Programada' && (
@@ -454,7 +469,7 @@ export default function DeliveryCard(props) {
                 )}
             </Flex>
             <CompletedModal />
-    <RescheduleModal />
+            <RescheduleModal />
         </Card>
     );
 }

@@ -1,5 +1,5 @@
-import { Box, Grid, Spinner, Text } from "@chakra-ui/react";
-
+import { Alert, AlertIcon, Box, Grid, Spinner, Text } from "@chakra-ui/react";
+import { motion, AnimatePresence } from 'framer-motion';
 import DeliveryCard from "views/driver/deliveries/components/Delivery";
 import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 
@@ -23,13 +23,13 @@ const getDriverValue = () => {
 export default function DeliveriesView() {
   const [tableDataOrders, setTableDataOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [coolerInfo, setCoolerInfo] = useState({});
   const jwtToken = getAccessToken();
   const history = useHistory();
+  const [alertMessage, setAlertMessage] = useState(null);
+  const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
 
   useEffect(() => {
 
-    const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
     const dateParam = getDateAsQueryParam()
     setLoading(true);
     const queryParams = {
@@ -49,7 +49,7 @@ export default function DeliveriesView() {
         const filteredData = responseData.filter(order =>
           (order.status === "Programada" || order.status === "En ruta") &&
           order.delivery_date === dateParam &&
-          order.driver === getDriverValue()
+          Number(order.driver) === Number(getDriverValue())
         );
 
         // Sort by delivery_time first
@@ -86,36 +86,39 @@ export default function DeliveriesView() {
     }
 
     try {
+      const queryParams = {
+        id: order.id,
+        delivery_date: order.delivery_date,
+      };
 
-      const response = await axios.put(process.env.REACT_APP_ORDERS_BASE_URL, order, {
+      const response = await axios.put(ordersURL, order, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`
         },
+        params: queryParams
       });
 
       if (response.status === 200) {
         let updatedOrders;
         if (statusText === 'Entregada' || statusText === 'Reprogramada') {
           updatedOrders = tableDataOrders.filter((order) => order.id !== orderId);
-          const { [orderId]: removedCooler, ...restCoolerInfo } = coolerInfo;
-          setCoolerInfo(restCoolerInfo);
         } else {
-          updatedOrders = tableDataOrders.map((order) =>
-            order.id === orderId ? { ...order, status: statusText } : order
-          );
-          setCoolerInfo((prevCoolerInfo) => ({
-            ...prevCoolerInfo,
-            [orderId]: order.cooler,
-          }));
-        }
+          updatedOrders = tableDataOrders.map((existingOrder) =>
+          existingOrder.id === orderId ? order : existingOrder
 
+          );
+        }
         setTableDataOrders(updatedOrders);
+        setAlertMessage({ type: 'success', text: 'Orden actualizada en la base de datos' });
+        setTimeout(() => setAlertMessage(null), 3000);
       } else {
         console.error('Error updating order:', response.statusText);
       }
     } catch (error) {
       console.error('Error updating order:', error);
+      setAlertMessage({ type: 'error', text: 'Error al actualizar la orden. Intenta de nuevo.' });
+      setTimeout(() => setAlertMessage(null), 3000);
     } finally {
 
     }
@@ -143,23 +146,50 @@ export default function DeliveriesView() {
   }
 
   return (
+    <>
+    {alertMessage && (
+      <motion.div
+        initial={{ x: '100%', right: '8px', top: '20%' }}
+        animate={{ x: 0, right: '8px', top: '20%' }}
+        exit={{ x: '100%' }}
+        transition={{ duration: 0.5 }}
+        style={{
+          position: 'fixed',
+          zIndex: 1000,
+        }}
+      >
+        <Alert status={alertMessage.type} mb={4}>
+          <AlertIcon />
+          {alertMessage.text}
+        </Alert>
+      </motion.div>
+    )}
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      <Grid>
-        {tableDataOrders.map((order, index) => (
-          <DeliveryCard
-            key={index}
-            gridArea={`${index + 1} / 1 / ${index + 2} / 2`}
-            minH={{ base: "auto", lg: "420px", "2xl": "365px" }}
-            pe='20px'
-            pb={{ base: "25px", lg: "20px" }}
-            mx="auto"
-            maxW={{ base: "sm", lg: "2xl", "2xl": "2xl" }}
-            order={order}
-            coolerInfo={coolerInfo[order.id]}
-            onUpdateDelivery={handleUpdateDelivery}
-          />
-        ))}
-      </Grid>
+    <Grid>
+          <AnimatePresence>
+            {tableDataOrders.map((order, index) => (
+              <motion.div
+                key={order.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <DeliveryCard
+                  gridArea={`${index + 1} / 1 / ${index + 2} / 2`}
+                  minH={{ base: "auto", lg: "420px", "2xl": "365px" }}
+                  pe="20px"
+                  pb={{ base: "25px", lg: "20px" }}
+                  mx="auto"
+                  maxW={{ base: "sm", lg: "2xl", "2xl": "2xl" }}
+                  order={order}
+                  onUpdateDelivery={handleUpdateDelivery}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </Grid>
     </Box>
+    </>
   );
 }

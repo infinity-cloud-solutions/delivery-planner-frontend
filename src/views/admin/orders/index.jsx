@@ -190,9 +190,9 @@ export default function OrdersView() {
       newOrder.errors = response.data.errors;
       newOrder.driver = response.data.driver;
       newOrder.delivery_sequence = null;
-      newOrder.item.latitude = response.data.latitude
-      newOrder.item.longitude = response.data.longitude
-      newOrder.item.id = response.data.id
+      newOrder.latitude = response.data.latitude
+      newOrder.longitude = response.data.longitude
+      newOrder.id = response.data.id
       newOrder.order = "Ver detalles";
 
       if (newOrder.delivery_date === queryParamDateValue) {
