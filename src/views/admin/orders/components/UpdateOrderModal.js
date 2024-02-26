@@ -51,6 +51,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [isFormValid, setIsFormValid] = useState(false);
 
   const [deliveryDate, setDeliveryDate] = useState(rowData.row.delivery_date || '');
+  const [deliveryNotes, setDeliveryNotes] = useState(rowData.row.notes || '');
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   let isUserAdmin = false;
@@ -103,6 +104,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         total_amount: parseFloat(totalAmountDisplay.replace(/[^\d.]/g, '')),
         cart_items: cartItems,
         payment_method: paymentMethod,
+        notes: deliveryNotes,
         status: "Creada",
         order: "Ver detalles",
         original_date: rowData.row.delivery_date
@@ -122,6 +124,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     setPhoneNumber('');
     setTotalAmountDisplay('');
     setPaymentMethod('');
+    setDeliveryNotes('');
     onClose();
 
   };
@@ -146,6 +149,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   };
 
   useEffect(() => {
+    validateDate(deliveryDate);
     calculateTotalAmount();
     checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
   }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude]);
@@ -157,7 +161,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     const isPhoneNumberValid = phoneNumber.trim() !== '';
     const isLatitudeValid = deliveryLatitude.trim() !== '';
     const isLongitudeValid = deliveryLongitude.trim() !== '';
-    const isDeliveryDateValid = !dateError;
+    const isDeliveryDateValid = !dateError && dateError !== null && dateError !== undefined;
 
     setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isLatitudeValid && isLongitudeValid);
   };
@@ -254,9 +258,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     }
   };
 
-  const handleDateChange = (selectedDate) => {
-    setDeliveryDate(selectedDate);
-
+  const validateDate = (selectedDate) => {
     const currentDate = new Date();
     const selectedDateObj = new Date(selectedDate + 'T00:00:00');
     selectedDateObj.setMinutes(selectedDateObj.getTimezoneOffset());
@@ -293,7 +295,11 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     checkFormValidity();
   };
 
+  const handleDateChange = (selectedDate) => {
+    setDeliveryDate(selectedDate);
+    validateDate(selectedDate);
 
+  };
 
   const ConfirmationModal = () => {
     return (
@@ -341,6 +347,19 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               <Input type="text" color={textColor} borderColor={borderColor}
                 value={clientName} onChange={(e) => setClientName(e.target.value)} />
             </FormControl>
+
+            {deliveryNotes !== null && rowData.row.status === "Reprogramada" && (
+              <FormControl isRequired>
+                <FormLabel>Notas</FormLabel>
+                <Textarea
+                  type="text"
+                  color={textColor}
+                  borderColor={borderColor}
+                  value={deliveryNotes}
+                  onChange={(e) => setDeliveryNotes(e.target.value)}
+                />
+              </FormControl>
+            )}
 
             <FormControl isRequired>
               <FormLabel>Direccion</FormLabel>

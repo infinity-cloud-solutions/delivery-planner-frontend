@@ -152,7 +152,7 @@ export default function DeliveriesView() {
         initial={{ x: '100%', right: '8px', top: '20%' }}
         animate={{ x: 0, right: '8px', top: '20%' }}
         exit={{ x: '100%' }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 1 }}
         style={{
           position: 'fixed',
           zIndex: 1000,
