@@ -69,7 +69,7 @@ function Products(props) {
     initialState
   } =
     tableInstance;
-    initialState.pageSize = 10;
+  initialState.pageSize = 10;
 
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
@@ -83,7 +83,7 @@ function Products(props) {
   };
 
   const openUpdateModal = (row, rowIndex) => {
-    if (isUserAdmin){
+    if (isUserAdmin) {
       setSelectedRowData({ row: row, index: rowIndex });
       setIsUpdateModalOpen(true);
     }
@@ -119,9 +119,9 @@ function Products(props) {
             Catálogo
           </Text>
           {isUserAdmin && (
-          <Button variant="action" onClick={openCreateModal}>
-            Crear
-          </Button>
+            <Button variant="action" onClick={openCreateModal}>
+              Crear
+            </Button>
           )}
         </Flex>
         {data.length === 0 ? (
@@ -230,22 +230,24 @@ function Products(props) {
           onCreate={onProductCreatedCallback}
         />
       )}
-        <Flex direction="column" align="center" mt="2" mb="2">
-          <ButtonGroup>
-            <Button variant="outline" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} onClick={() => previousPage()} disabled={!canPreviousPage}>
-              Anterior
-            </Button>
+      <Flex direction="column" align="center" mt="2" mb="2">
+        <ButtonGroup>
+          <Button variant="outline" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} onClick={() => previousPage()} disabled={!canPreviousPage}>
+            Anterior
+          </Button>
+          {pageOptions.length > 0 && (
             <Text mt="auto" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} pb="2">
               Página{' '}
               <strong>
                 {pageIndex + 1} de {pageOptions.length}
               </strong>{' '}
             </Text>
-            <Button variant="outline" onClick={() => nextPage()} disabled={!canNextPage}>
-              Siguiente
-            </Button>
-          </ButtonGroup>
-        </Flex>
+          )}
+          <Button variant="outline" onClick={() => nextPage()} disabled={!canNextPage}>
+            Siguiente
+          </Button>
+        </ButtonGroup>
+      </Flex>
     </>
   );
 }

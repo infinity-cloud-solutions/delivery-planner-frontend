@@ -1,11 +1,7 @@
 // Chakra Imports
 import {
 	Avatar,
-	Button,
 	Flex,
-	Icon,
-	Image,
-	Link,
 	Menu,
 	MenuButton,
 	MenuItem,
@@ -13,7 +9,6 @@ import {
 	Text,
 	useColorModeValue
 } from '@chakra-ui/react';
-// Custom Components
 
 import { useHistory } from "react-router-dom";
 
@@ -30,7 +25,9 @@ export default function DriverHeaderLinks(props) {
 	const navbarIcon = useColorModeValue('gray.400', 'white');
 	let menuBg = useColorModeValue('white', 'navy.800');
 	const textColor = useColorModeValue('secondaryGray.900', 'white');
+
 	const borderColor = useColorModeValue('#E6ECFA', 'rgba(135, 140, 189, 0.3)');
+
 	const shadow = useColorModeValue(
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.18)',
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
@@ -39,17 +36,15 @@ export default function DriverHeaderLinks(props) {
 	const history = useHistory();
 	const handleLogout = () => {
 		logout()
-		localStorage.removeItem('accessToken');
-		localStorage.removeItem('idToken');
-		localStorage.removeItem('refreshToken');
-
 		history.push('/auth');
 	};
+
 	const firstName = getFullNameFromLocalStorage().split(' ');
 
 	return (
 		<Flex
 			w={{ sm: '100%', md: 'auto' }}
+			justifyContent={{ base: 'space-between', md: 'center' }}
 			alignItems="center"
 			flexDirection="row"
 			bg={menuBg}
@@ -58,9 +53,12 @@ export default function DriverHeaderLinks(props) {
 			borderRadius="30px"
 			boxShadow={shadow}>
 
+			<Flex>
 			<SidebarResponsive routes={routes} />
 
+			</Flex>
 
+			<Flex alignItems="center">
 			<ThemeEditor navbarIcon={navbarIcon} />
 
 			<Menu>
@@ -103,6 +101,8 @@ export default function DriverHeaderLinks(props) {
 					</Flex>
 				</MenuList>
 			</Menu>
+			</Flex>
+
 		</Flex>
 	);
 }
