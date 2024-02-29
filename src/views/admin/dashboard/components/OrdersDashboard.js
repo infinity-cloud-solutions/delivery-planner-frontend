@@ -61,7 +61,7 @@ export default function ColumnsTable(props) {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
   const seeAllOrdersForToday = () => {
-    if (!validateJWT) {
+    if (validateJWT) {
       history.push('/admin/orders');
     }
   };

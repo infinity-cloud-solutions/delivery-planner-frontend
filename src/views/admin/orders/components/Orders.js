@@ -67,7 +67,7 @@ function Orders(props) {
       history.push('/auth');
     }
     const queryParams = {
-      date:formattedDate,
+      date: formattedDate,
     };
 
     setIsScheduling(true);
@@ -473,12 +473,14 @@ function Orders(props) {
             <Button variant="outline" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} onClick={() => previousPage()} disabled={!canPreviousPage}>
               Anterior
             </Button>
-            <Text mt="auto" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} pb="2">
-              Página{' '}
-              <strong>
-                {pageIndex + 1} de {pageOptions.length}
-              </strong>{' '}
-            </Text>
+            {pageOptions.length > 0 && (
+              <Text mt="auto" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} pb="2">
+                Página{' '}
+                <strong>
+                  {pageIndex + 1} de {pageOptions.length}
+                </strong>{' '}
+              </Text>
+            )}
             <Button variant="outline" onClick={() => nextPage()} disabled={!canNextPage}>
               Siguiente
             </Button>
