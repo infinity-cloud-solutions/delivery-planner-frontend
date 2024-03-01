@@ -26,7 +26,7 @@ export default function DeliveriesView() {
   const jwtToken = getAccessToken();
   const history = useHistory();
   const [alertMessage, setAlertMessage] = useState(null);
-  const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
+  const ordersURL = "https://webhook.site/60bd6e7b-f8cc-4470-b5d1-bdfcf9a23200";
 
   useEffect(() => {
 
@@ -44,7 +44,13 @@ export default function DeliveriesView() {
       params: queryParams
     })
       .then(response => {
-        const responseData = response.data;
+        const responseData = response.data.map(order => {
+          const paymentMethod = order.payment_method.toUpperCase() === "PAID" ? "Pagada" : order.payment_method;
+          return {
+            ...order,
+            payment_method: paymentMethod
+          };
+        });
 
         const filteredData = responseData.filter(order =>
           (order.status === "Programada" || order.status === "En ruta") &&

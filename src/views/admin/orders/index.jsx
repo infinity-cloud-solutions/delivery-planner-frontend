@@ -17,7 +17,7 @@ import {
 import {
   MdNoAccounts
 } from "react-icons/md";
-import { Link as RouterLink, useHistory } from "react-router-dom";
+import { Link as RouterLink, useHistory, useLocation } from "react-router-dom";
 
 
 import Orders from "views/admin/orders/components/Orders";
@@ -35,6 +35,7 @@ export default function OrdersView() {
   const [selectedDate, setSelectedDate] = useState(null);
   const jwtToken = getAccessToken();
   const history = useHistory();
+  const location = useLocation();
   const queryParamDateValue = useQueryParam('date');
 
   // Chakra Color Mode
@@ -50,47 +51,9 @@ export default function OrdersView() {
     if (!validateJWT) {
       history.push('/auth');
     }
-
-    const queryParams = {
-      date: getDateAsQueryParam(),
-    };
-    setLoading(true);
-
-    axios.get(ordersURL, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${jwtToken}`
-      },
-      params: queryParams
-    })
-      .then(response => {
-        const responseData = response.data;
-
-        if (responseData.length === 0) {
-          setTableDataOrders([]);
-        } else {
-          const updatedResponseData = responseData.map(obj => {
-            return { ...obj, order: "Ver detalles" };
-          });
-          updatedResponseData.sort((a, b) => {
-            const statusOrder = {
-              "Error": 1,
-              "Reprogramada": 2,
-            };
-            const statusA = a.status || '';
-            const statusB = b.status || '';
-            const orderA = statusOrder[statusA] || 99; // set a high order if status not found
-            const orderB = statusOrder[statusB] || 99;
-            return orderA - orderB;
-          });
-          setTableDataOrders(updatedResponseData);
-        }
-      })
-      .catch(error => {
-        console.error('API error:', error);
-      }).finally(() => {
-        setLoading(false);
-      });
+    if (!queryParamDateValue) {
+      fetchOrdersData(getDateAsQueryParam());
+    }
 
     axios.get(productsURL, {
       headers: {
@@ -119,7 +82,7 @@ export default function OrdersView() {
         setLoading(false);
       });
 
-  }, [jwtToken]);
+  }, [jwtToken, location]);
 
   const handleDateChange = (date) => {
     if (!validateJWT) {
@@ -127,11 +90,18 @@ export default function OrdersView() {
     }
 
     setSelectedDate(date.value);
+    const newUrl = `/admin/orders?date=${date.value}`;
+    history.push(newUrl)
+
+    fetchOrdersData(date.value);
+  };
+
+  const fetchOrdersData = (dateValue) => {
+    const queryParams = {
+      date: dateValue,
+    };
 
     setLoading(true);
-    const queryParams = {
-      date: date.value,
-    };
 
     axios.get(ordersURL, {
       headers: {
@@ -147,8 +117,14 @@ export default function OrdersView() {
           setTableDataOrders([]);
         } else {
           const updatedResponseData = responseData.map(obj => {
-            return { ...obj, order: "Ver detalles" };
+            const updatedRecord = { ...obj };
+            updatedRecord.order = "Ver detalles";
+            if (updatedRecord.payment_method.toUpperCase() === "PAID") {
+              updatedRecord.payment_method = "Pagada";
+            }
+            return updatedRecord;
           });
+
           updatedResponseData.sort((a, b) => {
             const statusOrder = {
               "Error": 1,
@@ -165,10 +141,12 @@ export default function OrdersView() {
       })
       .catch(error => {
         console.error('API error:', error);
-      }).finally(() => {
+      })
+      .finally(() => {
         setLoading(false);
       });
   };
+
 
   const handleOrderCreated = async (newOrder) => {
 

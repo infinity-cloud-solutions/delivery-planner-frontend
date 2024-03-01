@@ -37,7 +37,7 @@ import Menu from "components/menu/MainMenu";
 import UpdateOrderModal from "./UpdateOrderModal";
 import CreateOrderModal from "./CreateOrderModal";
 import ConsolidatedModal from "./ConsolidatedModal";
-import { useQueryParam } from "utils/Utility"
+import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 import { getAccessToken, validateJWT } from 'security.js';
 import { useHistory } from "react-router-dom";
 
@@ -184,6 +184,21 @@ function Orders(props) {
     displayText = 'Pedidos para hoy';
   }
 
+  const isToday = () => {
+
+    // if there is no dateQueryParam, consider it as today
+    if (!dateQueryParam) {
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        const currentDateValue = getDateAsQueryParam();
+        return formattedDate === currentDateValue;
+    }
+    // if there is a dateQueryParam, check if it matches the current date
+    else {
+        const currentDateValue = getDateAsQueryParam();
+        return dateQueryParam === currentDateValue;
+    }
+};
 
   return (
     <>
@@ -284,10 +299,7 @@ function Orders(props) {
                       {row.original.cart_items.map((item, itemIndex) => (
                         <Tr key={itemIndex}>
                           <Td>{item.product}</Td>
-                          <Td>{item.price.toLocaleString('es-MX', {
-                            style: 'currency',
-                            currency: 'MXN',
-                          })}</Td>
+                          <Td>{item.quantity}</Td>
                         </Tr>
                       ))}
                     </Tbody>
@@ -486,16 +498,19 @@ function Orders(props) {
             </Button>
           </ButtonGroup>
         </Flex>
-        <Button
-          variant="action"
-          mt="4"
-          onClick={handleScheduleButtonClick}
-          isDisabled={isScheduling || isButtonDisabled()}
-          isLoading={isScheduling}
-          spinnerPlacement="end"
-        >
-          Programar pedidos para ir a ruta
-        </Button>
+        {isToday() && (
+          <Button
+            variant="action"
+            mt="4"
+            onClick={handleScheduleButtonClick}
+            isDisabled={isScheduling || isButtonDisabled()}
+            isLoading={isScheduling}
+            spinnerPlacement="end"
+          >
+            Programar pedidos para ir a ruta
+          </Button>
+        )}
+
       </Card>
     </>
   );
