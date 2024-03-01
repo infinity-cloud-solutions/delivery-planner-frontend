@@ -83,7 +83,7 @@ export default function DeliveryCard(props) {
                 icon = FaMoneyBillTransfer;
                 colorScheme = 'blue';
                 break;
-            case 'Paid':
+            case 'Pagada':
                 icon = FaMoneyCheckDollar;
                 colorScheme = 'orange';
                 break;
@@ -276,8 +276,6 @@ export default function DeliveryCard(props) {
         );
     };
 
-
-
     const screenSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'lg' });
     const handleClickMarker = () => {
         const lat = order.latitude;
@@ -286,6 +284,11 @@ export default function DeliveryCard(props) {
 
         window.open(googleMapsUrl, '_blank');
     };
+
+    const formatter = new Intl.NumberFormat('es-MX', {
+        style: 'currency',
+        currency: 'MXN'
+    });
 
     return (
         <Card {...rest} mb='20px' align='center' p='20px'>
@@ -383,7 +386,7 @@ export default function DeliveryCard(props) {
                             textTransform='uppercase'
                             ml='2'
                         >
-                            Total: ${order.total_amount}
+                            Total: {formatter.format(order.total_amount)}
                         </Box>
                     </Box>
                 </Box>

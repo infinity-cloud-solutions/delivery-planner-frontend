@@ -61,9 +61,11 @@ export default function Dashboard() {
         const responseData = response.data.map(order => {
           const words = order.client_name.split(' ');
           const abbreviatedName = words.shift() + ' ' + words.map(word => word[0]).join('');
+          const paymentMethod = order.payment_method.toUpperCase() === "PAID" ? "Pagada" : order.payment_method;
           return {
             ...order,
-            name_display: abbreviatedName
+            name_display: abbreviatedName,
+            payment_method: paymentMethod
           };
         });
 
