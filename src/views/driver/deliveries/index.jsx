@@ -26,7 +26,7 @@ export default function DeliveriesView() {
   const jwtToken = getAccessToken();
   const history = useHistory();
   const [alertMessage, setAlertMessage] = useState(null);
-  const ordersURL = "https://webhook.site/60bd6e7b-f8cc-4470-b5d1-bdfcf9a23200";
+  const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
 
   useEffect(() => {
 
