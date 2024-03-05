@@ -39,8 +39,9 @@ export default function ProductView() {
 
   useEffect(() => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
 
     setLoading(true);
@@ -71,8 +72,9 @@ export default function ProductView() {
 
   const handleProductCreate = (product) => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
     setLoading(true);
 
@@ -98,8 +100,9 @@ export default function ProductView() {
 
   const handleProductUpdate = (product) => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
 
     setLoading(true);
@@ -128,8 +131,9 @@ export default function ProductView() {
 
   const handleProductDelete = (product) => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
 
     setLoading(true);

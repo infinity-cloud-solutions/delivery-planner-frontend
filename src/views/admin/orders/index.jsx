@@ -48,8 +48,9 @@ export default function OrdersView() {
 
   useEffect(() => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
     if (!queryParamDateValue) {
       fetchOrdersData(getDateAsQueryParam());
@@ -85,8 +86,9 @@ export default function OrdersView() {
   }, [jwtToken, location]);
 
   const handleDateChange = (date) => {
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
 
     setSelectedDate(date.value);
@@ -147,14 +149,13 @@ export default function OrdersView() {
       });
   };
 
-
   const handleOrderCreated = async (newOrder) => {
-
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
 
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await axios.post(ordersURL, newOrder, {
         headers: {
@@ -162,7 +163,6 @@ export default function OrdersView() {
           'Authorization': `Bearer ${jwtToken}`
         },
       });
-
 
       newOrder.status = response.data.status;
       newOrder.errors = response.data.errors;
@@ -185,6 +185,7 @@ export default function OrdersView() {
       console.error("Error creating order:", error);
       setAlertMessage({ type: 'error', text: 'Error al crear la orden. Intenta de nuevo.' });
       setTimeout(() => setAlertMessage(null), 3000);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -192,14 +193,15 @@ export default function OrdersView() {
 
   const handleOrderUpdated = async (updatedOrder) => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
     const queryParams = {
       id: updatedOrder.item.id,
       delivery_date: updatedOrder.item.delivery_date,
     };
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await axios.put(ordersURL, updatedOrder.item, {
         headers: {
@@ -233,7 +235,6 @@ export default function OrdersView() {
         });
       }
 
-
       setAlertMessage({ type: 'success', text: 'Orden actualizada en la base de datos' });
       setTimeout(() => setAlertMessage(null), 3000);
 
@@ -241,6 +242,7 @@ export default function OrdersView() {
       console.error("Error creating order:", error);
       setAlertMessage({ type: 'error', text: 'Error al actualizar la orden. Intenta de nuevo.' });
       setTimeout(() => setAlertMessage(null), 3000);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -248,14 +250,15 @@ export default function OrdersView() {
 
   const handleOrderDeleted = async (order) => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
     const queryParams = {
       id: order.item.id,
       delivery_date: order.item.delivery_date,
     };
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await axios.delete(ordersURL, {
         headers: {
@@ -278,6 +281,7 @@ export default function OrdersView() {
       console.error("Error creating order:", error);
       setAlertMessage({ type: 'error', text: 'Error al eliminar la orden. Intenta de nuevo.' });
       setTimeout(() => setAlertMessage(null), 3000);
+      throw error;
     } finally {
       setLoading(false);
     }

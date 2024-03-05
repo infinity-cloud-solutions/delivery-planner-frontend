@@ -87,8 +87,9 @@ export default function DeliveriesView() {
   }, []);
 
   const handleUpdateDelivery = async (order, orderId, statusText) => {
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
 
     try {

@@ -49,6 +49,10 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [dateError, setDateError] = useState(null);
   const [totalAmountDisplay, setTotalAmountDisplay] = useState(rowData.row.total_amount || "0.00");
   const [isFormValid, setIsFormValid] = useState(false);
+  const [loadingUpdateRequest, setLoadingUpdateRequest] = useState(false);
+  const [loadingDeleteRequest, setLoadingDeleteRequest] = useState(false);
+
+  const [apiError, setApiError] = useState(null);
 
   const [deliveryDate, setDeliveryDate] = useState(rowData.row.delivery_date || '');
   const [deliveryNotes, setDeliveryNotes] = useState(rowData.row.notes || '');
@@ -91,6 +95,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   };
 
   const updateOrder = async () => {
+    setLoadingUpdateRequest(true)
     const updOrder = {
       item: {
         id: rowData.row.id,
@@ -117,19 +122,31 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         item.price = Number(item.price) || 0;
       }
     });
-    onUpdate(updOrder);
-    setClientName('');
-    setDeliveryTime('');
-    setDeliveryAddress('');
-    setPhoneNumber('');
-    setTotalAmountDisplay('');
-    setPaymentMethod('');
-    setDeliveryNotes('');
-    onClose();
+    try {
+      await onUpdate(updOrder);
+      setClientName('');
+      setDeliveryTime('');
+      setDeliveryAddress('');
+      setPhoneNumber('');
+      setTotalAmountDisplay('');
+      setPaymentMethod('');
+      setDeliveryNotes('');
+      setLoadingUpdateRequest(false)
+      onClose();
+    } catch (error) {
+      const responseData = error.response.data;
+      const responseBody = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+      const errorMessage = responseBody.message;
 
+      if (errorMessage === "Order could not be processed due: No drivers available") {
+        setApiError("No hay repartidores disponible para esta fecha/hora. Intenta cambiar de día de entraga u horario.");
+      }
+      setLoadingUpdateRequest(false)
+    }
   };
 
   const deleteOrder = async () => {
+    setLoadingDeleteRequest(true)
     const order = {
       item: {
         id: rowData.row.id,
@@ -137,15 +154,20 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       },
       rowIndex: rowData.index
     };
-    onDelete(order);
-    setClientName('');
-    setDeliveryTime('');
-    setDeliveryAddress('');
-    setPhoneNumber('');
-    setTotalAmountDisplay('');
-    setPaymentMethod('');
-    onClose();
-
+    try {
+      await onDelete(order);
+      setClientName('');
+      setDeliveryTime('');
+      setDeliveryAddress('');
+      setPhoneNumber('');
+      setTotalAmountDisplay('');
+      setPaymentMethod('');
+      setDeliveryNotes('');
+      setLoadingDeleteRequest(false)
+      onClose();
+    } catch (error) {
+      setLoadingDeleteRequest(false)
+    }
   };
 
   useEffect(() => {
@@ -162,8 +184,9 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     const isLatitudeValid = deliveryLatitude.trim() !== '';
     const isLongitudeValid = deliveryLongitude.trim() !== '';
     const isDeliveryDateValid = !dateError && dateError == null && dateError !== undefined;
+    const isApiRequestValid = !apiError;
 
-    setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isLatitudeValid && isLongitudeValid);
+    setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isLatitudeValid && isLongitudeValid && isApiRequestValid);
   };
 
   const addCartItem = () => {
@@ -231,7 +254,6 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     });
   };
 
-
   const handleQuantityChange = (index, newQuantity) => {
     setCartItemsSelection((prevCartItemsSelection) => {
       const updatedCartItemsSelection = [...prevCartItemsSelection];
@@ -272,7 +294,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       selectedDateObj.toDateString() === currentDate.toDateString() &&
       currentTimestamp >= nineAMTimestamp.getTime()
     ) {
-      setDateError('No puede crear orden después de las 9 am');
+      setDateError('No se puede crear orden después de las 9 am');
       checkFormValidity();
       return;
     }
@@ -297,6 +319,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
 
   const handleDateChange = (selectedDate) => {
     setDeliveryDate(selectedDate);
+    setApiError(false)
     validateDate(selectedDate);
 
   };
@@ -399,12 +422,20 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                   {dateError}
                 </Text>
               )}
+              {apiError && (
+                <Text color="red.500" fontSize="sm" mt="2">
+                  {apiError}
+                </Text>
+              )}
             </FormControl>
 
             <FormControl isRequired>
               <FormLabel>Horario de entrega</FormLabel>
               <Select value={deliveryTime}
-                onChange={(e) => setDeliveryTime(e.target.value)}>
+                onChange={(e) => {
+                  setDeliveryTime(e.target.value);
+                  setApiError(false);
+                }}>
                 <option value="9 AM - 1 PM">9 AM - 1 PM</option>
                 <option value="1 PM - 5 PM">1 PM - 5 PM</option>
               </Select>
@@ -470,11 +501,25 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         <ModalFooter>
           <ButtonGroup spacing='6'>
             {isUserAdmin && (
-              <Button colorScheme='red' variant='outline' onClick={() => setIsConfirmationModalOpen(true)}>
+              <Button
+                colorScheme='red'
+                variant='outline'
+                onClick={() => setIsConfirmationModalOpen(true)}
+                isLoading={loadingDeleteRequest}
+                loadingText='Eliminando'
+                spinnerPlacement='end'
+              >
                 Eliminar
               </Button>
             )}
-            <Button variant="brand" onClick={updateOrder} isDisabled={!isFormValid}>
+            <Button
+              variant="brand"
+              onClick={updateOrder}
+              isLoading={loadingUpdateRequest}
+              loadingText='Actualizando'
+              spinnerPlacement='end'
+              isDisabled={!isFormValid}
+            >
               Actualizar
             </Button>
           </ButtonGroup>

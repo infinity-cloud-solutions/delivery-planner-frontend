@@ -63,8 +63,9 @@ function Orders(props) {
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
     const queryParams = {
       date: formattedDate,
@@ -122,8 +123,12 @@ function Orders(props) {
     setIsCreateModalOpen(false);
   };
 
-  const onOrderCreatedCallback = (newOrder) => {
-    onOrderCreated(newOrder);
+  const onOrderCreatedCallback = async (newOrder) => {
+    try {
+      await onOrderCreated(newOrder);
+    } catch (error) {
+      throw error;
+    }
   };
 
   const openConsolidatedModal = () => {
@@ -134,12 +139,20 @@ function Orders(props) {
     setIsConsolidatedModalOpen(false);
   };
 
-  const onOrderUpdatedCallback = (order) => {
-    onOrderUpdated(order);
+  const onOrderUpdatedCallback = async (order) => {
+    try {
+      await onOrderUpdated(order);
+    } catch (error) {
+      throw error;
+    }
   };
 
-  const onOrderDeletedCallback = (order) => {
-    onOrderDeleted(order);
+  const onOrderDeletedCallback = async (order) => {
+    try {
+      await onOrderDeleted(order);
+    } catch (error) {
+      throw error;
+    }
   };
 
   const tableInstance = useTable(
@@ -188,17 +201,17 @@ function Orders(props) {
 
     // if there is no dateQueryParam, consider it as today
     if (!dateQueryParam) {
-        const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0];
-        const currentDateValue = getDateAsQueryParam();
-        return formattedDate === currentDateValue;
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      const currentDateValue = getDateAsQueryParam();
+      return formattedDate === currentDateValue;
     }
     // if there is a dateQueryParam, check if it matches the current date
     else {
-        const currentDateValue = getDateAsQueryParam();
-        return dateQueryParam === currentDateValue;
+      const currentDateValue = getDateAsQueryParam();
+      return dateQueryParam === currentDateValue;
     }
-};
+  };
 
   return (
     <>
