@@ -41,8 +41,9 @@ export default function Dashboard() {
 
   useEffect(() => {
 
-    if (!validateJWT) {
+    if (!validateJWT()) {
       history.push('/auth');
+      return;
     }
 
     const queryParams = {

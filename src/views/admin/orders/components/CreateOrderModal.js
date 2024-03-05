@@ -35,6 +35,8 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     const [dateError, setDateError] = useState(null);
     const [totalAmountDisplay, setTotalAmountDisplay] = useState("0.00");
     const [isFormValid, setIsFormValid] = useState(false);
+    const [loadingRequest, setLoadingRequest] = useState(false);
+    const [apiError, setApiError] = useState(null);
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -80,8 +82,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         const isDeliveryAddressValid = deliveryAddress.trim() !== '';
         const isPhoneNumberValid = phoneNumber.trim() !== '';
         const isDeliveryDateValid = !dateError;
+        const isApiRequestValid = !apiError;
 
-        setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid);
+        setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isApiRequestValid);
     };
 
     const addCartItem = () => {
@@ -165,6 +168,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     };
 
     const createOrder = async () => {
+        setLoadingRequest(true)
 
         const newOrder = {
             client_name: clientName,
@@ -184,20 +188,29 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
                 item.price = Number(item.price) || 0;
             }
         });
-        onCreate(newOrder);
-        setClientName('');
-        setDeliveryTime('');
-        setDeliveryAddress('');
-        setPhoneNumber('');
-        setTotalAmountDisplay('');
-        setPaymentMethod('');
-        onClose();
+        try {
+            await onCreate(newOrder);
+            setClientName('');
+            setDeliveryTime('');
+            setDeliveryAddress('');
+            setPhoneNumber('');
+            setTotalAmountDisplay('');
+            setPaymentMethod('');
+            setLoadingRequest(false)
+            onClose();
+        } catch (error) {
+            const responseData = error.response.data;
+            const responseBody = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+            const errorMessage = responseBody.message;
 
+            if (errorMessage === "Order could not be processed due: No drivers available") {
+                setApiError("No hay repartidores disponible para esta fecha/hora. Intenta cambiar de día de entrega u horario.");
+            }
+            setLoadingRequest(false)
+        }
     };
 
-    const handleDateChange = (selectedDate) => {
-        setDeliveryDate(selectedDate);
-
+    const validateDate = (selectedDate) => {
         const currentDate = new Date();
         const selectedDateObj = new Date(selectedDate + 'T00:00:00');
         selectedDateObj.setMinutes(selectedDateObj.getTimezoneOffset());
@@ -206,12 +219,12 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         const nineAMTimestamp = new Date(currentDate);
         nineAMTimestamp.setHours(9, 0, 0, 0);
 
-        // scenario 1:date is today
+        // scenario 1: date is today
         if (
             selectedDateObj.toDateString() === currentDate.toDateString() &&
             currentTimestamp >= nineAMTimestamp.getTime()
         ) {
-            setDateError('No puede crear orden después de las 9 am');
+            setDateError('No se puede crear orden después de las 9 am');
             checkFormValidity();
             return;
         }
@@ -223,7 +236,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
             return;
         }
 
-        // scenario 3: Order is on sunday
+        // scenario 3: order is on sunday
         if (selectedDateObj.getDay() === 0) {
             setDateError('No hay entregas los domingos');
             checkFormValidity();
@@ -234,7 +247,11 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         checkFormValidity();
     };
 
-
+    const handleDateChange = (selectedDate) => {
+        setDeliveryDate(selectedDate);
+        setApiError(false)
+        validateDate(selectedDate);
+    };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} bg={bgColor}>
@@ -276,12 +293,21 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
                                     {dateError}
                                 </Text>
                             )}
+                            {apiError && (
+                                <Text color="red.500" fontSize="sm" mt="2">
+                                    {apiError}
+                                </Text>
+                            )}
                         </FormControl>
 
                         <FormControl isRequired>
                             <FormLabel>Horario de entrega</FormLabel>
                             <Select placeholder="Selecciona un horario" value={deliveryTime}
-                                onChange={(e) => setDeliveryTime(e.target.value)}>
+                                onChange={(e) => {
+                                    setDeliveryTime(e.target.value);
+                                    setApiError(false);
+                                }}
+                            >
                                 <option value="9 AM - 1 PM">9 AM - 1 PM</option>
                                 <option value="1 PM - 5 PM">1 PM - 5 PM</option>
                             </Select>
@@ -352,7 +378,10 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="brand" onClick={createOrder} isDisabled={!isFormValid}>Crear</Button>
+                    <Button variant="brand" onClick={createOrder} isLoading={loadingRequest}
+                        loadingText='Guardando'
+                        spinnerPlacement='end'
+                        isDisabled={!isFormValid}>Guardar orden</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

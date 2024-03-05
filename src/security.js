@@ -26,19 +26,18 @@ export function getAccessToken() {
 }
 
 export function validateJWT() {
-    const token = localStorage.getItem('accessToken')
+    const token = localStorage.getItem('idToken')
     try {
         const decodedToken = jwt_decode(token, { complete: true });
 
         // change for prod
         const expectedIssuer = process.env.REACT_APP_COGNITO_ISS;
         if (decodedToken.payload.iss !== expectedIssuer) {
-            throw new Error('Invalid issuer');
+            throw new Error('Token no concuerda con el token de la base de datos');
         }
         if (new Date(decodedToken.payload.exp * 1000) < new Date()) {
-            throw new Error('Token has expired');
+            throw new Error('Tu sesión ha expirado');
         }
-
         return true;
     } catch (error) {
         console.error('JWT validation error:', error.message);
