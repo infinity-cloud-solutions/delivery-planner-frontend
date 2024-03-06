@@ -45,7 +45,7 @@ import { useHistory } from "react-router-dom";
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onDateSelect, productsAvailable, listOfConsolidatedProducts } = props;
+  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onOrdersScheduled, onDateSelect, productsAvailable, listOfConsolidatedProducts } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
@@ -59,38 +59,14 @@ function Orders(props) {
     return data.length === 0 || data.some(row => row.status !== 'Creada' || row.errors.length > 0);
   };
 
-  const handleScheduleButtonClick = async () => {
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-
-    if (!validateJWT()) {
-      history.push('/auth');
-      return;
-    }
-    const queryParams = {
-      date: formattedDate,
-    };
-
+  const onOrderScheduledCallback = async (newOrder) => {
     setIsScheduling(true);
-
     try {
-      const response = await axios.post(process.env.REACT_APP_SCHEDULE_ORDERS_BASE_URL, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-        params: queryParams
-      });
-      console.log('Scheduled successfully:', response.data);
-      setAlertMessage({ type: 'success', text: 'Las ordenes fueron programadas con éxito' });
-      setTimeout(() => setAlertMessage(null), 3000);
+      await onOrdersScheduled(newOrder);
     } catch (error) {
-      console.error('Error scheduling:', error);
-      setAlertMessage({ type: 'error', text: 'Error al programar ordenes. Intenta de nuevo.' });
-      setTimeout(() => setAlertMessage(null), 3000);
-    } finally {
-      setIsScheduling(false);
+    setIsScheduling(false);
     }
+    setIsScheduling(false);
   };
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -202,7 +178,11 @@ function Orders(props) {
     // if there is no dateQueryParam, consider it as today
     if (!dateQueryParam) {
       const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0];
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+
+      const formattedDate = `${year}-${month}-${day}`;
       const currentDateValue = getDateAsQueryParam();
       return formattedDate === currentDateValue;
     }
@@ -515,7 +495,7 @@ function Orders(props) {
           <Button
             variant="action"
             mt="4"
-            onClick={handleScheduleButtonClick}
+            onClick={onOrderScheduledCallback}
             isDisabled={isScheduling || isButtonDisabled()}
             isLoading={isScheduling}
             spinnerPlacement="end"

@@ -139,7 +139,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       const errorMessage = responseBody.message;
 
       if (errorMessage === "Order could not be processed due: No drivers available") {
-        setApiError("No hay repartidores disponible para esta fecha/hora. Intenta cambiar de día de entraga u horario.");
+        setApiError("No hay repartidores disponible para esta fecha/hora. Intenta cambiar de día de entrega u horario.");
       }
       setLoadingUpdateRequest(false)
     }
