@@ -87,8 +87,8 @@ function Orders(props) {
   };
 
   const closeUpdateModal = () => {
-    setSelectedRowData(null);
     setIsUpdateModalOpen(false);
+    setSelectedRowData(null);
   };
 
   const openCreateModal = () => {
