@@ -59,10 +59,10 @@ function Orders(props) {
     return data.length === 0 || data.some(row => row.status !== 'Creada' || row.errors.length > 0);
   };
 
-  const onOrderScheduledCallback = async (newOrder) => {
+  const onOrderScheduledCallback = async () => {
     setIsScheduling(true);
     try {
-      await onOrdersScheduled(newOrder);
+      await onOrdersScheduled();
     } catch (error) {
     setIsScheduling(false);
     }
