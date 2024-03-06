@@ -287,6 +287,48 @@ export default function OrdersView() {
     }
   }
 
+  const handleScheduleOrders = async () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
+
+    if (!validateJWT()) {
+      history.push('/auth');
+      return;
+    }
+    const body = {
+      date: formattedDate,
+    };
+
+    try {
+      const response = await axios.post(process.env.REACT_APP_SCHEDULE_ORDERS_BASE_URL, body, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+
+      });
+      console.log('Scheduled successfully:', response.data);
+      setTableDataOrders(prevTableData => {
+        const updatedTableData = prevTableData.map(order => ({
+          ...order,
+          status: "Programada"
+        }));
+        return updatedTableData;
+      });
+      setAlertMessage({ type: 'success', text: 'Las ordenes fueron programadas con éxito' });
+      setTimeout(() => setAlertMessage(null), 3000);
+    } catch (error) {
+      console.error('Error scheduling:', error);
+      setAlertMessage({ type: 'error', text: 'Error al programar ordenes. Intenta de nuevo.' });
+      setTimeout(() => setAlertMessage(null), 3000);
+    } finally {
+    }
+  };
+
   const consolidateProducts = () => {
     const consolidatedProducts = [];
 
@@ -370,6 +412,7 @@ export default function OrdersView() {
               onOrderCreated={handleOrderCreated}
               onOrderUpdated={handleOrderUpdated}
               onOrderDeleted={handleOrderDeleted}
+              onOrdersScheduled={handleScheduleOrders}
               onDateSelect={handleDateChange}
               productsAvailable={products}
               listOfConsolidatedProducts={consolidatedProducts}
