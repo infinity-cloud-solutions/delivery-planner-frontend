@@ -174,7 +174,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     validateDate(deliveryDate);
     calculateTotalAmount();
     checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
-  }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude]);
+  }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude, dateError, apiError]);
 
   const checkFormValidity = () => {
     const isCartItemsValid = cartItems.length >= 1;
@@ -183,7 +183,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     const isPhoneNumberValid = phoneNumber.trim() !== '';
     const isLatitudeValid = deliveryLatitude.trim() !== '';
     const isLongitudeValid = deliveryLongitude.trim() !== '';
-    const isDeliveryDateValid = !dateError && dateError == null && dateError !== undefined;
+    const isDeliveryDateValid = !dateError;
     const isApiRequestValid = !apiError;
 
     setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isLatitudeValid && isLongitudeValid && isApiRequestValid);
