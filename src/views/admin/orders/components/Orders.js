@@ -5,6 +5,8 @@ import {
   Button,
   ButtonGroup,
   Flex,
+  FormControl,
+  FormLabel,
   Table,
   Icon,
   Tbody,
@@ -14,6 +16,11 @@ import {
   Thead,
   Tooltip,
   Tr,
+  Select,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
   useColorModeValue,
 } from "@chakra-ui/react";
 import axios from 'axios';
@@ -42,7 +49,7 @@ import { getAccessToken, validateJWT } from 'security.js';
 import { useHistory } from "react-router-dom";
 
 // Assets
-import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
+import { MdCheckCircle, MdCancel, MdOutlineError, MdClear, MdAdd } from "react-icons/md";
 
 function Orders(props) {
   const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onOrdersScheduled, onDateSelect, productsAvailable, listOfConsolidatedProducts } = props;
@@ -51,6 +58,7 @@ function Orders(props) {
   const data = useMemo(() => tableData, [tableData]);
   const [isScheduling, setIsScheduling] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+  const [selectedAvailableDrivers, setSelectedAvailableDrivers] = useState([1, 2])
   const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
   const jwtToken = getAccessToken();
   const history = useHistory();
@@ -62,11 +70,12 @@ function Orders(props) {
   const onOrderScheduledCallback = async () => {
     setIsScheduling(true);
     try {
-      await onOrdersScheduled();
+      await onOrdersScheduled(selectedAvailableDrivers);
     } catch (error) {
-    setIsScheduling(false);
+      setIsScheduling(false);
     }
     setIsScheduling(false);
+    setSelectedAvailableDrivers([1, 2])
   };
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -128,6 +137,15 @@ function Orders(props) {
       await onOrderDeleted(order);
     } catch (error) {
       throw error;
+    }
+  };
+
+  const handleAvailableDriversChange = (event) => {
+    if (event.target.value) {
+      setSelectedAvailableDrivers([Number(event.target.value)]);
+    }
+    else {
+      setSelectedAvailableDrivers([1, 2]);
     }
   };
 
@@ -491,6 +509,36 @@ function Orders(props) {
             </Button>
           </ButtonGroup>
         </Flex>
+        <Accordion allowMultiple>
+          <AccordionItem>
+            {({ isExpanded }) => (
+              <>
+                <AccordionButton>
+                  <Box as="span" flex='1' textAlign='left'>
+                    Ver opciones avanzadas
+                  </Box>
+                  {isExpanded ? (
+                    <MdClear />
+                  ) : (
+                    <MdAdd />
+                  )}
+                </AccordionButton>
+                <AccordionPanel pb={4}>
+                  <FormControl mt={'4'}>
+                    <FormLabel>Programar todas las órdenes para un solo repartidor</FormLabel>
+                    <Select
+                      value={selectedAvailableDrivers}
+                      onChange={handleAvailableDriversChange}
+                      placeholder='Elegir a un repartidor'>
+                      <option value="1">Repartidor 1</option>
+                      <option value="2">Repartidor 2</option>
+                    </Select>
+                  </FormControl>
+                </AccordionPanel>
+              </>
+            )}
+          </AccordionItem>
+        </Accordion>
         {isToday() && (
           <Button
             variant="action"
@@ -500,10 +548,11 @@ function Orders(props) {
             isLoading={isScheduling}
             spinnerPlacement="end"
           >
-            Programar pedidos para ir a ruta
+            {selectedAvailableDrivers.length === 2
+              ? "Programar pedidos para ir a ruta"
+              : `Programar pedidos repartidor ${selectedAvailableDrivers[0]}`}
           </Button>
         )}
-
       </Card>
     </>
   );
