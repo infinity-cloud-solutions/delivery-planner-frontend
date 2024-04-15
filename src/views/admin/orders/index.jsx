@@ -301,7 +301,7 @@ export default function OrdersView() {
     }
     const body = {
       date: formattedDate,
-      availableDrivers: selectedDrivers
+      available_drivers: selectedDrivers
     };
 
     try {
