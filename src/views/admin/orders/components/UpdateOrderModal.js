@@ -47,6 +47,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     })) || [{ product: null, quantity: null }]
   );
   const [dateError, setDateError] = useState(null);
+  const [selectedDriver, setSelectedDriver] = useState(rowData.row.driver || '');
   const [totalAmountDisplay, setTotalAmountDisplay] = useState(rowData.row.total_amount || "0.00");
   const [isFormValid, setIsFormValid] = useState(false);
   const [loadingUpdateRequest, setLoadingUpdateRequest] = useState(false);
@@ -112,7 +113,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         notes: deliveryNotes,
         status: "Creada",
         order: "Ver detalles",
-        original_date: rowData.row.delivery_date
+        original_date: rowData.row.delivery_date,
+        driver: selectedDriver
       },
       rowIndex: rowData.index
     };
@@ -131,6 +133,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       setTotalAmountDisplay('');
       setPaymentMethod('');
       setDeliveryNotes('');
+      setSelectedDriver('');
       setLoadingUpdateRequest(false)
       onClose();
     } catch (error) {
@@ -163,6 +166,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       setTotalAmountDisplay('');
       setPaymentMethod('');
       setDeliveryNotes('');
+      setSelectedDriver('');
       setLoadingDeleteRequest(false)
       onClose();
     } catch (error) {
@@ -396,6 +400,17 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
                 value={deliveryLatitude}
                 onChange={(e) => setDeliveryLatitude(e.target.value)} />
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Repartidor</FormLabel>
+              <Select
+                value={selectedDriver}
+                onChange={(e) => setSelectedDriver(Number(e.target.value))}
+                placeholder='Elegir a un repartidor'>
+                <option value="1">Repartidor 1</option>
+                <option value="2">Repartidor 2</option>
+              </Select>
             </FormControl>
 
             <FormControl isRequired>

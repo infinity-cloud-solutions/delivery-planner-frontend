@@ -287,7 +287,7 @@ export default function OrdersView() {
     }
   }
 
-  const handleScheduleOrders = async () => {
+  const handleScheduleOrders = async (selectedDrivers) => {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -301,6 +301,7 @@ export default function OrdersView() {
     }
     const body = {
       date: formattedDate,
+      available_drivers: selectedDrivers
     };
 
     try {
@@ -315,7 +316,8 @@ export default function OrdersView() {
       setTableDataOrders(prevTableData => {
         const updatedTableData = prevTableData.map(order => ({
           ...order,
-          status: "Programada"
+          status: "Programada",
+          driver: selectedDrivers.length === 1 ? selectedDrivers[0] : order.driver
         }));
         return updatedTableData;
       });
