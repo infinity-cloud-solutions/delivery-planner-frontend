@@ -102,8 +102,10 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         id: rowData.row.id,
         client_name: clientName,
         delivery_address: deliveryAddress,
-        latitude: deliveryLatitude,
-        longitude: deliveryLongitude,
+        geolocation: {
+          latitude: Number(deliveryLatitude),
+          longitude: Number(deliveryLongitude)
+        },
         delivery_date: deliveryDate,
         delivery_time: deliveryTime,
         phone_number: phoneNumber,
@@ -114,7 +116,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         status: "Creada",
         order: "Ver detalles",
         original_date: rowData.row.delivery_date,
-        driver: selectedDriver
+        driver: selectedDriver,
+        original_dirver: rowData.row.driver
       },
       rowIndex: rowData.index
     };
@@ -124,6 +127,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         item.price = Number(item.price) || 0;
       }
     });
+    console.log(updOrder.item)
     try {
       await onUpdate(updOrder);
       setClientName('');
