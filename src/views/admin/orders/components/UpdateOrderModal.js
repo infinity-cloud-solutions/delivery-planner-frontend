@@ -117,7 +117,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         order: "Ver detalles",
         original_date: rowData.row.delivery_date,
         driver: selectedDriver,
-        original_dirver: rowData.row.driver
+        original_driver: rowData.row.driver
       },
       rowIndex: rowData.index
     };
