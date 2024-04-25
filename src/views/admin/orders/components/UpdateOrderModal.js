@@ -289,41 +289,39 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   };
 
   const validateDate = (selectedDate) => {
-    const currentDate = new Date();
     const selectedDateObj = new Date(selectedDate + 'T00:00:00');
-    selectedDateObj.setMinutes(selectedDateObj.getTimezoneOffset());
 
-    const currentTimestamp = currentDate.getTime();
+    selectedDateObj.setHours(0, 0, 0, 0);
+
+    const currentDate = new Date();
+    const currentTime = currentDate.getTime();
+
     const nineAMTimestamp = new Date(currentDate);
     nineAMTimestamp.setHours(9, 0, 0, 0);
 
-    // scenario 1: date is today
-    if (
-      selectedDateObj.toDateString() === currentDate.toDateString() &&
-      currentTimestamp >= nineAMTimestamp.getTime()
-    ) {
-      setDateError('No se puede crear orden después de las 9 am');
-      checkFormValidity();
-      return;
-    }
+    const nextDayTimestamp = new Date(currentDate);
+    nextDayTimestamp.setDate(nextDayTimestamp.getDate() + 1);
+    nextDayTimestamp.setHours(0, 0, 0, 0);
 
-    // scenario 2: order is in the past
-    if (selectedDateObj < currentDate) {
-      setDateError('No se puede programar una orden en el pasado');
-      checkFormValidity();
-      return;
-    }
-
-    // scenario 3: order is on sunday
-    if (selectedDateObj.getDay() === 0) {
-      setDateError('No hay entregas los domingos');
-      checkFormValidity();
-      return;
+    if (selectedDateObj.toDateString() === currentDate.toDateString()) {
+        if (currentTime > nineAMTimestamp.getTime()) {
+            setDateError('No se puede crear orden después de las 9 am');
+            checkFormValidity();
+            return;
+        }
+    } else if (selectedDateObj.getTime() < currentDate.getTime()) {
+        setDateError('No se puede programar una orden en el pasado');
+        checkFormValidity();
+        return;
+    } else if (selectedDateObj.getDay() === 0) {
+        setDateError('No hay entregas los domingos');
+        checkFormValidity();
+        return;
     }
 
     setDateError(null);
     checkFormValidity();
-  };
+};
 
   const handleDateChange = (selectedDate) => {
     setDeliveryDate(selectedDate);
