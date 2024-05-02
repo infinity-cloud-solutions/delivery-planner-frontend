@@ -86,6 +86,32 @@ export default function DeliveriesView() {
       });
   }, []);
 
+  const consolidateProducts = () => {
+    const consolidatedProducts = {};
+
+    tableDataOrders.forEach(order => {
+      const { driver, cart_items } = order;
+
+      cart_items.forEach(item => {
+        const { product, quantity } = item;
+        const numericQuantity = parseInt(quantity, 10);
+
+        if (!consolidatedProducts[driver]) {
+          consolidatedProducts[driver] = {};
+        }
+
+        if (consolidatedProducts[driver][product]) {
+          consolidatedProducts[driver][product] += numericQuantity;
+        } else {
+          consolidatedProducts[driver][product] = numericQuantity;
+        }
+      });
+    });
+    return consolidatedProducts;
+  };
+
+  const consolidatedProducts = consolidateProducts();
+
   const handleUpdateDelivery = async (order, orderId, statusText) => {
     if (!validateJWT()) {
       history.push('/auth');
@@ -112,7 +138,7 @@ export default function DeliveriesView() {
           updatedOrders = tableDataOrders.filter((order) => order.id !== orderId);
         } else {
           updatedOrders = tableDataOrders.map((existingOrder) =>
-          existingOrder.id === orderId ? order : existingOrder
+            existingOrder.id === orderId ? order : existingOrder
 
           );
         }
@@ -154,25 +180,25 @@ export default function DeliveriesView() {
 
   return (
     <>
-    {alertMessage && (
-      <motion.div
-        initial={{ x: '100%', right: '8px', top: '20%' }}
-        animate={{ x: 0, right: '8px', top: '20%' }}
-        exit={{ x: '100%' }}
-        transition={{ duration: 1 }}
-        style={{
-          position: 'fixed',
-          zIndex: 1000,
-        }}
-      >
-        <Alert status={alertMessage.type} mb={4}>
-          <AlertIcon />
-          {alertMessage.text}
-        </Alert>
-      </motion.div>
-    )}
-    <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-    <Grid>
+      {alertMessage && (
+        <motion.div
+          initial={{ x: '100%', right: '8px', top: '20%' }}
+          animate={{ x: 0, right: '8px', top: '20%' }}
+          exit={{ x: '100%' }}
+          transition={{ duration: 1 }}
+          style={{
+            position: 'fixed',
+            zIndex: 1000,
+          }}
+        >
+          <Alert status={alertMessage.type} mb={4}>
+            <AlertIcon />
+            {alertMessage.text}
+          </Alert>
+        </motion.div>
+      )}
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Grid>
           <AnimatePresence>
             {tableDataOrders.map((order, index) => (
               <motion.div
@@ -191,12 +217,13 @@ export default function DeliveriesView() {
                   maxW={{ base: "sm", lg: "2xl", "2xl": "2xl" }}
                   order={order}
                   onUpdateDelivery={handleUpdateDelivery}
+                  listOfConsolidatedProducts={consolidatedProducts}
                 />
               </motion.div>
             ))}
           </AnimatePresence>
         </Grid>
-    </Box>
+      </Box>
     </>
   );
 }

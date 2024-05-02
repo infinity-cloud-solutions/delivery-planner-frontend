@@ -332,22 +332,26 @@ export default function OrdersView() {
   };
 
   const consolidateProducts = () => {
-    const consolidatedProducts = [];
+    const consolidatedProducts = {};
 
     tableDataOrders.forEach(order => {
-      order.cart_items.forEach(item => {
+      const { driver, cart_items } = order;
+
+      cart_items.forEach(item => {
         const { product, quantity } = item;
-        const existingProductIndex = consolidatedProducts.findIndex(p => p.product === product);
         const numericQuantity = parseInt(quantity, 10);
 
-        if (existingProductIndex !== -1) {
-          consolidatedProducts[existingProductIndex].quantity += numericQuantity;
+        if (!consolidatedProducts[driver]) {
+          consolidatedProducts[driver] = {};
+        }
+
+        if (consolidatedProducts[driver][product]) {
+          consolidatedProducts[driver][product] += numericQuantity;
         } else {
-          consolidatedProducts.push({ product, quantity: numericQuantity });
+          consolidatedProducts[driver][product] = numericQuantity;
         }
       });
     });
-
     return consolidatedProducts;
   };
 

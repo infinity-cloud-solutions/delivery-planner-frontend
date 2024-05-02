@@ -52,6 +52,9 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [isFormValid, setIsFormValid] = useState(false);
   const [loadingUpdateRequest, setLoadingUpdateRequest] = useState(false);
   const [loadingDeleteRequest, setLoadingDeleteRequest] = useState(false);
+  const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState([]);
+  const [discount, setDiscount] = useState(rowData.row.discount || '');
+  const [notes, setNotes] = rowData.row.notes || '';
 
   const [apiError, setApiError] = useState(null);
 
@@ -117,7 +120,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         order: "Ver detalles",
         original_date: rowData.row.delivery_date,
         driver: selectedDriver,
-        original_driver: rowData.row.driver
+        original_driver: rowData.row.driver,
+        discount: discount
       },
       rowIndex: rowData.index
     };
@@ -138,6 +142,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       setPaymentMethod('');
       setDeliveryNotes('');
       setSelectedDriver('');
+      setDiscount('');
       setLoadingUpdateRequest(false)
       onClose();
     } catch (error) {
@@ -180,9 +185,10 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
 
   useEffect(() => {
     validateDate(deliveryDate);
+    setScheduleTimesBasedOnDate(deliveryDate);
     calculateTotalAmount();
     checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
-  }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude, dateError, apiError]);
+  }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude, dateError, apiError, discount]);
 
   const checkFormValidity = () => {
     const isCartItemsValid = cartItems.length >= 1;
@@ -274,18 +280,21 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   };
 
   const calculateTotalAmount = () => {
+    let totalAmount = 0;
     if (cartItems.length > 0) {
-      const calculatedTotalAmount = cartItems.reduce((sum, item) => {
-        const itemTotal = item.price * item.quantity;
-        return sum + itemTotal;
-      }, 0).toLocaleString('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-      });
-      setTotalAmountDisplay(calculatedTotalAmount);
-    } else {
-      setTotalAmountDisplay("0.00");
+      totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      if (discount === "5") {
+        totalAmount *= 0.95;
+      } else if (discount === "10") {
+        totalAmount *= 0.9;
+      }
     }
+    const calculatedTotalAmount = totalAmount.toLocaleString('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+    });
+
+    setTotalAmountDisplay(calculatedTotalAmount);
   };
 
   const validateDate = (selectedDate) => {
@@ -304,31 +313,48 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     nextDayTimestamp.setHours(0, 0, 0, 0);
 
     if (selectedDateObj.toDateString() === currentDate.toDateString()) {
-        if (currentTime > nineAMTimestamp.getTime()) {
-            setDateError('No se puede crear orden después de las 9 am');
-            checkFormValidity();
-            return;
-        }
+      if (currentTime > nineAMTimestamp.getTime()) {
+        setDateError('No se puede crear orden después de las 9 am');
+        checkFormValidity();
+        return;
+      }
     } else if (selectedDateObj.getTime() < currentDate.getTime()) {
-        setDateError('No se puede programar una orden en el pasado');
-        checkFormValidity();
-        return;
+      setDateError('No se puede programar una orden en el pasado');
+      checkFormValidity();
+      return;
     } else if (selectedDateObj.getDay() === 0) {
-        setDateError('No hay entregas los domingos');
-        checkFormValidity();
-        return;
+      setDateError('No hay entregas los domingos');
+      checkFormValidity();
+      return;
     }
 
     setDateError(null);
     checkFormValidity();
-};
+  };
+
+  const setScheduleTimesBasedOnDate = (selectedDate) => {
+    const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+    const dayOfWeek = selectedDateObj.getDay();
+    if (dayOfWeek === 6) { // saturday
+      setAvailableDeliveryTimes(["9 AM - 1 PM"]);
+    } else if (dayOfWeek === 0) { // sunday
+      setAvailableDeliveryTimes([]);
+    } else { // mon-fri
+      setAvailableDeliveryTimes(["9 AM - 1 PM", "1 PM - 5 PM"]);
+    }
+  }
 
   const handleDateChange = (selectedDate) => {
     setDeliveryDate(selectedDate);
     setApiError(false)
     validateDate(selectedDate);
-
+    setScheduleTimesBasedOnDate(selectedDate);
   };
+
+  const handleDiscount = (selectedDiscount) => {
+    setDiscount(selectedDiscount)
+    calculateTotalAmount();
+  }
 
   const ConfirmationModal = () => {
     return (
@@ -377,31 +403,11 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                 value={clientName} onChange={(e) => setClientName(e.target.value)} />
             </FormControl>
 
-            {deliveryNotes !== null && rowData.row.status === "Reprogramada" && (
-              <FormControl isRequired>
-                <FormLabel>Notas</FormLabel>
-                <Textarea
-                  type="text"
-                  color={textColor}
-                  borderColor={borderColor}
-                  value={deliveryNotes}
-                  onChange={(e) => setDeliveryNotes(e.target.value)}
-                />
-              </FormControl>
-            )}
-
             <FormControl isRequired>
               <FormLabel>Direccion</FormLabel>
               <Textarea type="text" color={textColor} borderColor={borderColor}
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)} />
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Latitud</FormLabel>
-              <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
-                value={deliveryLatitude}
-                onChange={(e) => setDeliveryLatitude(e.target.value)} />
             </FormControl>
 
             <FormControl isRequired>
@@ -413,6 +419,13 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                 <option value="1">Repartidor 1</option>
                 <option value="2">Repartidor 2</option>
               </Select>
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Latitud</FormLabel>
+              <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
+                value={deliveryLatitude}
+                onChange={(e) => setDeliveryLatitude(e.target.value)} />
             </FormControl>
 
             <FormControl isRequired>
@@ -453,8 +466,9 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                   setDeliveryTime(e.target.value);
                   setApiError(false);
                 }}>
-                <option value="9 AM - 1 PM">9 AM - 1 PM</option>
-                <option value="1 PM - 5 PM">1 PM - 5 PM</option>
+                {availableDeliveryTimes.map((time, index) => (
+                  <option key={index} value={time}>{time}</option>
+                ))}
               </Select>
             </FormControl>
 
@@ -503,6 +517,29 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
             ))}
 
             <Button variant="outline" onClick={addCartItem}>Agregar más al carrito</Button>
+
+            <FormControl>
+              <FormLabel>Notas</FormLabel>
+              <Textarea
+                type="text"
+                color={textColor}
+                borderColor={borderColor}
+                value={deliveryNotes}
+                onChange={(e) => setDeliveryNotes(e.target.value)}
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Descuento</FormLabel>
+              <Select
+                placeholder="Selecciona un descuento"
+                value={discount}
+                onChange={(e) => handleDiscount(e.target.value)}
+              >
+                <option value="5">5% de descuento</option>
+                <option value="10">10% de descuento</option>
+              </Select>
+            </FormControl>
 
             <Text
               color={textColor}
