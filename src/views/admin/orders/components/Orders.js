@@ -173,7 +173,7 @@ function Orders(props) {
     prepareRow,
     initialState,
   } = tableInstance;
-  initialState.pageSize = 10;
+  initialState.pageSize = 30;
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -362,13 +362,15 @@ function Orders(props) {
                               h="24px"
                               me="5px"
                               color={
-                                (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta" || cell.value === "Entregada")
+                                (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta")
                                   ? "green.500"
-                                  : cell.value === "Error"
-                                    ? "red.500"
-                                    : cell.value === "Reprogramada"
-                                      ? "orange.500"
-                                      : null
+                                  : cell.value === "Entregada"
+                                    ? "blue.500"
+                                    : cell.value === "Error"
+                                      ? "red.500"
+                                      : cell.value === "Reprogramada"
+                                        ? "orange.500"
+                                        : null
                               }
                               as={
                                 (cell.value === "Programada" || cell.value === "Creada" || cell.value === "En ruta" || cell.value === "Entregada")
@@ -455,6 +457,12 @@ function Orders(props) {
                           fontSize={{ sm: "14px" }}
                           minW={{ sm: "150px", md: "200px", lg: "auto" }}
                           borderColor="transparent"
+                          style={{
+                            maxWidth: "200px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis"
+                          }}
                         >
                           {data}
                         </Td>

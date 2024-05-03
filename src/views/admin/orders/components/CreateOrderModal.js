@@ -37,6 +37,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     const [isFormValid, setIsFormValid] = useState(false);
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [apiError, setApiError] = useState(null);
+    const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState([]);
+    const [discount, setDiscount] = useState("");
+    const [notes, setNotes] = useState("");
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -74,7 +77,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     useEffect(() => {
         calculateTotalAmount();
         checkFormValidity();
-    }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod]);
+    }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, discount]);
 
     const checkFormValidity = () => {
         const isCartItemsValid = cartItems.length > 1;
@@ -155,16 +158,21 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
     };
 
     const calculateTotalAmount = () => {
+        let totalAmount = 0;
         if (cartItems.length > 0) {
-            const calculatedTotalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-                .toLocaleString('es-MX', {
-                    style: 'currency',
-                    currency: 'MXN',
-                });
-            setTotalAmountDisplay(calculatedTotalAmount);
-        } else {
-            setTotalAmountDisplay("0.00");
+            totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            if (discount === "5") {
+                totalAmount *= 0.95;
+            } else if (discount === "10") {
+                totalAmount *= 0.9;
+            }
         }
+        const calculatedTotalAmount = totalAmount.toLocaleString('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+        });
+
+        setTotalAmountDisplay(calculatedTotalAmount);
     };
 
     const createOrder = async () => {
@@ -180,7 +188,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
             cart_items: cartItems,
             payment_method: paymentMethod,
             status: "Creada",
-            order: "Ver detalles"
+            order: "Ver detalles",
+            notes: notes,
+            discount: discount
         };
         newOrder.cart_items = newOrder.cart_items.filter(item => item.product !== "");
         newOrder.cart_items.forEach(item => {
@@ -196,7 +206,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
             setPhoneNumber('');
             setTotalAmountDisplay('');
             setPaymentMethod('');
-            setLoadingRequest(false)
+            setLoadingRequest(false);
+            setNotes('');
+            setDiscount('');
             onClose();
         } catch (error) {
             const responseData = error.response.data;
@@ -245,11 +257,29 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
         checkFormValidity();
     };
 
+    const setScheduleTimesBasedOnDate = (selectedDate) => {
+        const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+        const dayOfWeek = selectedDateObj.getDay();
+        if (dayOfWeek === 6) { // saturday
+            setAvailableDeliveryTimes(["9 AM - 1 PM"]);
+        } else if (dayOfWeek === 0) { // sunday
+            setAvailableDeliveryTimes([]);
+        } else { // mon-fri
+            setAvailableDeliveryTimes(["9 AM - 1 PM", "1 PM - 5 PM"]);
+        }
+    }
+
     const handleDateChange = (selectedDate) => {
         setDeliveryDate(selectedDate);
         setApiError(false)
         validateDate(selectedDate);
+        setScheduleTimesBasedOnDate(selectedDate);
     };
+
+    const handleDiscount = (selectedDiscount) => {
+        setDiscount(selectedDiscount)
+        calculateTotalAmount();
+    }
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} bg={bgColor}>
@@ -306,8 +336,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
                                     setApiError(false);
                                 }}
                             >
-                                <option value="9 AM - 1 PM">9 AM - 1 PM</option>
-                                <option value="1 PM - 5 PM">1 PM - 5 PM</option>
+                                {availableDeliveryTimes.map((time, index) => (
+                                    <option key={index} value={time}>{time}</option>
+                                ))}
                             </Select>
                         </FormControl>
 
@@ -363,6 +394,24 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable }) => {
                         <Button variant="outline" onClick={addCartItem}>
                             Agregar al carrito
                         </Button>
+
+                        <FormControl>
+                            <FormLabel>Notas</FormLabel>
+                            <Textarea type="text" color={textColor} rows="3" borderColor={borderColor} placeholder="Notas sobre el pedido" value={notes}
+                                onChange={(e) => setNotes(e.target.value)} />
+                        </FormControl>
+
+                        <FormControl>
+                            <FormLabel>Descuento</FormLabel>
+                            <Select
+                                placeholder="Selecciona un descuento"
+                                value={discount}
+                                onChange={(e) => handleDiscount(e.target.value)}
+                            >
+                                <option value="5">5% de descuento</option>
+                                <option value="10">10% de descuento</option>
+                            </Select>
+                        </FormControl>
 
                         <Text
                             color={textColor}

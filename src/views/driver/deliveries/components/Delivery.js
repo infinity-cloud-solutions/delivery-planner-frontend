@@ -41,14 +41,16 @@ import {
     FaMoneyBill1Wave,
     FaClipboardCheck,
     FaRegCalendarMinus,
-    FaMoneyCheckDollar
+    FaMoneyCheckDollar,
+    FaNoteSticky
 } from "react-icons/fa6";
 
 import Card from "components/card/Card.js";
+import ConsolidatedDeliveryModal from "./ConsolidatedModalDeliver";
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function DeliveryCard(props) {
-    const { order, onUpdateDelivery, ...rest } = props;
+    const { order, onUpdateDelivery, listOfConsolidatedProducts, ...rest } = props;
     const textColorPrimary = useColorModeValue("secondaryGray.900", "white");
     const [cooler, setCooler] = useState('');
     const [loadingAddToDelivery, setLoadingAddToDelivery] = useState(false);
@@ -58,6 +60,7 @@ export default function DeliveryCard(props) {
     const [isCompletedModalOpen, setIsCompletedModalOpen] = useState(false);
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
     const rescheduleReasonRef = useRef('');
+    const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
 
     useEffect(() => {
         setOrderStatus(order.status);
@@ -290,8 +293,25 @@ export default function DeliveryCard(props) {
         currency: 'MXN'
     });
 
+    const openConsolidatedModal = () => {
+        setIsConsolidatedModalOpen(true);
+    };
+
+    const closeConsolidatedModal = () => {
+        setIsConsolidatedModalOpen(false);
+    };
+
     return (
         <Card {...rest} mb='20px' align='center' p='20px'>
+            <Flex px="25px" justify="space-between" mb="20px" align="right" justifyContent="flex-end">
+                <Flex align="right">
+                    <ButtonGroup spacing="6">
+                        <Button variant="outline" onClick={openConsolidatedModal}>
+                            Ver consolidado
+                        </Button>
+                    </ButtonGroup>
+                </Flex>
+            </Flex>
             <Flex maxW={{ base: "sm", lg: "2xl", "2xl": "2xl" }} direction={{ base: "column", "2xl": "row" }}>
 
                 <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p="6" flex="1" mb={{ base: "10px", sm: "5px", md: "15px" }}>
@@ -340,6 +360,21 @@ export default function DeliveryCard(props) {
                             <Text ml={{ base: "2", md: "4", lg: "6" }}>{order.phone_number}</Text>
                         </Flex>
                     </Box>
+                    {order.notes && (
+                        <Box
+                            mt="1"
+                            fontWeight="semibold"
+                            as="h4"
+                            isTruncated
+                            color="gray.500"
+                            fontSize={{ base: "sm", md: "md", lg: "lg" }}
+                        >
+                            <Flex alignItems="center">
+                                <FaNoteSticky color="gray.600" size={14} />
+                                <Text ml={{ base: "2", md: "4", lg: "6" }}>{order.notes}</Text>
+                            </Flex>
+                        </Box>
+                    )}
                     <Box position='relative' padding={{ base: '4', md: '8', lg: '10' }}>
                         <Divider />
                         <AbsoluteCenter
@@ -473,6 +508,13 @@ export default function DeliveryCard(props) {
             </Flex>
             <CompletedModal />
             <RescheduleModal />
+            {isConsolidatedModalOpen && (
+                <ConsolidatedDeliveryModal
+                    isOpen={isConsolidatedModalOpen}
+                    onClose={closeConsolidatedModal}
+                    products={listOfConsolidatedProducts}
+                />
+            )}
         </Card>
     );
 }

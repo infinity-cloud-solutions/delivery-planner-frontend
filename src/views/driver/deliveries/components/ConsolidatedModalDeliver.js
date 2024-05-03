@@ -18,7 +18,7 @@ import {
 } from '@chakra-ui/react';
 
 
-function ConsolidatedModal({ isOpen, onClose, products }) {
+function ConsolidatedDeliveryModal({ isOpen, onClose, products }) {
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -62,4 +62,4 @@ function ConsolidatedModal({ isOpen, onClose, products }) {
 }
 
 
-export default ConsolidatedModal;
+export default ConsolidatedDeliveryModal;
