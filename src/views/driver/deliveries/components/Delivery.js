@@ -127,6 +127,7 @@ export default function DeliveryCard(props) {
             latitude: order.latitude,
             longitude: order.longitude,
             notes: order.notes,
+            discount: order.discount
         };
         await onUpdateDelivery(updatedOrder, updatedOrder.id, "En ruta");
 
@@ -158,6 +159,7 @@ export default function DeliveryCard(props) {
             latitude: order.latitude,
             longitude: order.longitude,
             notes: order.notes,
+            discount: order.discount
         };
         await onUpdateDelivery(updatedOrder, updatedOrder.id, "Entregada");
 
@@ -188,7 +190,8 @@ export default function DeliveryCard(props) {
             id: order.id,
             latitude: order.latitude,
             longitude: order.longitude,
-            notes: rescheduleReasonRef.current
+            notes: rescheduleReasonRef.current,
+            discount: order.discount
         };
         closeRescheduleModal()
         await onUpdateDelivery(updatedOrder, updatedOrder.id, "Reprogramada");
