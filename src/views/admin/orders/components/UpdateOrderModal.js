@@ -131,7 +131,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         item.price = Number(item.price) || 0;
       }
     });
-    console.log(updOrder.item)
+
     try {
       await onUpdate(updOrder);
       setClientName('');
