@@ -48,8 +48,13 @@ function Clients(props) {
     }
   };
 
-  const onClientDeletedCallback = (client) => {
+  const onClientDeletedCallback = async (client) => {
     onClientDeleted(client);
+    try {
+      await onClientDeleted(client);
+    } catch (error) {
+      throw error;
+    }
   };
 
   const textColor = useColorModeValue("navy.700", "white");

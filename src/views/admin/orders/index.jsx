@@ -45,6 +45,7 @@ export default function OrdersView() {
   const [loading, setLoading] = useState(false);
   const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL
   const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL;
+  const clientsURL = process.env.REACT_APP_CLIENTS_BASE_URL;
 
   useEffect(() => {
 
@@ -355,9 +356,51 @@ export default function OrdersView() {
     return consolidatedProducts;
   };
 
-
   const consolidatedProducts = consolidateProducts();
   const userIsDriver = isDriver();
+
+  const handleClientFetched = async (searchQuery) => {
+    if (!validateJWT()) {
+      history.push('/auth');
+      return;
+    }
+
+      const queryParams = {
+        phone_number: searchQuery,
+      };
+
+      try {
+        const response = await axios.get(clientsURL, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          params: queryParams
+        });
+        const responseData = response.data;
+        if (responseData) {
+          const clientMapped = {
+            clientPhoneNumber: responseData.phone_number,
+            clientName: responseData.name,
+            clientAddress: responseData.address,
+            clientLatitude: responseData.address_latitude,
+            clientLongitude: responseData.address_longitude,
+            clientSecondAddress: responseData.second_address,
+            clientSecondLatitude: responseData.second_address_latitude,
+            clientSecondLongitude: responseData.second_address_longitude,
+            clientEmail: responseData.email,
+            clientDiscount: responseData.discount
+          };
+          return clientMapped;
+        } else {
+          console.log("No client data found.");
+          return null;
+        }
+      } catch (error) {
+        console.error('API error:', error);
+        return null;
+      }
+    };
 
   if (userIsDriver) {
     return (
@@ -422,6 +465,7 @@ export default function OrdersView() {
               onDateSelect={handleDateChange}
               productsAvailable={products}
               listOfConsolidatedProducts={consolidatedProducts}
+              onValidateClient={handleClientFetched}
             />
           )}
         </SimpleGrid>

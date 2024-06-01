@@ -41,35 +41,14 @@ export default function ClientView() {
       history.push('/auth');
       return;
     }
-
-    setLoading(true);
-    setLoading(false);
-
-    // axios.get(clientsURL, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': `Bearer ${jwtToken}`
-    //   },
-    // })
-    //   .then(response => {
-    //     const responseData = response.data;
-
-    //     if (responseData.length === 0) {
-    //       setClient([]);
-    //     } else {
-
-    //       setClient(responseData);
-    //     }
-
-    //   })
-    //   .catch(error => {
-    //     console.error('API error:', error);
-    //   }).finally(() => {
-    //     setLoading(false);
-    //   });
   }, []);
 
   const handleClientFetch = async (searchQuery) => {
+    if (!validateJWT()) {
+      history.push('/auth');
+      return;
+    }
+
     const queryParams = {
       phone_number: searchQuery,
     };
@@ -82,21 +61,20 @@ export default function ClientView() {
         },
         params: queryParams
       });
-
       const responseData = response.data;
 
-      if (responseData.data) {
+      if (responseData) {
         const clientMapped = {
-          clientPhoneNumber: responseData.data.phone_number,
-          clientName: responseData.data.name,
-          clientAddress: responseData.data.address,
-          clientLatitude: responseData.data.address_latitude,
-          clientLongitude: responseData.data.address_longitude,
-          clientSecondAddress: responseData.data.second_address,
-          clientSecondLatitude: responseData.data.second_address_latitude,
-          clientSecondLongitude: responseData.data.second_address_longitude,
-          clientEmail: responseData.data.email,
-          clientDiscount: responseData.data.discount
+          clientPhoneNumber: responseData.phone_number,
+          clientName: responseData.name,
+          clientAddress: responseData.address,
+          clientLatitude: responseData.address_latitude,
+          clientLongitude: responseData.address_longitude,
+          clientSecondAddress: responseData.second_address,
+          clientSecondLatitude: responseData.second_address_latitude,
+          clientSecondLongitude: responseData.second_address_longitude,
+          clientEmail: responseData.email,
+          clientDiscount: responseData.discount
         };
         return clientMapped;
       } else {
@@ -132,14 +110,13 @@ export default function ClientView() {
   };
 
   const handleClientUpdate = async (client) => {
-
     if (!validateJWT()) {
       history.push('/auth');
       return;
     }
 
     try {
-      const repsonse = await axios.post(clientsURL, client, {
+      const repsonse = await axios.put(clientsURL, client, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`
@@ -154,38 +131,36 @@ export default function ClientView() {
     }
   };
 
-  const handleClientDelete = (client) => {
+  const handleClientDelete = async (client) => {
 
-    // if (!validateJWT()) {
-    //   history.push('/auth');
-    //   return;
-    // }
+    if (!validateJWT()) {
+      history.push('/auth');
+      return;
+    }
 
-    // setLoading(true);
+    const queryParam = {
+      phone_number: client.phone_number
+    };
 
-    // axios.delete(`${clientsURL}?name=${client.item.name}`, {
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': `Bearer ${jwtToken}`
-    //   },
-    // })
-    //   .then(response => {
-    //     const updatedClientData = [...client];
+    try {
+      const response = await axios.delete(clientsURL, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        params: queryParam
+      });
 
-    //     updatedClientData.splice(client.rowIndex, 1);
+      setAlertMessage({ type: 'success', text: 'Cliente eliminado en la base de datos' });
+      setTimeout(() => setAlertMessage(null), 3000);
 
-    //     setClient(updatedClientData);
-
-    //     setAlertMessage({ type: 'success', text: 'Cliente eliminado en la base de datos' });
-    //     setTimeout(() => setAlertMessage(null), 3000);
-    //   })
-    //   .catch(error => {
-    //     console.error(error)
-    //     setAlertMessage({ type: 'error', text: 'Error al eliminar cliente. Intenta de nuevo.' });
-    //     setTimeout(() => setAlertMessage(null), 3000);
-    //   }).finally(() => {
-    //     setLoading(false);
-    //   });
+    } catch (error) {
+      console.error("Error creating client:", error);
+      setAlertMessage({ type: 'error', text: 'Error al eliminar el cliente. Intenta de nuevo.' });
+      setTimeout(() => setAlertMessage(null), 3000);
+      throw error;
+    } finally {
+    }
   };
 
   const userIsDriver = isDriver();

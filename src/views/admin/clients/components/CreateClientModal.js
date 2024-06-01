@@ -14,6 +14,7 @@ import {
     VStack,
     useColorModeValue,
     FormErrorMessage,
+    Select,
     Spinner,
     Text,
 } from '@chakra-ui/react';
@@ -42,7 +43,7 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }) =
 
     useEffect(() => {
         checkFormValidity();
-    }, [clientPhoneNumber, clientName, clientAddress, clientEmail, clientDiscount]);
+    }, [clientPhoneNumber, clientName, clientAddress, clientEmail, clientDiscount, isAnExistingId]);
 
     const checkFormValidity = () => {
         const isClientPhoneNumberValid = clientPhoneNumber.length === 10;
@@ -50,8 +51,9 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }) =
         const isClientAddressValid = clientAddress.trim() !== '';
         const isClientEmailValid = clientEmail === '' || /\S+@\S+\.\S+/.test(clientEmail);
         const isClientDiscountValid = !isNaN(clientDiscount) && Number.isInteger(Number(clientDiscount));
+        const isIdValid = !isAnExistingId
 
-        setIsFormValid(isClientPhoneNumberValid && isClientNameValid && isClientAddressValid && isClientEmailValid && isClientDiscountValid);
+        setIsFormValid(isClientPhoneNumberValid && isClientNameValid && isClientAddressValid && isClientEmailValid && isClientDiscountValid && isIdValid);
     };
 
     const handlePhoneBlur = async () => {
@@ -203,24 +205,19 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }) =
                                     />
                                     <FormErrorMessage>Email inválido.</FormErrorMessage>
                                 </FormControl>
-                                <FormControl isInvalid={discountTouched &&
-                                    (Number(clientDiscount) < 0 || Number(clientDiscount) > 100) ||
-                                    (isNaN(clientDiscount) ||
-                                        !Number.isInteger(Number(clientDiscount)))}>
+                                <FormControl>
                                     <FormLabel>Descuento</FormLabel>
-                                    <Input
-                                        type="number"
-                                        color={textColor}
-                                        borderColor={borderColor}
-                                        placeholder="Solo válido números enteros"
+                                    <Select
+                                        placeholder="Selecciona opción de descuento"
                                         value={clientDiscount}
-                                        isDisabled={isAnExistingId}
                                         onChange={(e) => setClientDiscount(e.target.value)}
-                                        onBlur={() => {
-                                            setDiscountTouched(true);
-                                        }}
-                                    />
-                                    <FormErrorMessage>Descuento debe ser un entero entre 0 y 100.</FormErrorMessage>
+                                    >
+                                        <option value="0">Sin descuento</option>
+                                        <option value="5">5% de descuento</option>
+                                        <option value="10">10% de descuento</option>
+                                        <option value="15">15% de descuento</option>
+                                        <option value="100">100% de descuento</option>
+                                    </Select>
                                 </FormControl>
                             </>
                         )}

@@ -52,7 +52,7 @@ import { useHistory } from "react-router-dom";
 import { MdCheckCircle, MdCancel, MdOutlineError, MdClear, MdAdd } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onOrdersScheduled, onDateSelect, productsAvailable, listOfConsolidatedProducts } = props;
+  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onOrdersScheduled, onDateSelect, productsAvailable, listOfConsolidatedProducts, onValidateClient } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
@@ -115,6 +115,15 @@ function Orders(props) {
       throw error;
     }
   };
+
+  const onClientExistsCheckCallback = async (client) => {
+    try {
+      const clientData = await onValidateClient(client)
+      return clientData;
+    } catch (error) {
+      throw error
+    }
+  }
 
   const openConsolidatedModal = () => {
     setIsConsolidatedModalOpen(true);
@@ -490,6 +499,7 @@ function Orders(props) {
             onClose={closeCreateModal}
             onCreate={onOrderCreatedCallback}
             productsAvailable={productsAvailable}
+            onClientExistsCheck={onClientExistsCheckCallback}
           />
         )}
         {isConsolidatedModalOpen && (

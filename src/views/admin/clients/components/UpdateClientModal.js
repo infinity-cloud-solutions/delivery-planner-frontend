@@ -15,14 +15,18 @@ import {
     Input,
     VStack,
     HStack,
+    Checkbox,
+    Text,
+    Select,
     useColorModeValue,
 } from '@chakra-ui/react';
 
-import { isAdmin, } from 'security.js';
+import { isAdmin } from 'security.js';
 
 const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) => {
 
     const [clientPhoneNumber, setClientPhoneNumber] = useState(clientData.clientPhoneNumber || '');
+    const [originalPhoneNumber] = useState(clientData.clientPhoneNumber || ''); // Store the original phone number
     const [clientName, setClientName] = useState(clientData.clientName || '');
     const [clientAddress, setClientAddress] = useState(clientData.clientAddress || '');
     const [clientLatitude, setClientLatitude] = useState(clientData.clientLatitude || '');
@@ -33,6 +37,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
     const [clientEmail, setClientEmail] = useState(clientData.clientEmail || '');
     const [clientDiscount, setClientDiscount] = useState(clientData.clientDiscount || '0');
     const [loadingUpdateRequest, setLoadingUpdateRequest] = useState(false);
+    const [loadingDeleteRequest, setLoadingDeleteRequest] = useState(false);
     const [showSecondAddress, setShowSecondAddress] = useState(!!clientData.clientSecondAddress);
     const [isFormValid, setIsFormValid] = useState(false);
     const [nameTouched, setNameTouched] = useState(false);
@@ -40,6 +45,8 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
     const [emailTouched, setEmailTouched] = useState(false);
     const [discountTouched, setDiscountTouched] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
+    const [phoneChanged, setPhoneChanged] = useState(false); // Track if phone number changed
+    const [deleteOldRecord, setDeleteOldRecord] = useState(true); // Checkbox state for deleting old record
 
     let isUserAdmin = false;
     const textColor = useColorModeValue('secondaryGray.900', 'white');
@@ -57,7 +64,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
         const isClientEmailValid = clientEmail === '' || /\S+@\S+\.\S+/.test(clientEmail);
         const isClientDiscountValid = !isNaN(clientDiscount) && Number.isInteger(Number(clientDiscount));
 
-        setIsFormValid(isClientPhoneNumberValid && isClientNameValid && isClientAddressValid  && isClientEmailValid && isClientDiscountValid);
+        setIsFormValid(isClientPhoneNumberValid && isClientNameValid && isClientAddressValid && isClientEmailValid && isClientDiscountValid);
     };
 
     const handleInputChange = (setter, value, initialValue) => {
@@ -67,29 +74,41 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
         }
     };
 
+    const handlePhoneNumberChange = (e) => {
+        const newValue = e.target.value;
+        setClientPhoneNumber(newValue);
+        if (newValue !== originalPhoneNumber) {
+            setPhoneChanged(true);
+        } else {
+            setPhoneChanged(false);
+        }
+        setHasChanges(true);
+    };
+
     const updateClient = async () => {
         setLoadingUpdateRequest(true);
 
         const addressChanged = clientAddress !== clientData.clientAddress;
-
         const secondAddressChanged = showSecondAddress && clientSecondAddress !== clientData.clientSecondAddress;
 
         const updClient = {
             phone_number: clientPhoneNumber,
+            original_phone_number: originalPhoneNumber,
             name: clientName,
             address: clientAddress,
             address_geolocation: addressChanged
-                ? { latitude: null, longitude: null }
-                : { latitude: clientLatitude, longitude: clientLongitude },
+                ? null
+                : { latitude: Number(clientLatitude), longitude: Number(clientLongitude) },
             second_address: showSecondAddress ? (clientSecondAddress === '' ? null : clientSecondAddress) : null,
             second_address_geolocation: !showSecondAddress || secondAddressChanged
                 ? null
                 : {
-                    latitude: clientSecondLatitude === '' ? null : clientSecondLatitude,
-                    longitude: clientSecondLongitude === '' ? null : clientSecondLongitude
+                    latitude: clientSecondLatitude === '' ? null : Number(clientSecondLatitude),
+                    longitude: clientSecondLongitude === '' ? null : Number(clientSecondLongitude)
                 },
             email: clientEmail,
-            discount: clientDiscount
+            discount: clientDiscount,
+            delete_old_record: deleteOldRecord
         };
         try {
             await onUpdate(updClient);
@@ -107,27 +126,30 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
         } catch (error) {
             setLoadingUpdateRequest(false);
         }
-
-
     };
 
-
     const deleteClient = async () => {
-        // const updatedClientName = clientName || clientData.name || '';
-        // const updatedClientPrice = clientPrice || clientData.price || '';
+        setLoadingDeleteRequest(true);
+        const client = {
+            phone_number: clientPhoneNumber,
+        };
 
-        // const client = {
-        //     item: {
-        //         name: updatedClientName,
-        //         price: updatedClientPrice,
-        //         id: clientData.id || '',
-        //     },
-        //     rowIndex: rowData.index
-        // };
-        // onDelete(client);
-        // setClientName('');
-        // setClientPrice('');
-        onClose();
+        try {
+            await onDelete(client);
+            setClientPhoneNumber('');
+            setClientName('');
+            setClientAddress('');
+            setClientLongitude('');
+            setClientLatitude('');
+            setClientSecondAddress('');
+            setClientSecondLatitude('');
+            setClientSecondLongitude('');
+            setClientEmail('');
+            setClientDiscount('');
+            onClose();
+        } catch (error) {
+            setLoadingDeleteRequest(false);
+        }
     };
 
     isUserAdmin = isAdmin();
@@ -148,9 +170,19 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                                 borderColor={borderColor}
                                 placeholder="Ingresa el teléfono del cliente"
                                 value={clientPhoneNumber}
-                                isDisabled={true}
-                                onChange={(e) => setClientPhoneNumber(e.target.value)}
+                                onChange={handlePhoneNumberChange}
                             />
+                            {phoneChanged && (
+                                <>
+                                    <Text color="red.500" mt={2}>Este cambio creará un nuevo registro con la información actual.</Text>
+                                    <Checkbox
+                                        isChecked={deleteOldRecord}
+                                        onChange={(e) => setDeleteOldRecord(e.target.checked)}
+                                    >
+                                        Eliminar el registro antiguo
+                                    </Checkbox>
+                                </>
+                            )}
                         </FormControl>
 
                         <FormControl isRequired isInvalid={nameTouched && clientName.trim() === ''}>
@@ -160,14 +192,13 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                                 color={textColor}
                                 borderColor={borderColor}
                                 placeholder="Ingresa el nombre del cliente"
-                                defaultValue={clientName}
+                                value={clientName}
                                 onChange={(e) => handleInputChange(setClientName, e.target.value, clientData.clientName)}
                                 onBlur={() => {
                                     setNameTouched(true);
                                 }}
                             />
                             <FormErrorMessage>El nombre es obligatorio.</FormErrorMessage>
-
                         </FormControl>
 
                         <FormControl isRequired isInvalid={addressTouched && clientAddress.trim() === ''}>
@@ -189,7 +220,6 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                                 }}
                             />
                             <FormErrorMessage>La dirección es obligatoria.</FormErrorMessage>
-
                         </FormControl>
 
                         <FormControl>
@@ -199,7 +229,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                                 color={textColor}
                                 borderColor={borderColor}
                                 placeholder="Ingresa la latitud de la dirección primaria"
-                                defaultValue={clientLatitude}
+                                value={clientLatitude}
                                 isDisabled={!isUserAdmin}
                                 onChange={(e) => handleInputChange(setClientLatitude, e.target.value, clientData.clientLatitude)}
                             />
@@ -212,11 +242,12 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                                 color={textColor}
                                 borderColor={borderColor}
                                 placeholder="Ingresa la longitud del cliente"
-                                defaultValue={clientLongitude}
+                                value={clientLongitude}
                                 isDisabled={!isUserAdmin}
                                 onChange={(e) => handleInputChange(setClientLongitude, e.target.value, clientData.clientLongitude)}
                             />
                         </FormControl>
+
                         {showSecondAddress && (
                             <>
                                 <FormControl>
@@ -232,6 +263,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                                 </FormControl>
                             </>
                         )}
+
                         {clientData.clientSecondAddress && clientData.clientSecondAddress.trim() !== '' && (
                             <>
                                 <FormControl>
@@ -272,7 +304,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                                 color={textColor}
                                 borderColor={borderColor}
                                 placeholder="Ingresa la dirección de correo electrónico"
-                                defaultValue={clientEmail}
+                                value={clientEmail}
                                 onChange={(e) => handleInputChange(setClientEmail, e.target.value, clientData.clientEmail)}
                                 onBlur={() => {
                                     setEmailTouched(true);
@@ -281,30 +313,32 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                             <FormErrorMessage>Email inválido.</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isInvalid={discountTouched &&
-                            ((Number(clientDiscount) < 0 || Number(clientDiscount) > 100) ||
-                            (isNaN(clientDiscount) ||
-                                !Number.isInteger(Number(clientDiscount))))}>
+                        <FormControl>
                             <FormLabel>Descuento</FormLabel>
-                            <Input
-                                type="number"
-                                color={textColor}
-                                borderColor={borderColor}
-                                placeholder="Solo válido números enteros"
-                                defaultValue={clientDiscount}
+                            <Select
+                                placeholder="Selecciona opción de descuento"
+                                value={clientDiscount}
                                 onChange={(e) => handleInputChange(setClientDiscount, e.target.value, clientData.clientDiscount)}
-                                onBlur={() => {
-                                    setDiscountTouched(true);
-                                }}
-                            />
-                            <FormErrorMessage>Descuento debe ser un entero entre 0 y 100.</FormErrorMessage>
+                            >
+                                <option value="0">Sin descuento</option>
+                                <option value="5">5% de descuento</option>
+                                <option value="10">10% de descuento</option>
+                                <option value="15">15% de descuento</option>
+                                <option value="100">100% de descuento</option>
+                            </Select>
                         </FormControl>
                     </VStack>
                 </ModalBody>
                 <ModalFooter>
                     <ButtonGroup spacing='6'>
                         {isUserAdmin && (
-                            <Button colorScheme='red' variant='outline' onClick={deleteClient}>
+                            <Button
+                                colorScheme='red'
+                                variant='outline'
+                                onClick={deleteClient}
+                                isLoading={loadingDeleteRequest}
+                                loadingText='Eliminando'
+                                spinnerPlacement='end'>
                                 Eliminar
                             </Button>
                         )}
@@ -320,7 +354,6 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) 
                         </Button>
                     </ButtonGroup>
                 </ModalFooter>
-
             </ModalContent>
         </Modal>
     );
