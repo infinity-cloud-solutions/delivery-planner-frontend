@@ -8,12 +8,12 @@ import {
   MdOutlineShoppingCart,
   MdLock
 } from "react-icons/md";
-// import { FaHandshake } from "react-icons/fa6";
+import { FaHandshake } from "react-icons/fa6";
 
 // Admin Imports
 import MainDashboard from "views/admin/dashboard";
 import Product from "views/admin/products";
-// import Client from "views/admin/clients";
+import Client from "views/admin/clients";
 import Deliveries from "views/driver/deliveries";
 import Orders from "views/admin/orders";
 
@@ -43,21 +43,21 @@ const routes = [
     component: Product,
     secondary: true,
   },
-  // {
-  //   name: "Clientes",
-  //   layout: "/admin",
-  //   path: "/clients",
-  //   icon: (
-  //     <Icon
-  //       as={FaHandshake}
-  //       width='20px'
-  //       height='20px'
-  //       color='inherit'
-  //     />
-  //   ),
-  //   component: Client,
-  //   secondary: true,
-  // },
+  {
+    name: "Clientes",
+    layout: "/admin",
+    path: "/clients",
+    icon: (
+      <Icon
+        as={FaHandshake}
+        width='20px'
+        height='20px'
+        color='inherit'
+      />
+    ),
+    component: Client,
+    secondary: true,
+  },
   {
     name: "Órdenes",
     layout: "/admin",

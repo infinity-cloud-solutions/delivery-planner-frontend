@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Accordion,
+  AccordionIcon,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  Box,
   Button,
   ButtonGroup,
   Modal,
@@ -10,6 +16,7 @@ import {
   ModalBody,
   ModalCloseButton,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Input,
   Textarea,
@@ -54,7 +61,12 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [loadingDeleteRequest, setLoadingDeleteRequest] = useState(false);
   const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState([]);
   const [discount, setDiscount] = useState(rowData.row.discount || '');
-  const [notes, setNotes] = rowData.row.notes || '';
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [deliveryAddressTouched, setDeliveryAddressTouched] = useState(false);
+  const [deliveryDateTouched, setDeliveryDateTouched] = useState(false);
+  const [deliveryTimeTouched, setDeliveryTimeTouched] = useState(false);
+  const [paymentMethodTouched, setPaymentMethodTouched] = useState(false);
 
   const [apiError, setApiError] = useState(null);
 
@@ -100,28 +112,30 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
 
   const updateOrder = async () => {
     setLoadingUpdateRequest(true)
+    const formattedNotes = deliveryNotes === "" ? null : deliveryNotes;
+    const formattedDiscount = discount === "" ? null : discount;
     const updOrder = {
       item: {
         id: rowData.row.id,
         client_name: clientName,
         delivery_address: deliveryAddress,
-        geolocation: {
+        geolocation: (deliveryLatitude && deliveryLongitude) ? {
           latitude: Number(deliveryLatitude),
           longitude: Number(deliveryLongitude)
-        },
+        } : null,
         delivery_date: deliveryDate,
         delivery_time: deliveryTime,
         phone_number: phoneNumber,
         total_amount: parseFloat(totalAmountDisplay.replace(/[^\d.]/g, '')),
         cart_items: cartItems,
         payment_method: paymentMethod,
-        notes: deliveryNotes,
+        notes: formattedNotes,
         status: "Creada",
         order: "Ver detalles",
         original_date: rowData.row.delivery_date,
         driver: selectedDriver,
         original_driver: rowData.row.driver,
-        discount: discount
+        discount: formattedDiscount
       },
       rowIndex: rowData.index
     };
@@ -131,7 +145,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         item.price = Number(item.price) || 0;
       }
     });
-    console.log(updOrder.item)
+
     try {
       await onUpdate(updOrder);
       setClientName('');
@@ -397,17 +411,70 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing="4">
-            <FormControl isRequired>
-              <FormLabel>Nombre</FormLabel>
-              <Input type="text" color={textColor} borderColor={borderColor}
-                value={clientName} onChange={(e) => setClientName(e.target.value)} />
+            <FormControl isRequired isInvalid={phoneTouched && phoneNumber.length !== 10}>
+              <FormLabel>Teléfono</FormLabel>
+              <Input
+                type="number"
+                color={textColor}
+                borderColor={borderColor}
+                placeholder="Si el cliente existe, usaramos la información previamente salvada"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                onBlur={() => {
+                  setPhoneTouched(true);
+                }}
+              />
+
+              {phoneTouched && phoneNumber.length !== 10 && (
+                <FormErrorMessage>El número de teléfono debe tener 10 dígitos.</FormErrorMessage>
+              )}
             </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel>Direccion</FormLabel>
-              <Textarea type="text" color={textColor} borderColor={borderColor}
+            <FormControl isRequired isInvalid={nameTouched && clientName.trim() === ''}>
+              <FormLabel>Nombre</FormLabel>
+              <Input
+                type="text"
+                color={textColor}
+                borderColor={borderColor}
+                placeholder="Nombre y apellido"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                onBlur={() => {
+                  setNameTouched(true);
+                }} />
+              <FormErrorMessage>El nombre es obligatorio.</FormErrorMessage>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Descuento</FormLabel>
+              <Select
+                placeholder="Selecciona un descuento"
+                value={discount}
+                onChange={(e) => handleDiscount(e.target.value)}
+              >
+                <option value="0">Sin descuento</option>
+                <option value="5">5% de descuento</option>
+                <option value="10">10% de descuento</option>
+                <option value="15">15% de descuento</option>
+                <option value="100">100% de descuento</option>
+              </Select>
+            </FormControl>
+
+            <FormControl isRequired isInvalid={deliveryAddressTouched && deliveryAddress.trim() === ''}>
+              <FormLabel>Dirección</FormLabel>
+              <Textarea
+                type="text"
+                color={textColor}
+                rows="2"
+                borderColor={borderColor}
+                placeholder="Formato similar al de Google Maps"
                 value={deliveryAddress}
-                onChange={(e) => setDeliveryAddress(e.target.value)} />
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                onBlur={() => {
+                  setDeliveryAddressTouched(true);
+                }}
+              />
+              <FormErrorMessage>La dirección es obligatoria.</FormErrorMessage>
             </FormControl>
 
             <FormControl isRequired>
@@ -421,65 +488,86 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               </Select>
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl>
               <FormLabel>Latitud</FormLabel>
-              <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
+              <Textarea
+                type="text"
+                color={textColor}
+                rows="1"
+                borderColor={borderColor}
                 value={deliveryLatitude}
+                isDisabled={!isUserAdmin}
                 onChange={(e) => setDeliveryLatitude(e.target.value)} />
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl>
               <FormLabel>Longitud</FormLabel>
-              <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
+              <Textarea
+                type="text"
+                color={textColor}
+                rows="1"
+                borderColor={borderColor}
                 value={deliveryLongitude}
+                isDisabled={!isUserAdmin}
                 onChange={(e) => setDeliveryLongitude(e.target.value)} />
             </FormControl>
 
-            <FormControl isRequired>
-              <FormLabel>Teléfono</FormLabel>
-              <Textarea type="text" color={textColor} rows="1" borderColor={borderColor}
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)} />
-            </FormControl>
-
-            <FormControl isRequired>
-              <FormLabel>Fecha de entrega </FormLabel>
-              <Input color={textColor} borderColor={borderColor} type="date" value={deliveryDate}
+            <FormControl isRequired isInvalid={deliveryDateTouched && deliveryDate.trim() === ''}>
+              <FormLabel>Fecha de entrega</FormLabel>
+              <Input
+                color={textColor}
+                borderColor={borderColor}
+                type="date"
+                value={deliveryDate}
                 onChange={(e) => handleDateChange(e.target.value)}
+                onBlur={() => {
+                  setDeliveryDateTouched(true);
+                }}
               />
               {dateError && (
-                <Text color="red.500" fontSize="sm" mt="2">
-                  {dateError}
-                </Text>
+                <Text color="red.500" fontSize="sm" mt="2">{dateError}</Text>
               )}
               {apiError && (
-                <Text color="red.500" fontSize="sm" mt="2">
-                  {apiError}
-                </Text>
+                <Text color="red.500" fontSize="sm" mt="2">{apiError}</Text>
+
               )}
+              <FormErrorMessage>Fecha de entrega es obligatoria.</FormErrorMessage>
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={deliveryTimeTouched && deliveryTime.trim() === ''}>
               <FormLabel>Horario de entrega</FormLabel>
-              <Select value={deliveryTime}
+              <Select
+                placeholder="Selecciona un horario"
+                value={deliveryTime}
                 onChange={(e) => {
                   setDeliveryTime(e.target.value);
                   setApiError(false);
-                }}>
+                }}
+                onBlur={() => {
+                  setDeliveryTimeTouched(true);
+                }}
+              >
                 {availableDeliveryTimes.map((time, index) => (
                   <option key={index} value={time}>{time}</option>
                 ))}
               </Select>
+              <FormErrorMessage>Horario es obligatorio.</FormErrorMessage>
             </FormControl>
 
-            <FormControl isRequired>
+            <FormControl isRequired isInvalid={paymentMethodTouched && paymentMethod.trim() === ''}>
               <FormLabel>Método de pago</FormLabel>
-              <Select value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}>
+              <Select
+                placeholder="Selecciona un método de pago"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                onBlur={() => {
+                  setPaymentMethodTouched(true);
+                }}>
                 <option value="Tarjeta">Tarjeta</option>
                 <option value="Efectivo">Efectivo</option>
                 <option value="Transferencia">Transferencia</option>
               </Select>
+              <FormErrorMessage>Método de pago es obligatorio.</FormErrorMessage>
             </FormControl>
 
             <FormLabel>Lista de productos en pedido</FormLabel>
@@ -491,8 +579,9 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                     isSearchable={true}
                     styles={customStyles}
                     options={productsAvailable}
-                    placeholder="Busca producto"
+                    placeholder="Buscar producto"
                     noOptionsMessage={() => "No hay opción"}
+                    isDisabled={index !== 0}
                     value={{ label: cartItemsSelection[index]?.product, value: cartItemsSelection[index] }}
                     onChange={(selectedOption) => handleProductSelect(selectedOption, index)}
                   />
@@ -505,6 +594,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                     color={textColor}
                     borderColor={borderColor}
                     value={cartItemsSelection[index]?.quantity ?? ''}
+                    isDisabled={index !== 0}
                     onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}
                   />
                 </FormControl>
@@ -519,26 +609,29 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
             <Button variant="outline" onClick={addCartItem}>Agregar más al carrito</Button>
 
             <FormControl>
-              <FormLabel>Notas</FormLabel>
-              <Textarea
-                type="text"
-                color={textColor}
-                borderColor={borderColor}
-                value={deliveryNotes}
-                onChange={(e) => setDeliveryNotes(e.target.value)}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Descuento</FormLabel>
-              <Select
-                placeholder="Selecciona un descuento"
-                value={discount}
-                onChange={(e) => handleDiscount(e.target.value)}
-              >
-                <option value="5">5% de descuento</option>
-                <option value="10">10% de descuento</option>
-              </Select>
+              <Accordion allowToggle>
+                <AccordionItem>
+                  <h2>
+                    <AccordionButton>
+                      <Box flex="1" textAlign="left">
+                        {deliveryNotes ? "Ver notas" : "Agregar notas"}
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={4}>
+                    <Textarea
+                      type="text"
+                      color={textColor}
+                      rows="1"
+                      borderColor={borderColor}
+                      placeholder="Instrucciones para la entrega"
+                      value={deliveryNotes}
+                      onChange={(e) => setDeliveryNotes(e.target.value)}
+                    />
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
             </FormControl>
 
             <Text
