@@ -147,7 +147,7 @@ function Clients(props) {
             />
             {!isError ? (
               <FormHelperText>
-                Ingresa el número que deseas buscar en la base de datos.
+                Ingresa el número que deseas buscar en la base de datos
               </FormHelperText>
             ) : (
               <FormErrorMessage>Cliente no encontrado.</FormErrorMessage>
