@@ -65,8 +65,8 @@ function Clients(props) {
   };
 
   const openUpdateModal = (clientData) => {
-      setFetchedClientData(clientData)
-      setIsUpdateModalOpen(true);
+    setFetchedClientData(clientData)
+    setIsUpdateModalOpen(true);
   };
 
   const closeUpdateModal = () => {
@@ -129,9 +129,9 @@ function Clients(props) {
           <Text color={textColor} fontSize='xl' fontWeight='600'>
             Clientes
           </Text>
-            <Button variant="action" onClick={openCreateModal}>
-              Crear
-            </Button>
+          <Button variant="action" onClick={openCreateModal}>
+            Crear
+          </Button>
         </Flex>
 
         <Box px="22px">
