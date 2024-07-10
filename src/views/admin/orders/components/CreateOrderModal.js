@@ -125,8 +125,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         const isPhoneNumberValid = phoneNumber.trim() !== '';
         const isDeliveryDateValid = !dateError;
         const isApiRequestValid = !apiError;
+        const isPaymentMethodValid = paymentMethod.trim() !== '';
 
-        setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isApiRequestValid);
+        setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isApiRequestValid && isPaymentMethodValid);
     };
 
     const addCartItem = () => {
