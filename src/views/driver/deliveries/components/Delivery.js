@@ -284,9 +284,9 @@ export default function DeliveryCard(props) {
 
     const screenSize = useBreakpointValue({ base: 'sm', md: 'md', lg: 'lg' });
     const handleClickMarker = () => {
-        const lat = order.latitude;
-        const long = order.longitude;
-        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${long}`;
+        const address = order.delivery_address;
+        const encodedAddress = encodeURIComponent(address);
+        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
 
         window.open(googleMapsUrl, '_blank');
     };
