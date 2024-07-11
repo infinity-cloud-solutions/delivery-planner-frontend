@@ -363,6 +363,12 @@ function Orders(props) {
                             {cell.value}
                           </Text>
                         );
+                      } else if (cell.column.Header === "TELÉFONO") {
+                        data = (
+                          <Text color={textColor} fontSize="sm" fontWeight="700">
+                            {cell.value}
+                          </Text>
+                        );
                       } else if (cell.column.Header === "STATUS") {
                         data = (
                           <Flex align="center">

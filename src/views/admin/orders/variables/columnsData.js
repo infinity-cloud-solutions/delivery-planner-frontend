@@ -24,6 +24,10 @@ export const columnsDataOrders = [
     accessor: "client_name",
   },
   {
+    Header: "TELÉFONO",
+    accessor: "phone_number",
+  },
+  {
     Header: "PEDIDO",
     accessor: "order",
   },
