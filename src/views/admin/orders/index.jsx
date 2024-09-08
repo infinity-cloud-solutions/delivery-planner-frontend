@@ -402,6 +402,28 @@ export default function OrdersView() {
       }
     };
 
+    const handleSaveRoute = async (orders) => {
+      if (!validateJWT()) {
+        history.push('/auth');
+        return;
+      }
+      try {
+        await axios.post(process.env.REACT_APP_UPDATE_SEQUENCING_ORDERS_BASE_URL, orders, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+        });
+        setAlertMessage({ type: 'success', text: 'Ruta creada con éxito.' });
+        setTimeout(() => setAlertMessage(null), 3000);
+      } catch (error) {
+        console.error('API error:', error);
+        setAlertMessage({ type: 'error', text: 'Error al guardar la ruta.' });
+        setTimeout(() => setAlertMessage(null), 3000);
+        throw error;
+      }
+    }
+
   if (userIsDriver) {
     return (
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
@@ -466,6 +488,7 @@ export default function OrdersView() {
               productsAvailable={products}
               listOfConsolidatedProducts={consolidatedProducts}
               onValidateClient={handleClientFetched}
+              onRouteSelected={handleSaveRoute}
             />
           )}
         </SimpleGrid>
