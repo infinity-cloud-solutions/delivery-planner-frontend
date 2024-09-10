@@ -27,6 +27,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [confirmedOrders, setConfirmedOrders] = useState([]);
     const [loadingRequest, setLoadingRequest] = useState(false);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const bgColor = useColorModeValue('white', '#2D3748');
@@ -54,7 +55,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
     useEffect(() => {
         if (selectedDriver && selectedHours) {
             const filtered = orders.filter(order =>
-                order.driver === Number(selectedDriver) &&
+                Number(order.driver) === Number(selectedDriver) &&
                 order.delivery_time === selectedHours
             );
 
@@ -74,7 +75,6 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
             ...order,
             delivery_sequence: index + 1,
         }));
-
         setFilteredOrders(updatedOrders);
 
         const combined = [...confirmedOrders, ...updatedOrders].reduce((acc, current) => {
@@ -91,11 +91,66 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
     const confirmRoute = async () => {
         setLoadingRequest(true);
         try {
-            await onConfirmRoute(confirmedOrders);
+            const updatedOrders = orders.map(order => {
+                const matchingOrder = confirmedOrders.find(filteredOrder => filteredOrder.id === order.id);
+                if (matchingOrder) {
+                    return {
+                        id: order.id,
+                        delivery_date: order.delivery_date,
+                        status: "Programada",
+                        driver: matchingOrder.driver,
+                        delivery_sequence: matchingOrder.delivery_sequence,
+                    };
+                }
+                return order;
+            })
+            const finalOrders = updatedOrders.map(order => {
+                return {
+                    id: order.id,
+                    delivery_date: order.delivery_date,
+                    status: "Programada",
+                    driver: order.driver,
+                    delivery_sequence: order.delivery_sequence,
+                };
+            });
+            await onConfirmRoute(finalOrders);
             onClose();
         } catch (error) {
             setLoadingRequest(false);
         }
+    };
+
+    const ConfirmationModal = () => {
+        return (
+            <Modal
+                isOpen={isConfirmationModalOpen}
+                onClose={() => setIsConfirmationModalOpen(false)}
+            >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Confirmar Acción</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        Esta acción bloqueará la edición de los pedidos programados para hoy. ¿Estás seguro de que deseas programar todas las órdenes?
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button
+                            variant="brand"
+                            mr={3}
+                            onClick={() => {
+                                setIsConfirmationModalOpen(false);
+                                confirmRoute();
+                            }}
+                        >
+                            Confirmar
+                        </Button>
+                        <Button variant="ghost" onClick={() => setIsConfirmationModalOpen(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        );
     };
 
     return (
@@ -116,8 +171,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                                 {filteredOrders.map((position, idx) => {
                                     const defaultIcon = L.icon({
                                         iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-                                        iconSize: [25, 41],
-                                        iconAnchor: [12, 41],
+                                        iconSize: [18, 27],
+                                        iconAnchor: [8, 27],
                                     });
 
                                     const labelIcon = L.divIcon({
@@ -170,7 +225,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                                 <DragDropContext onDragEnd={onDragEnd}>
                                     <Droppable droppableId="orders">
                                         {(provided) => (
-                                            <table {...provided.droppableProps} ref={provided.innerRef}>
+                                            <table {...provided.droppableProps} ref={provided.innerRef} style={{ width: '100%' }}>
                                                 <thead>
                                                     <tr>
                                                         <th>#</th>
@@ -190,15 +245,21 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                                                                         ...provided.draggableProps.style,
                                                                         backgroundColor: snapshot.isDragging ? draggingColor : rowBgColor,
                                                                         color: textColor,
+                                                                        borderBottom: snapshot.isDragging ? 'none' : '1px solid',
+                                                                        borderBottomColor: rowBgColor,
                                                                     }}
                                                                 >
                                                                     {snapshot.isDragging ? (
                                                                         <td colSpan="3">{order.delivery_address}</td>
                                                                     ) : (
                                                                         <>
-                                                                            <td>{index + 1}</td>
-                                                                            <td>{order.delivery_address}</td>
-                                                                            <td><Text as="span">&#x2630;</Text></td>
+                                                                            <td style={{
+                                                                                borderRight: '1px solid',
+                                                                                borderRightColor: rowBgColor,
+                                                                                padding: '8px',
+                                                                            }}>{index + 1}</td>
+                                                                            <td style={{ padding: '8px' }}>{order.delivery_address}</td>
+                                                                            <td style={{ padding: '8px' }}><Text as="span">&#x2630;</Text></td>
                                                                         </>
                                                                     )}
                                                                 </tr>
@@ -211,6 +272,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                                         )}
                                     </Droppable>
                                 </DragDropContext>
+
                             </Box>
                         </VStack>
                     </Box>
@@ -218,7 +280,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                 <ModalFooter>
                     <Button
                         variant="brand"
-                        onClick={confirmRoute}
+                        onClick={() => setIsConfirmationModalOpen(true)}
                         isLoading={loadingRequest}
                         loadingText='Guardando...'
                         spinnerPlacement='end'>
@@ -229,6 +291,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                     </Button>
                 </ModalFooter>
             </ModalContent>
+            <ConfirmationModal />
         </Modal>
     );
 };

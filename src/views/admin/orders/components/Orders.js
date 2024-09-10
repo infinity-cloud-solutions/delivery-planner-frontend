@@ -22,13 +22,7 @@ import {
   AccordionButton,
   AccordionPanel,
   useColorModeValue,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton
+
 } from "@chakra-ui/react";
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -62,8 +56,6 @@ import { MdCheckCircle, MdCancel, MdOutlineError, MdClear, MdAdd } from "react-i
 function Orders(props) {
   const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onOrdersScheduled, onDateSelect, productsAvailable, listOfConsolidatedProducts, onValidateClient, onRouteSelected } = props;
 
-  const mockOrderds = []
-
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
   const [isScheduling, setIsScheduling] = useState(false);
@@ -71,7 +63,7 @@ function Orders(props) {
   const [selectedAvailableDrivers, setSelectedAvailableDrivers] = useState([1, 2])
   const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+
   const jwtToken = getAccessToken();
   const history = useHistory();
 
@@ -85,43 +77,13 @@ function Orders(props) {
       !data.some(row => row.status === 'En ruta');
   };
 
-  const ConfirmationModal = () => {
-    return (
-      <Modal
-        isOpen={isConfirmationModalOpen}
-        onClose={() => setIsConfirmationModalOpen(false)}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Confirmar Acción</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-          Esta acción bloqueará la edición de los pedidos programados para hoy. ¿Estás seguro de que deseas programar todas las órdenes?
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              variant="brand"
-              mr={3}
-              onClick={() => {
-                setIsConfirmationModalOpen(false);
-                onOrderScheduledCallback();
-              }}
-            >
-              Confirmar
-            </Button>
-            <Button variant="ghost" onClick={() => setIsConfirmationModalOpen(false)}>
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    );
-  };
+
 
   const onOrderScheduledCallback = async () => {
     setIsScheduling(true);
     try {
       await onOrdersScheduled(selectedAvailableDrivers);
+      setIsMapModalOpen(true);
     } catch (error) {
       setIsScheduling(false);
     }
@@ -590,7 +552,7 @@ function Orders(props) {
             isOpen={isMapModalOpen}
             onClose={closeMapModal}
             onConfirmRoute={onConfirmedRouteCallback}
-            orders={mockOrderds}
+            orders={data}
           />
         )}
         <Flex direction="column" align="center" mt="2" mb="2">
@@ -612,42 +574,42 @@ function Orders(props) {
           </ButtonGroup>
         </Flex>
         {(isToday() && !isButtonDisabled()) && (
-        <Accordion allowMultiple>
-          <AccordionItem>
-            {({ isExpanded }) => (
-              <>
-                <AccordionButton>
-                  <Box as="span" flex='1' textAlign='left'>
-                    Ver opciones avanzadas
-                  </Box>
-                  {isExpanded ? (
-                    <MdClear />
-                  ) : (
-                    <MdAdd />
-                  )}
-                </AccordionButton>
-                <AccordionPanel pb={4}>
-                  <FormControl mt={'4'}>
-                    <FormLabel>Programar todas las órdenes para un solo repartidor</FormLabel>
-                    <Select
-                      value={selectedAvailableDrivers}
-                      onChange={handleAvailableDriversChange}
-                      placeholder='Elegir a un repartidor'>
-                      <option value="1">Repartidor 1</option>
-                      <option value="2">Repartidor 2</option>
-                    </Select>
-                  </FormControl>
-                </AccordionPanel>
-              </>
-            )}
-          </AccordionItem>
-        </Accordion>
+          <Accordion allowMultiple>
+            <AccordionItem>
+              {({ isExpanded }) => (
+                <>
+                  <AccordionButton>
+                    <Box as="span" flex='1' textAlign='left'>
+                      Ver opciones avanzadas
+                    </Box>
+                    {isExpanded ? (
+                      <MdClear />
+                    ) : (
+                      <MdAdd />
+                    )}
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    <FormControl mt={'4'}>
+                      <FormLabel>Programar todas las órdenes para un solo repartidor</FormLabel>
+                      <Select
+                        value={selectedAvailableDrivers}
+                        onChange={handleAvailableDriversChange}
+                        placeholder='Elegir a un repartidor'>
+                        <option value="1">Repartidor 1</option>
+                        <option value="2">Repartidor 2</option>
+                      </Select>
+                    </FormControl>
+                  </AccordionPanel>
+                </>
+              )}
+            </AccordionItem>
+          </Accordion>
         )}
         {isToday() && (
           <Button
             variant="action"
             mt="4"
-            onClick={() => setIsConfirmationModalOpen(true)}
+            onClick={onOrderScheduledCallback}
             isDisabled={isScheduling || isButtonDisabled()}
             isLoading={isScheduling}
             spinnerPlacement="end"
@@ -657,17 +619,6 @@ function Orders(props) {
               : `Crear ruta sugerida usando repartidor ${selectedAvailableDrivers[0]}`}
           </Button>
         )}
-        {(isToday() && isEditRoutesButtonVisible()) && (
-          <Button
-            variant="action"
-            mt="4"
-            onClick={openMapModal}
-            spinnerPlacement="end"
-          >
-            Ver programación en mapa
-          </Button>
-        )}
-        <ConfirmationModal />
       </Card>
     </>
   );
