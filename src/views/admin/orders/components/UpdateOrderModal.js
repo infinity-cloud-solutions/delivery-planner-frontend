@@ -133,8 +133,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         status: "Creada",
         order: "Ver detalles",
         original_date: rowData.row.delivery_date,
-        driver: selectedDriver,
-        original_driver: rowData.row.driver,
+        driver: Number(selectedDriver),
+        original_driver: Number(rowData.row.driver),
         discount: formattedDiscount
       },
       rowIndex: rowData.index
@@ -381,7 +381,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
           <ModalHeader>Confirmar Acción</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            Esta acción no se puede deshacer. ¿Estas seguro de que deseas eliminar esta orden?
+            Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar esta orden?
           </ModalBody>
           <ModalFooter>
             <Button

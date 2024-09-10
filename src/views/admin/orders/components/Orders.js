@@ -22,6 +22,7 @@ import {
   AccordionButton,
   AccordionPanel,
   useColorModeValue,
+
 } from "@chakra-ui/react";
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -44,6 +45,7 @@ import Menu from "components/menu/MainMenu";
 import UpdateOrderModal from "./UpdateOrderModal";
 import CreateOrderModal from "./CreateOrderModal";
 import ConsolidatedModal from "./ConsolidatedModal";
+import MapModal from "./MapModal";
 import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 import { getAccessToken, validateJWT } from 'security.js';
 import { useHistory } from "react-router-dom";
@@ -52,7 +54,7 @@ import { useHistory } from "react-router-dom";
 import { MdCheckCircle, MdCancel, MdOutlineError, MdClear, MdAdd } from "react-icons/md";
 
 function Orders(props) {
-  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onOrdersScheduled, onDateSelect, productsAvailable, listOfConsolidatedProducts, onValidateClient } = props;
+  const { columnsData, tableData, onOrderCreated, onOrderUpdated, onOrderDeleted, onOrdersScheduled, onDateSelect, productsAvailable, listOfConsolidatedProducts, onValidateClient, onRouteSelected } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
@@ -60,6 +62,8 @@ function Orders(props) {
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedAvailableDrivers, setSelectedAvailableDrivers] = useState([1, 2])
   const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
   const jwtToken = getAccessToken();
   const history = useHistory();
 
@@ -67,10 +71,19 @@ function Orders(props) {
     return data.length === 0 || data.some(row => row.status !== 'Creada' || row.errors.length > 0);
   };
 
+  const isEditRoutesButtonVisible = () => {
+    return data.length > 0 &&
+      data.every(row => row.status === 'Programada' && row.delivery_sequence !== null) &&
+      !data.some(row => row.status === 'En ruta');
+  };
+
+
+
   const onOrderScheduledCallback = async () => {
     setIsScheduling(true);
     try {
       await onOrdersScheduled(selectedAvailableDrivers);
+      setIsMapModalOpen(true);
     } catch (error) {
       setIsScheduling(false);
     }
@@ -116,6 +129,14 @@ function Orders(props) {
     }
   };
 
+  const onConfirmedRouteCallback = async (orders) => {
+    try {
+      await onRouteSelected(orders);
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const onClientExistsCheckCallback = async (client) => {
     try {
       const clientData = await onValidateClient(client)
@@ -131,6 +152,14 @@ function Orders(props) {
 
   const closeConsolidatedModal = () => {
     setIsConsolidatedModalOpen(false);
+  };
+
+  const openMapModal = () => {
+    setIsMapModalOpen(true);
+  };
+
+  const closeMapModal = () => {
+    setIsMapModalOpen(false);
   };
 
   const onOrderUpdatedCallback = async (order) => {
@@ -299,10 +328,13 @@ function Orders(props) {
               {page.map((row, index) => {
                 prepareRow(row);
                 const actualIndex = index + pageIndex * pageSize;
-                const totalAmount = row.original.cart_items.reduce(
+                let totalAmount = row.original.cart_items.reduce(
                   (sum, item) => sum + item.price * item.quantity,
                   0
                 );
+                if (row.original.discount > 0) {
+                  totalAmount *= (1 - row.original.discount / 100);
+                }
                 const formattedTotalAmount = totalAmount.toLocaleString('es-MX', {
                   style: 'currency',
                   currency: 'MXN',
@@ -436,7 +468,14 @@ function Orders(props) {
                             {cell.value}
                           </Text>
                         );
-                      } else if (cell.column.Header === "DIRECCIÓN") {
+                      } else if (cell.column.Header === "CREADA") {
+                        data = (
+                          <Text color={textColor} fontSize="sm" fontWeight="700">
+                            {cell.value}
+                          </Text>
+                        );
+                      }
+                      else if (cell.column.Header === "DIRECCIÓN") {
                         data = (
                           <Text color={textColor} fontSize="sm" fontWeight="700">
                             {cell.value}
@@ -515,6 +554,14 @@ function Orders(props) {
             products={listOfConsolidatedProducts}
           />
         )}
+        {isMapModalOpen && (
+          <MapModal
+            isOpen={isMapModalOpen}
+            onClose={closeMapModal}
+            onConfirmRoute={onConfirmedRouteCallback}
+            orders={data}
+          />
+        )}
         <Flex direction="column" align="center" mt="2" mb="2">
           <ButtonGroup>
             <Button variant="outline" mr={{ base: '10px', sm: '15', md: '30px', lg: '40px', xl: '50px' }} onClick={() => previousPage()} disabled={!canPreviousPage}>
@@ -533,36 +580,38 @@ function Orders(props) {
             </Button>
           </ButtonGroup>
         </Flex>
-        <Accordion allowMultiple>
-          <AccordionItem>
-            {({ isExpanded }) => (
-              <>
-                <AccordionButton>
-                  <Box as="span" flex='1' textAlign='left'>
-                    Ver opciones avanzadas
-                  </Box>
-                  {isExpanded ? (
-                    <MdClear />
-                  ) : (
-                    <MdAdd />
-                  )}
-                </AccordionButton>
-                <AccordionPanel pb={4}>
-                  <FormControl mt={'4'}>
-                    <FormLabel>Programar todas las órdenes para un solo repartidor</FormLabel>
-                    <Select
-                      value={selectedAvailableDrivers}
-                      onChange={handleAvailableDriversChange}
-                      placeholder='Elegir a un repartidor'>
-                      <option value="1">Repartidor 1</option>
-                      <option value="2">Repartidor 2</option>
-                    </Select>
-                  </FormControl>
-                </AccordionPanel>
-              </>
-            )}
-          </AccordionItem>
-        </Accordion>
+        {(isToday() && !isButtonDisabled()) && (
+          <Accordion allowMultiple>
+            <AccordionItem>
+              {({ isExpanded }) => (
+                <>
+                  <AccordionButton>
+                    <Box as="span" flex='1' textAlign='left'>
+                      Ver opciones avanzadas
+                    </Box>
+                    {isExpanded ? (
+                      <MdClear />
+                    ) : (
+                      <MdAdd />
+                    )}
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    <FormControl mt={'4'}>
+                      <FormLabel>Programar todas las órdenes para un solo repartidor</FormLabel>
+                      <Select
+                        value={selectedAvailableDrivers}
+                        onChange={handleAvailableDriversChange}
+                        placeholder='Elegir a un repartidor'>
+                        <option value="1">Repartidor 1</option>
+                        <option value="2">Repartidor 2</option>
+                      </Select>
+                    </FormControl>
+                  </AccordionPanel>
+                </>
+              )}
+            </AccordionItem>
+          </Accordion>
+        )}
         {isToday() && (
           <Button
             variant="action"
@@ -573,8 +622,8 @@ function Orders(props) {
             spinnerPlacement="end"
           >
             {selectedAvailableDrivers.length === 2
-              ? "Programar pedidos para ir a ruta"
-              : `Programar pedidos repartidor ${selectedAvailableDrivers[0]}`}
+              ? "Crear ruta sugerida"
+              : `Crear ruta sugerida usando repartidor ${selectedAvailableDrivers[0]}`}
           </Button>
         )}
       </Card>
