@@ -133,8 +133,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         status: "Creada",
         order: "Ver detalles",
         original_date: rowData.row.delivery_date,
-        driver: selectedDriver,
-        original_driver: rowData.row.driver,
+        driver: Number(selectedDriver),
+        original_driver: Number(rowData.row.driver),
         discount: formattedDiscount
       },
       rowIndex: rowData.index

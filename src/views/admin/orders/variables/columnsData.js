@@ -40,6 +40,10 @@ export const columnsDataOrders = [
     accessor: "payment_method",
   },
   {
+    Header: "CREADA",
+    accessor: "created_by",
+  },
+  {
     Header: "STATUS",
     accessor: "status",
   },

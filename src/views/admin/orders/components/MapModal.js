@@ -98,8 +98,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                         id: order.id,
                         delivery_date: order.delivery_date,
                         status: "Programada",
-                        driver: matchingOrder.driver,
-                        delivery_sequence: matchingOrder.delivery_sequence,
+                        driver: Number(matchingOrder.driver),
+                        delivery_sequence: Number(matchingOrder.delivery_sequence),
                     };
                 }
                 return order;
@@ -109,8 +109,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                     id: order.id,
                     delivery_date: order.delivery_date,
                     status: "Programada",
-                    driver: order.driver,
-                    delivery_sequence: order.delivery_sequence,
+                    driver: Number(order.driver),
+                    delivery_sequence: Number(order.delivery_sequence),
                 };
             });
             await onConfirmRoute(finalOrders);
