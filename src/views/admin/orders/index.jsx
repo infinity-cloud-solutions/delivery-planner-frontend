@@ -47,6 +47,7 @@ export default function OrdersView() {
   const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL
   const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL;
   const clientsURL = process.env.REACT_APP_CLIENTS_BASE_URL;
+  const ordersScheduleURL = process.env.REACT_APP_UPDATE_SEQUENCING_ORDERS_BASE_URL;
 
   useEffect(() => {
 
@@ -382,7 +383,7 @@ export default function OrdersView() {
       return;
     }
     try {
-      const response = await axios.post('https://webhook.site/f0b96fef-0b83-4eaa-9ee3-0b4789d24adb', orders, {
+      const response = await axios.post(ordersScheduleURL, orders, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${jwtToken}`
