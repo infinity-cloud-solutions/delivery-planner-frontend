@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Modal,
     ModalOverlay,
@@ -34,6 +34,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
     const draggingColor = useColorModeValue('gray.700', 'navy.700');
     const rowBgColor = useColorModeValue('white', 'gray.800');
 
+    const mapRef = useRef();
+
     delete L.Icon.Default.prototype._getIconUrl;
 
     L.Icon.Default.mergeOptions({
@@ -63,6 +65,12 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
             setFilteredOrders(sorted);
         }
     }, [selectedDriver, selectedHours]);
+
+    useEffect(() => {
+        if (isOpen && mapRef.current) {
+            mapRef.current.invalidateSize();
+        }
+    }, [isOpen]);
 
     const onDragEnd = (result) => {
         if (!result.destination) return;
@@ -162,7 +170,9 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                 <ModalBody>
                     <Box display="flex">
                         <Box flex="1">
-                            <MapContainer center={[20.6783825, -103.348088]} zoom={11} style={{ height: '100%', width: '100%' }}>
+                            <MapContainer center={[20.6783825, -103.348088]} zoom={11} style={{ height: '500px', width: '100%' }} whenCreated={(mapInstance) => {
+                                mapRef.current = mapInstance;
+                            }}>
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
@@ -193,7 +203,10 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                                         </React.Fragment>
                                     );
                                 })}
-                                <Polyline positions={[[20.7257943, -103.3792193], ...filteredOrders.map(pos => [pos.latitude, pos.longitude])]} color="blue" />
+                                <Polyline positions={[[20.7257943, -103.3792193], ...filteredOrders.map(pos => [pos.latitude, pos.longitude])]}
+                                    color="blue" weight={2}
+                                    opacity={1}
+                                    lineJoin="round" />
                             </MapContainer>
                         </Box>
                         <VStack spacing="4" flex="1" ml="8">
