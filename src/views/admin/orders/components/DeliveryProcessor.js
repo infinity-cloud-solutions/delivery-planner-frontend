@@ -31,14 +31,14 @@ export const DeliveryProcessor = (selectedDrivers, ordersForToday) => {
         const afternoonRecords = selectOrdersByDeliveryRangeTime(ordersForToday, "1 PM - 5 PM",  Number(driverNumber));
         if (afternoonRecords.length > 0) {
 
-            // const afternoonStartingPoint = morningOrderedLocations.length > 0
-            //     ? {
-            //         latitude: morningOrderedLocations[morningOrderedLocations.length - 1].latitude,
-            //         longitude: morningOrderedLocations[morningOrderedLocations.length - 1].longitude
-            //     }
-            //     : { latitude: 20.7257943, longitude: -103.3792193 };
+            const afternoonStartingPoint = morningOrderedLocations.length > 0
+                ? {
+                    latitude: morningOrderedLocations[morningOrderedLocations.length - 1].latitude,
+                    longitude: morningOrderedLocations[morningOrderedLocations.length - 1].longitude
+                }
+                : { latitude: 20.7257943, longitude: -103.3792193 };
 
-            const afternoonOrderedLocations = planner.findShortestPath(afternoonRecords, { latitude: 20.7257943, longitude: -103.3792193 });
+            const afternoonOrderedLocations = planner.findShortestPath(afternoonRecords, afternoonStartingPoint);
             const reducedAfternoonOrderedLocations = afternoonOrderedLocations.map(location => ({
                 id: location.id,
                 delivery_date: location.delivery_date,

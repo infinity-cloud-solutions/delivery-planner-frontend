@@ -203,10 +203,17 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
                                         </React.Fragment>
                                     );
                                 })}
-                                <Polyline positions={[[20.7257943, -103.3792193], ...filteredOrders.map(pos => [pos.latitude, pos.longitude])]}
-                                    color="blue" weight={2}
+                                <Polyline
+                                    positions={
+                                        selectedHours === '9 AM - 1 PM'
+                                            ? [[20.7257943, -103.3792193], ...filteredOrders.map(order => [order.latitude, order.longitude])]
+                                            : [...filteredOrders.map(order => [order.latitude, order.longitude]), [20.7257943, -103.3792193]]
+                                    }
+                                    color="blue"
+                                    weight={2}
                                     opacity={1}
-                                    lineJoin="round" />
+                                    lineJoin="round"
+                                />
                             </MapContainer>
                         </Box>
                         <VStack spacing="4" flex="1" ml="8">
