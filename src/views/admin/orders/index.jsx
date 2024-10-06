@@ -21,6 +21,7 @@ import { Link as RouterLink, useHistory, useLocation } from "react-router-dom";
 
 
 import Orders from "views/admin/orders/components/Orders";
+import { DeliveryProcessor } from "./components/DeliveryProcessor";
 import {
   columnsDataOrders,
 } from "views/admin/orders/variables/columnsData";
@@ -46,6 +47,7 @@ export default function OrdersView() {
   const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL
   const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL;
   const clientsURL = process.env.REACT_APP_CLIENTS_BASE_URL;
+  const ordersScheduleURL = process.env.REACT_APP_UPDATE_SEQUENCING_ORDERS_BASE_URL;
 
   useEffect(() => {
 
@@ -289,47 +291,20 @@ export default function OrdersView() {
   }
 
   const handleScheduleOrders = async (selectedDrivers) => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
+    let updatedOrders = tableDataOrders;
 
-    const formattedDate = `${year}-${month}-${day}`;
+    if (selectedDrivers.length === 1) {
+      const availableDriver = selectedDrivers[0];
 
-    if (!validateJWT()) {
-      history.push('/auth');
-      return;
-    }
-    const body = {
-      date: formattedDate,
-      available_drivers: selectedDrivers
+      // assing the available driver to all orders for today
+      updatedOrders = tableDataOrders.map(order => ({
+        ...order,
+        driver: availableDriver
+      }));
+      setTableDataOrders(updatedOrders);
     };
-
-    try {
-      const response = await axios.post(process.env.REACT_APP_SCHEDULE_ORDERS_BASE_URL, body, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`
-        },
-
-      });
-      console.log('Scheduled successfully:', response.data);
-      setTableDataOrders(prevTableData => {
-        const updatedTableData = prevTableData.map(order => ({
-          ...order,
-          status: "Programada",
-          driver: selectedDrivers.length === 1 ? selectedDrivers[0] : order.driver
-        }));
-        return updatedTableData;
-      });
-      setAlertMessage({ type: 'success', text: 'Las ordenes fueron programadas con éxito' });
-      setTimeout(() => setAlertMessage(null), 3000);
-    } catch (error) {
-      console.error('Error scheduling:', error);
-      setAlertMessage({ type: 'error', text: 'Error al programar ordenes. Intenta de nuevo.' });
-      setTimeout(() => setAlertMessage(null), 3000);
-    } finally {
-    }
+    const processedOrders = DeliveryProcessor(selectedDrivers, updatedOrders);
+    setTableDataOrders(processedOrders);
   };
 
   const consolidateProducts = () => {
@@ -365,42 +340,85 @@ export default function OrdersView() {
       return;
     }
 
-      const queryParams = {
-        phone_number: searchQuery,
-      };
+    const queryParams = {
+      phone_number: searchQuery,
+    };
 
-      try {
-        const response = await axios.get(clientsURL, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwtToken}`
-          },
-          params: queryParams
-        });
-        const responseData = response.data;
-        if (responseData) {
-          const clientMapped = {
-            clientPhoneNumber: responseData.phone_number,
-            clientName: responseData.name,
-            clientAddress: responseData.address,
-            clientLatitude: responseData.address_latitude,
-            clientLongitude: responseData.address_longitude,
-            clientSecondAddress: responseData.second_address,
-            clientSecondLatitude: responseData.second_address_latitude,
-            clientSecondLongitude: responseData.second_address_longitude,
-            clientEmail: responseData.email,
-            clientDiscount: responseData.discount
-          };
-          return clientMapped;
-        } else {
-          console.log("No client data found.");
-          return null;
-        }
-      } catch (error) {
-        console.error('API error:', error);
+    try {
+      const response = await axios.get(clientsURL, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        params: queryParams
+      });
+      const responseData = response.data;
+      if (responseData) {
+        const clientMapped = {
+          clientPhoneNumber: responseData.phone_number,
+          clientName: responseData.name,
+          clientAddress: responseData.address,
+          clientLatitude: responseData.address_latitude,
+          clientLongitude: responseData.address_longitude,
+          clientSecondAddress: responseData.second_address,
+          clientSecondLatitude: responseData.second_address_latitude,
+          clientSecondLongitude: responseData.second_address_longitude,
+          clientEmail: responseData.email,
+          clientDiscount: responseData.discount
+        };
+        return clientMapped;
+      } else {
+        console.log("No client data found.");
         return null;
       }
-    };
+    } catch (error) {
+      console.error('API error:', error);
+      return null;
+    }
+  };
+
+  const handleSaveRoute = async (orders) => {
+    if (!validateJWT()) {
+      history.push('/auth');
+      return;
+    }
+    try {
+      const response = await axios.post(ordersScheduleURL, orders, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+      });
+
+      if (response.status === 200) {
+        setTableDataOrders(prevOrders =>
+          prevOrders.map(order => {
+            const matchingOrder = orders.find(o => o.id === order.id);
+            if (matchingOrder) {
+              return {
+                ...order,
+                status: matchingOrder.status,
+                delivery_sequence: matchingOrder.delivery_sequence,
+                driver: matchingOrder.driver
+              };
+            }
+            return order;
+          })
+        );
+        setAlertMessage({ type: 'success', text: 'Ruta creada con éxito.' });
+        setTimeout(() => setAlertMessage(null), 3000);
+      } else {
+        setAlertMessage({ type: 'error', text: 'Error al guardar la ruta.' });
+        setTimeout(() => setAlertMessage(null), 3000);
+        throw new Error('Solicitud para guardar rutas falló');
+      }
+    } catch (error) {
+      console.error('API error:', error);
+      setAlertMessage({ type: 'error', text: 'Error al guardar la ruta.' });
+      setTimeout(() => setAlertMessage(null), 3000);
+      throw error;
+    }
+  }
 
   if (userIsDriver) {
     return (
@@ -466,6 +484,7 @@ export default function OrdersView() {
               productsAvailable={products}
               listOfConsolidatedProducts={consolidatedProducts}
               onValidateClient={handleClientFetched}
+              onRouteSelected={handleSaveRoute}
             />
           )}
         </SimpleGrid>
