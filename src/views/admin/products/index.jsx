@@ -107,7 +107,7 @@ export default function ProductView() {
 
     setLoading(true);
 
-    axios.post(productsURL, product.item, {
+    axios.put(productsURL, product.item, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwtToken}`
@@ -138,7 +138,7 @@ export default function ProductView() {
 
     setLoading(true);
 
-    axios.delete(`${productsURL}?name=${product.item.name}`, {
+    axios.delete(`${productsURL}?id=${product.item.id}`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwtToken}`
