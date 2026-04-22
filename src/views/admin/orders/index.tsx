@@ -10,6 +10,8 @@ import { useQueryParam, getDateAsQueryParam } from 'utils/Utility';
 import { isDriver } from 'security';
 import { useAuthGuard } from 'hooks/useAuthGuard';
 import { useOrders } from 'views/admin/orders/hooks/useOrders';
+import type { UpdateOrderArgs, DeleteOrderArgs } from 'views/admin/orders/hooks/useOrders';
+import type { CreateOrderPayload, Order } from 'types/order';
 import { useProducts } from 'views/admin/hooks/useProducts';
 import { useClientLookup } from 'views/admin/hooks/useClientLookup';
 import { AlertMessage } from 'types/ui';
@@ -29,7 +31,7 @@ export default function OrdersView() {
   const { products, fetchProducts } = useProducts();
   const { lookupClient } = useClientLookup();
 
-  useEffect(() => { fetchProducts(); }, [location]);
+  useEffect(() => { fetchProducts(); }, [location, fetchProducts]);
 
   const showAlert = (type: 'success' | 'error', text: string) => {
     setAlertMessage({ type, text });
@@ -41,45 +43,45 @@ export default function OrdersView() {
     fetchOrders(date.value);
   };
 
-  const handleOrderCreated = async (payload: unknown) => {
+  const handleOrderCreated = async (payload: CreateOrderPayload): Promise<void> => {
     try {
-      await createOrder(payload as never);
+      await createOrder(payload);
       showAlert('success', 'Orden guardada en la base de datos');
-    } catch {
+    } catch (err) {
       showAlert('error', 'Error al crear la orden. Intenta de nuevo.');
-      throw new Error('Create order failed');
+      throw err;
     }
   };
 
-  const handleOrderUpdated = async (args: unknown) => {
+  const handleOrderUpdated = async (args: UpdateOrderArgs): Promise<void> => {
     try {
-      await updateOrder(args as never);
+      await updateOrder(args);
       showAlert('success', 'Orden actualizada en la base de datos');
-    } catch {
+    } catch (err) {
       showAlert('error', 'Error al actualizar la orden. Intenta de nuevo.');
-      throw new Error('Update order failed');
+      throw err;
     }
   };
 
-  const handleOrderDeleted = async (args: unknown) => {
+  const handleOrderDeleted = async (args: DeleteOrderArgs): Promise<void> => {
     try {
-      await deleteOrder(args as never);
+      await deleteOrder(args);
       showAlert('success', 'Orden eliminada en la base de datos');
-    } catch {
+    } catch (err) {
       showAlert('error', 'Error al eliminar la orden. Intenta de nuevo.');
-      throw new Error('Delete order failed');
+      throw err;
     }
   };
 
   const handleScheduleOrders = (selectedDrivers: number[]) => scheduleOrders(selectedDrivers);
 
-  const handleSaveRoute = async (routeOrders: unknown) => {
+  const handleSaveRoute = async (routeOrders: Order[]): Promise<void> => {
     try {
-      await saveRoute(routeOrders as never);
+      await saveRoute(routeOrders);
       showAlert('success', 'Ruta creada con éxito.');
-    } catch {
+    } catch (err) {
       showAlert('error', 'Error al guardar la ruta.');
-      throw new Error('Save route failed');
+      throw err;
     }
   };
 

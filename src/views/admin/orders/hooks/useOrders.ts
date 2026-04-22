@@ -5,12 +5,12 @@ import { Order, CreateOrderPayload, UpdateOrderPayload, ConsolidatedProducts } f
 import { getAccessToken } from 'security';
 import { DeliveryProcessor } from 'views/admin/orders/components/DeliveryProcessor';
 
-interface UpdateOrderArgs {
+export interface UpdateOrderArgs {
   item: Order & { original_date?: string };
   rowIndex: number;
 }
 
-interface DeleteOrderArgs {
+export interface DeleteOrderArgs {
   item: Order;
   rowIndex: number;
 }
