@@ -1,5 +1,6 @@
 import jwt_decode from 'jsonwebtoken/decode';
 import { CognitoUser, CognitoUserPool } from 'amazon-cognito-identity-js';
+import { DecodedJwtPayload } from './types/auth';
 
 export const logout = (): void => {
   const poolData = {
@@ -25,15 +26,6 @@ export function getAccessToken(): string | null {
   return localStorage.getItem('idToken');
 }
 
-interface JwtPayload {
-  iss: string;
-  exp: number;
-  'cognito:groups'?: string[];
-  given_name?: string;
-  family_name?: string;
-  email?: string;
-}
-
 interface JwtHeader {
   alg: string;
   typ?: string;
@@ -42,7 +34,7 @@ interface JwtHeader {
 
 interface DecodedToken {
   header: JwtHeader;
-  payload: JwtPayload;
+  payload: DecodedJwtPayload;
   signature: string;
 }
 

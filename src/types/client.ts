@@ -23,3 +23,23 @@ export interface MappedClient {
   clientEmail?: string;
   clientDiscount?: number;
 }
+
+export interface GeoLocation {
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface CreateClientPayload {
+  phone_number: string;
+  name: string;
+  address: string;
+  address_geolocation: GeoLocation | null;
+  second_address?: string | null;
+  second_address_geolocation?: GeoLocation | null;
+  email?: string;
+  discount?: number;
+}
+
+export interface UpdateClientPayload extends CreateClientPayload {
+  original_phone_number: string;
+}

@@ -4,6 +4,14 @@ export interface CartItem {
   price?: number;
 }
 
+export type OrderStatus =
+  | 'Creada'
+  | 'Programada'
+  | 'En ruta'
+  | 'Entregada'
+  | 'Reprogramada'
+  | 'Error';
+
 export interface Order {
   id: string;
   delivery_date: string;
@@ -15,7 +23,7 @@ export interface Order {
   phone_number: string;
   total_amount: number;
   payment_method: string;
-  status: string;
+  status: OrderStatus;
   errors: string[];
   cart_items: CartItem[];
   latitude?: number | null;
@@ -41,6 +49,7 @@ export interface UpdateOrderPayload extends Partial<CreateOrderPayload> {
   id: string;
   delivery_date: string;
   original_date?: string;
+  original_driver?: number;
 }
 
 export interface ConsolidatedProducts {

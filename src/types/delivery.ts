@@ -1,3 +1,5 @@
+import { CartItem } from './order';
+
 export type DeliveryStatus = 'Programada' | 'En ruta' | 'Entregada' | 'Reprogramada';
 
 export interface Delivery {
@@ -12,7 +14,7 @@ export interface Delivery {
   total_amount: number;
   payment_method: string;
   status: DeliveryStatus;
-  cart_items: import('./order').CartItem[];
+  cart_items: CartItem[];
   latitude?: number | null;
   longitude?: number | null;
 }
