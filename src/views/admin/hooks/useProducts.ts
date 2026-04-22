@@ -7,6 +7,7 @@ import { getAccessToken } from 'security';
 interface UseProductsReturn {
   products: Product[];
   loadingProducts: boolean;
+  productsError: string | null;
   fetchProducts: () => Promise<void>;
 }
 
@@ -15,28 +16,31 @@ const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL as string;
 export function useProducts(): UseProductsReturn {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [productsError, setProductsError] = useState<string | null>(null);
   const jwtToken = getAccessToken();
 
   const fetchProducts = useCallback(async (): Promise<void> => {
+    if (!jwtToken) {
+      console.warn('useProducts: no auth token, skipping fetch');
+      return;
+    }
     setLoadingProducts(true);
+    setProductsError(null);
     try {
       const response = await axios.get<Product[]>(productsURL, {
         headers: { Authorization: `Bearer ${jwtToken}` },
       });
       const data = response.data;
-      if (data.length === 0) {
-        setProducts([]);
-      } else {
-        setProducts(
-          data.map((item) => ({ ...item, label: item.name, value: item.name }))
-        );
-      }
+      setProducts(
+        data.map((item) => ({ ...item, label: item.name, value: item.name }))
+      );
     } catch (error) {
       console.error('API error fetching products:', error);
+      setProductsError('Error al cargar productos.');
     } finally {
       setLoadingProducts(false);
     }
   }, [jwtToken]);
 
-  return { products, loadingProducts, fetchProducts };
+  return { products, loadingProducts, productsError, fetchProducts };
 }

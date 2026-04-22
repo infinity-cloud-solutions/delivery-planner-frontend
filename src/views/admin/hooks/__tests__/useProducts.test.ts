@@ -20,6 +20,7 @@ describe('useProducts', () => {
     await waitFor(() => expect(result.current.products).toHaveLength(1));
     expect(result.current.products[0].label).toBe('Berry');
     expect(result.current.products[0].value).toBe('Berry');
+    expect(result.current.productsError).toBeNull();
   });
 
   it('should set products to empty array when API returns empty', async () => {
@@ -28,6 +29,7 @@ describe('useProducts', () => {
     act(() => { result.current.fetchProducts(); });
     await waitFor(() => expect(result.current.loadingProducts).toBe(false));
     expect(result.current.products).toHaveLength(0);
+    expect(result.current.productsError).toBeNull();
   });
 
   it('should handle API errors gracefully', async () => {
@@ -36,5 +38,15 @@ describe('useProducts', () => {
     act(() => { result.current.fetchProducts(); });
     await waitFor(() => expect(result.current.loadingProducts).toBe(false));
     expect(result.current.products).toHaveLength(0);
+    expect(result.current.productsError).toBe('Error al cargar productos.');
+  });
+
+  it('should expose productsError on API failure', async () => {
+    mockAxios.get.mockRejectedValueOnce(new Error('Network error'));
+    const { result } = renderHook(() => useProducts());
+    expect(result.current.productsError).toBeNull();
+    act(() => { result.current.fetchProducts(); });
+    await waitFor(() => expect(result.current.loadingProducts).toBe(false));
+    expect(result.current.productsError).toBe('Error al cargar productos.');
   });
 });
