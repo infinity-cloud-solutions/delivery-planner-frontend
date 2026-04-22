@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import routes from 'driverRoutes.js';
-import { getFullNameFromLocalStorage, logout } from 'security.js'
+import { getFullNameFromLocalStorage, logout } from 'security'
 
 export default function DriverHeaderLinks(props) {
 	const { secondary } = props;

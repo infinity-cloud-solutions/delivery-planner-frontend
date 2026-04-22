@@ -22,7 +22,7 @@ import {
 
 import CreateProductModal from "views/admin/products/components/CreateProductModal";
 import UpdateProductModal from "views/admin/products/components/UpdateProductModal";
-import { isAdmin, } from 'security.js';
+import { isAdmin, } from 'security';
 
 
 function Products(props) {

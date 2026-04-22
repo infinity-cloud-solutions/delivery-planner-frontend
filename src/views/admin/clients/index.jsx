@@ -21,7 +21,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 // Custom components
 import Clients from "views/admin/clients/components/Clients";
-import { isDriver, getAccessToken, validateJWT } from 'security.js';
+import { isDriver, getAccessToken, validateJWT } from 'security';
 
 
 export default function ClientView() {

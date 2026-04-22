@@ -5,7 +5,7 @@ import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
-import { getAccessToken, validateJWT, getEmailFromToken } from 'security.js';
+import { getAccessToken, validateJWT, getEmailFromToken } from 'security';
 import { useNavigate } from "react-router-dom";
 
 const getDriverValue = () => {

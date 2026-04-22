@@ -47,7 +47,7 @@ import CreateOrderModal from "./CreateOrderModal";
 import ConsolidatedModal from "./ConsolidatedModal";
 import MapModal from "./MapModal";
 import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
-import { getAccessToken, validateJWT } from 'security.js';
+import { getAccessToken, validateJWT } from 'security';
 import { useNavigate } from "react-router-dom";
 
 // Assets

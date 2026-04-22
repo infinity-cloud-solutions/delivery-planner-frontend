@@ -26,7 +26,7 @@ import {
   columnsDataOrders,
 } from "views/admin/orders/variables/columnsData";
 import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
-import { isDriver, getAccessToken, validateJWT } from 'security.js';
+import { isDriver, getAccessToken, validateJWT } from 'security';
 
 export default function OrdersView() {
   const brandColor = useColorModeValue("brand.500", "white");

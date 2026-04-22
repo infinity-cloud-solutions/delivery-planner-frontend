@@ -28,7 +28,7 @@ import {
 } from '@chakra-ui/react';
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
-import { isAdmin, } from 'security.js';
+import { isAdmin, } from 'security';
 
 const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, productsAvailable }) => {
   const [clientName, setClientName] = useState(rowData.row.client_name || '');

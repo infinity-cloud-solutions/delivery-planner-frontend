@@ -16,7 +16,7 @@ import React from 'react';
 import { useNavigate } from "react-router-dom";
 
 import routes from 'routes.js';
-import { getFullNameFromLocalStorage, logout } from 'security.js'
+import { getFullNameFromLocalStorage, logout } from 'security'
 
 export default function HeaderLinks(props) {
 	const { secondary } = props;

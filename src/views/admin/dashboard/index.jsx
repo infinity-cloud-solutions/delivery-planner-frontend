@@ -24,7 +24,7 @@ import OrdersDashboard from "views/admin/dashboard/components/OrdersDashboard";
 import {
   columnsOrdersDashboard,
 } from "views/admin/dashboard/variables/columnsData";
-import { isDriver, validateJWT, getAccessToken } from 'security.js';
+import { isDriver, validateJWT, getAccessToken } from 'security';
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { getDateAsQueryParam } from "utils/Utility"
 

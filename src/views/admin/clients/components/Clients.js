@@ -16,7 +16,7 @@ import axios from 'axios';
 
 import CreateClientModal from "views/admin/clients/components/CreateClientModal";
 import UpdateClientModal from "views/admin/clients/components/UpdateClientModal";
-import { isAdmin } from 'security.js';
+import { isAdmin } from 'security';
 
 function Clients(props) {
   const { onClientCreated, onClientUpdated, onClientDeleted, onClientFetched } = props;

@@ -25,7 +25,7 @@ import {
 // Custom components
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
-import { validateJWT } from 'security.js';
+import { validateJWT } from 'security';
 import { useNavigate } from "react-router-dom";
 
 // Assets

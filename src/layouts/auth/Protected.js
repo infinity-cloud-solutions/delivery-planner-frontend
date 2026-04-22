@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { validateJWT, getAccessToken } from 'security.js';
+import { validateJWT, getAccessToken } from 'security';
 
 const isAuthenticated = () => getAccessToken() && validateJWT();
 

@@ -23,7 +23,7 @@ import illustration from "assets/img/auth/auth.png";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
-import { validateJWT, isDriver, getAccessToken } from 'security.js';
+import { validateJWT, isDriver, getAccessToken } from 'security';
 
 function SignIn() {
   const navigate = useNavigate();

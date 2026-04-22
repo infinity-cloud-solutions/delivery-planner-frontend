@@ -21,7 +21,7 @@ import {
     useColorModeValue,
 } from '@chakra-ui/react';
 
-import { isAdmin } from 'security.js';
+import { isAdmin } from 'security';
 
 const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }) => {
 

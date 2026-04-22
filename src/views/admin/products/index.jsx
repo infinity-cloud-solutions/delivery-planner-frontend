@@ -21,7 +21,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 // Custom components
 import Products from "views/admin/products/components/Products";
-import { isDriver, getAccessToken, validateJWT } from 'security.js';
+import { isDriver, getAccessToken, validateJWT } from 'security';
 
 import { tableColumnsProducts } from "views/admin/products/variables/tableColumnsProducts";
 

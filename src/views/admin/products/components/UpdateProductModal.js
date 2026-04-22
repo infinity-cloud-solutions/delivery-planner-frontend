@@ -16,7 +16,7 @@ import {
     useColorModeValue,
 } from '@chakra-ui/react';
 
-import { isAdmin, } from 'security.js';
+import { isAdmin, } from 'security';
 
 const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }) => {
     const [productName, setProductName] = useState('');
