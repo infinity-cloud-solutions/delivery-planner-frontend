@@ -4,8 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { validateJWT } from 'security';
 
 /**
- * Redirects to /auth if the JWT is missing or invalid.
- * Call at the top of any protected view component.
+ * Guards a protected route by validating the JWT on mount.
+ * If the token is missing or invalid, calls logout() (clears session storage
+ * and signs out of Cognito) and navigates to /auth with replace:true.
+ *
+ * Must be called inside a component rendered within a <Router> context.
  */
 export function useAuthGuard(): void {
   const navigate = useNavigate();

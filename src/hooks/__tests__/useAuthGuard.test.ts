@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useAuthGuard } from '../useAuthGuard';
 import * as security from 'security';
 
@@ -8,12 +8,6 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Test component that uses the hook
-function TestComponent() {
-  useAuthGuard();
-  return null;
-}
-
 describe('useAuthGuard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -21,13 +15,13 @@ describe('useAuthGuard', () => {
 
   it('should redirect to /auth when JWT is invalid', () => {
     jest.spyOn(security, 'validateJWT').mockReturnValue(false);
-    render(<TestComponent />);
+    renderHook(() => useAuthGuard());
     expect(mockNavigate).toHaveBeenCalledWith('/auth', { replace: true });
   });
 
   it('should not redirect when JWT is valid', () => {
     jest.spyOn(security, 'validateJWT').mockReturnValue(true);
-    render(<TestComponent />);
+    renderHook(() => useAuthGuard());
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
