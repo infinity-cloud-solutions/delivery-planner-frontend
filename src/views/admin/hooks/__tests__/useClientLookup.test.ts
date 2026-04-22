@@ -69,4 +69,19 @@ describe('useClientLookup', () => {
 
     expect(client).toBeNull();
   });
+
+  it('should return null when no auth token', async () => {
+    const securityModule = require('security');
+    jest.spyOn(securityModule, 'getAccessToken').mockReturnValueOnce(null);
+
+    const { result } = renderHook(() => useClientLookup());
+
+    let client;
+    await act(async () => {
+      client = await result.current.lookupClient('5551234567');
+    });
+
+    expect(client).toBeNull();
+    expect(mockAxios.get).not.toHaveBeenCalled();
+  });
 });

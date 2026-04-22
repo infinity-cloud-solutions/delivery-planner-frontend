@@ -1,5 +1,5 @@
 // src/views/admin/orders/hooks/useOrders.ts
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Order, CreateOrderPayload, UpdateOrderPayload, ConsolidatedProducts } from 'types/order';
 import { getAccessToken } from 'security';
@@ -69,10 +69,13 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
   const [error, setError] = useState<string | null>(null);
   const jwtToken = getAccessToken();
 
-  const authHeaders = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${jwtToken}`,
-  };
+  const authHeaders = useMemo(
+    () => ({
+      'Content-Type': 'application/json',
+      ...(jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {}),
+    }),
+    [jwtToken]
+  );
 
   const fetchOrders = useCallback(
     async (date: string): Promise<void> => {
@@ -96,13 +99,12 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         setLoading(false);
       }
     },
-    [jwtToken]
+    [authHeaders]
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (initialDate) fetchOrders(initialDate);
-  }, [initialDate]);
+  }, [initialDate, fetchOrders]);
 
   const createOrder = useCallback(
     async (payload: CreateOrderPayload): Promise<Order> => {
@@ -123,7 +125,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         throw err;
       }
     },
-    [jwtToken]
+    [authHeaders]
   );
 
   const updateOrder = useCallback(
@@ -153,7 +155,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         throw err;
       }
     },
-    [jwtToken]
+    [authHeaders]
   );
 
   const deleteOrder = useCallback(
@@ -169,32 +171,41 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         throw err;
       }
     },
-    [jwtToken]
+    [authHeaders]
   );
 
   const scheduleOrders = useCallback(
     (selectedDrivers: number[]): void => {
-      const scheduled = DeliveryProcessor(selectedDrivers, orders);
-      setOrders(scheduled);
+      setOrders((prev) => {
+        let updated = prev;
+        if (selectedDrivers.length === 1) {
+          updated = prev.map((o) => ({ ...o, driver: selectedDrivers[0] }));
+        }
+        return DeliveryProcessor(selectedDrivers, updated);
+      });
     },
-    [orders]
+    []
   );
 
   const saveRoute = useCallback(
     async (routeOrders: Order[]): Promise<void> => {
+      if (!jwtToken) {
+        console.warn('useOrders: no auth token, skipping saveRoute');
+        return;
+      }
       try {
-        const promises = routeOrders.map((order, index) =>
-          axios.put(
-            ordersScheduleURL,
-            { ...order, delivery_sequence: index + 1 },
-            { headers: authHeaders }
-          )
-        );
-        await Promise.all(promises);
+        const response = await axios.post(ordersScheduleURL, routeOrders, {
+          headers: authHeaders,
+        });
+        if (response.status !== 200) {
+          throw new Error('Solicitud para guardar rutas falló');
+        }
         setOrders((prev) =>
           prev.map((o) => {
-            const idx = routeOrders.findIndex((r) => r.id === o.id);
-            return idx !== -1 ? { ...o, delivery_sequence: idx + 1 } : o;
+            const match = routeOrders.find((r) => r.id === o.id);
+            return match
+              ? { ...o, status: match.status, delivery_sequence: match.delivery_sequence, driver: match.driver }
+              : o;
           })
         );
       } catch (err) {
@@ -202,7 +213,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         throw err;
       }
     },
-    [jwtToken]
+    [jwtToken, authHeaders]
   );
 
   const consolidatedProducts = buildConsolidated(orders);

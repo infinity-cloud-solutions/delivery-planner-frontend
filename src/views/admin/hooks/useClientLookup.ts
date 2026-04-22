@@ -15,6 +15,10 @@ export function useClientLookup(): UseClientLookupReturn {
 
   const lookupClient = useCallback(
     async (phoneNumber: string): Promise<MappedClient | null> => {
+      if (!jwtToken) {
+        console.warn('useClientLookup: no auth token, skipping lookup');
+        return null;
+      }
       try {
         const response = await axios.get(clientsURL, {
           headers: { Authorization: `Bearer ${jwtToken}` },
