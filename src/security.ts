@@ -19,6 +19,8 @@ export const logout = (): void => {
   localStorage.removeItem('refreshToken');
 };
 
+// NOTE: Despite the name, this returns the Cognito ID token (not the access token).
+// The idToken is used for JWT validation throughout this app.
 export function getAccessToken(): string | null {
   return localStorage.getItem('idToken');
 }
@@ -32,15 +34,23 @@ interface JwtPayload {
   email?: string;
 }
 
+interface JwtHeader {
+  alg: string;
+  typ?: string;
+  kid?: string;
+}
+
 interface DecodedToken {
+  header: JwtHeader;
   payload: JwtPayload;
+  signature: string;
 }
 
 function decodeToken(): DecodedToken | null {
   const token = getAccessToken();
   if (!token) return null;
   try {
-    return jwt_decode(token, { complete: true }) as DecodedToken;
+    return jwt_decode(token, { complete: true }) as unknown as DecodedToken;
   } catch {
     return null;
   }
