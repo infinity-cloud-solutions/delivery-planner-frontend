@@ -20,8 +20,16 @@ import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { Order } from 'types/order';
 
-const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }) => {
+interface MapModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirmRoute: (orders: Order[]) => Promise<void>;
+  orders: Order[];
+}
+
+const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) => {
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [selectedHours, setSelectedHours] = useState(null);
     const [filteredOrders, setFilteredOrders] = useState([]);

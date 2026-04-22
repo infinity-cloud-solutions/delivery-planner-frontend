@@ -37,8 +37,19 @@ import {
 } from '@chakra-ui/react';
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
+import { MappedClient } from 'types/client';
+import { Product, CreateOrderPayload } from 'types/order';
+import { OrderFormFields } from './OrderFormFields';
 
-const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClientExistsCheck }) => {
+interface CreateOrderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (payload: CreateOrderPayload) => Promise<void>;
+  productsAvailable: Product[];
+  onClientExistsCheck: (phone: string) => Promise<MappedClient | null>;
+}
+
+const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClientExistsCheck }: CreateOrderModalProps) => {
 
     const [clientName, setClientName] = useState('');
     const [deliveryTime, setDeliveryTime] = useState('');
@@ -400,33 +411,40 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing="4">
-                        <FormControl isRequired isInvalid={phoneTouched && phoneNumber.length !== 10}>
-                            <FormLabel>Teléfono</FormLabel>
-                            <Input
-                                type="number"
-                                color={textColor}
-                                borderColor={borderColor}
-                                placeholder="Si el cliente existe, usaramos la información previamente salvada"
-                                value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
-                                onBlur={() => {
-                                    setPhoneTouched(true);
-                                    handlePhoneBlur();
-                                }}
-                                isDisabled={isValidationCompleted}
-                            />
-                            {loadingCheck && <Spinner
-                                mt='5px'
-                                thickness='5px'
-                                speed='0.65s'
-                                emptyColor={borderColor}
-                                color={textColor}
-                                size='lg'
-                            />}
-                            {phoneTouched && phoneNumber.length !== 10 && (
-                                <FormErrorMessage>El número de teléfono debe tener 10 dígitos.</FormErrorMessage>
-                            )}
-                        </FormControl>
+                        <OrderFormFields
+                            phoneNumber={phoneNumber}
+                            onPhoneNumberChange={setPhoneNumber}
+                            onPhoneNumberBlur={() => { setPhoneTouched(true); handlePhoneBlur(); }}
+                            phoneTouched={phoneTouched}
+                            isPhoneDisabled={isValidationCompleted}
+                            isLoadingPhoneCheck={loadingCheck}
+                            clientName={clientName}
+                            onClientNameChange={setClientName}
+                            onClientNameBlur={() => setNameTouched(true)}
+                            nameTouched={nameTouched}
+                            isNameDisabled={isAnExistingId}
+                            deliveryAddress={deliveryAddress}
+                            onDeliveryAddressChange={setDeliveryAddress}
+                            onDeliveryAddressBlur={() => setDeliveryAddressTouched(true)}
+                            deliveryAddressTouched={deliveryAddressTouched}
+                            isAddressDisabled={isAnExistingId && deliveryAddress !== ''}
+                            deliveryDate={deliveryDate}
+                            onDeliveryDateChange={handleDateChange}
+                            onDeliveryDateBlur={() => setDeliveryDateTouched(true)}
+                            deliveryDateTouched={deliveryDateTouched}
+                            dateError={dateError}
+                            apiError={apiError}
+                            availableDeliveryTimes={availableDeliveryTimes}
+                            deliveryTime={deliveryTime}
+                            onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(false); }}
+                            onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
+                            deliveryTimeTouched={deliveryTimeTouched}
+                            paymentMethod={paymentMethod}
+                            onPaymentMethodChange={setPaymentMethod}
+                            onPaymentMethodBlur={() => setPaymentMethodTouched(true)}
+                            paymentMethodTouched={paymentMethodTouched}
+                            showClientFields={isValidationCompleted}
+                        />
                         {clientErrorMessage && (
                             <Text color="red.500" mt="4">
                                 {clientErrorMessage}
@@ -434,22 +452,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                         )}
                         {isValidationCompleted && (
                             <>
-                                <FormControl isRequired isInvalid={nameTouched && clientName.trim() === ''}>
-                                    <FormLabel>Nombre</FormLabel>
-                                    <Input
-                                        type="text"
-                                        color={textColor}
-                                        borderColor={borderColor}
-                                        placeholder="Nombre y apellido"
-                                        value={clientName}
-                                        isDisabled={isAnExistingId}
-                                        onChange={(e) => setClientName(e.target.value)}
-                                        onBlur={() => {
-                                            setNameTouched(true);
-                                        }} />
-                                    <FormErrorMessage>El nombre es obligatorio.</FormErrorMessage>
-                                </FormControl>
-
                                 <FormControl>
                                     <FormLabel>Descuento</FormLabel>
                                     <Select
@@ -463,82 +465,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                         <option value="15">15% de descuento</option>
                                         <option value="100">100% de descuento</option>
                                     </Select>
-                                </FormControl>
-
-                                <FormControl isRequired isInvalid={deliveryAddressTouched && deliveryAddress.trim() === ''}>
-                                    <FormLabel>Dirección</FormLabel>
-                                    <Textarea
-                                        type="text"
-                                        color={textColor}
-                                        rows="2"
-                                        borderColor={borderColor}
-                                        placeholder="Formato similar al de Google Maps"
-                                        value={deliveryAddress}
-                                        isDisabled={isAnExistingId && deliveryAddress !== ""}
-                                        onChange={(e) => setDeliveryAddress(e.target.value)}
-                                        onBlur={() => {
-                                            setDeliveryAddressTouched(true);
-                                        }}
-                                    />
-                                    <FormErrorMessage>La dirección es obligatoria.</FormErrorMessage>
-                                </FormControl>
-
-                                <FormControl isRequired isInvalid={deliveryDateTouched && deliveryDate.trim() === ''}>
-                                    <FormLabel>Fecha de entrega</FormLabel>
-                                    <Input
-                                        color={textColor}
-                                        borderColor={borderColor}
-                                        type="date"
-                                        value={deliveryDate}
-                                        onChange={(e) => handleDateChange(e.target.value)}
-                                        onBlur={() => {
-                                            setDeliveryDateTouched(true);
-                                        }}
-                                    />
-                                    {dateError && (
-                                        <Text color="red.500" fontSize="sm" mt="2">{dateError}</Text>
-                                    )}
-                                    {apiError && (
-                                        <Text color="red.500" fontSize="sm" mt="2">{apiError}</Text>
-
-                                    )}
-                                    <FormErrorMessage>Fecha de entrega es obligatoria.</FormErrorMessage>
-                                </FormControl>
-
-                                <FormControl isRequired isInvalid={deliveryTimeTouched && deliveryTime.trim() === ''}>
-                                    <FormLabel>Horario de entrega</FormLabel>
-                                    <Select
-                                        placeholder="Selecciona un horario"
-                                        value={deliveryTime}
-                                        onChange={(e) => {
-                                            setDeliveryTime(e.target.value);
-                                            setApiError(false);
-                                        }}
-                                        onBlur={() => {
-                                            setDeliveryTimeTouched(true);
-                                        }}
-                                    >
-                                        {availableDeliveryTimes.map((time, index) => (
-                                            <option key={index} value={time}>{time}</option>
-                                        ))}
-                                    </Select>
-                                    <FormErrorMessage>Horario es obligatorio.</FormErrorMessage>
-                                </FormControl>
-
-                                <FormControl isRequired isInvalid={paymentMethodTouched && paymentMethod.trim() === ''}>
-                                    <FormLabel>Método de pago</FormLabel>
-                                    <Select
-                                        placeholder="Selecciona un método de pago"
-                                        value={paymentMethod}
-                                        onChange={(e) => setPaymentMethod(e.target.value)}
-                                        onBlur={() => {
-                                            setPaymentMethodTouched(true);
-                                        }}>
-                                        <option value="Tarjeta">Tarjeta</option>
-                                        <option value="Efectivo">Efectivo</option>
-                                        <option value="Transferencia">Transferencia</option>
-                                    </Select>
-                                    <FormErrorMessage>Método de pago es obligatorio.</FormErrorMessage>
                                 </FormControl>
 
                                 <FormLabel
