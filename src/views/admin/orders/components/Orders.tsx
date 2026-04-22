@@ -1,4 +1,4 @@
-import { Alert, AlertIcon, Button, ButtonGroup, Flex, Text, useColorModeValue } from "@chakra-ui/react";
+import { Alert, AlertIcon, AlertStatus, Button, ButtonGroup, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import React, { useMemo, useState } from "react";
 // @ts-ignore
@@ -39,7 +39,7 @@ function Orders({
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
   const [isScheduling, setIsScheduling] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<{ type: string; text: string } | null>(null);
+  const [alertMessage, setAlertMessage] = useState<{ type: AlertStatus; text: string } | null>(null);
   const [selectedAvailableDrivers, setSelectedAvailableDrivers] = useState([1, 2]);
   const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
@@ -96,9 +96,12 @@ function Orders({
     }
   };
 
-  const tableInstance = useTable({ columns, data }, useGlobalFilter, useSortBy, usePagination);
-  // @ts-ignore
-  tableInstance.initialState.pageSize = 30;
+  const tableInstance = useTable(
+    { columns, data, initialState: { pageSize: 30 } },
+    useGlobalFilter,
+    useSortBy,
+    usePagination
+  );
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
 
@@ -140,7 +143,7 @@ function Orders({
           transition={{ duration: 0.5 }}
           style={{ position: "fixed", zIndex: 1000 }}
         >
-          <Alert status={alertMessage.type as any} mb={4}>
+          <Alert status={alertMessage.type} mb={4}>
             <AlertIcon />
             {alertMessage.text}
           </Alert>
@@ -178,7 +181,6 @@ function Orders({
         </Flex>
         <OrdersTable
           tableInstance={tableInstance}
-          pageSize={30}
           onRowClick={openUpdateModal}
         />
         {isUpdateModalOpen && (

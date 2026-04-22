@@ -22,11 +22,10 @@ import { Order } from "types/order";
 
 interface OrdersTableProps {
   tableInstance: TableInstance<Order>;
-  pageSize: number;
   onRowClick: (row: Order, actualIndex: number) => void;
 }
 
-function OrdersTable({ tableInstance, pageSize, onRowClick }: OrdersTableProps) {
+function OrdersTable({ tableInstance, onRowClick }: OrdersTableProps) {
   const {
     getTableProps,
     getTableBodyProps,
@@ -38,7 +37,7 @@ function OrdersTable({ tableInstance, pageSize, onRowClick }: OrdersTableProps) 
     canPreviousPage,
     pageOptions,
     // @ts-ignore
-    state: { pageIndex },
+    state: { pageIndex, pageSize },
     prepareRow,
   } = tableInstance;
 
