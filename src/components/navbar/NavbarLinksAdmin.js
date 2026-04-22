@@ -13,7 +13,7 @@ import {
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import routes from 'routes.js';
 import { getFullNameFromLocalStorage, logout } from 'security.js'
@@ -33,10 +33,10 @@ export default function HeaderLinks(props) {
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
 	);
 
-	const history = useHistory();
+	const navigate = useNavigate();
 	const handleLogout = () => {
 		logout()
-		history.push('/auth');
+		navigate('/auth');
 	};
 
 	const firstName = getFullNameFromLocalStorage();

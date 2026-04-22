@@ -6,7 +6,7 @@ import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { getAccessToken, validateJWT, getEmailFromToken } from 'security.js';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const getDriverValue = () => {
   const driverEnvValue = process.env.REACT_APP_DRIVERS_MAP || {};
@@ -24,7 +24,7 @@ export default function DeliveriesView() {
   const [tableDataOrders, setTableDataOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const jwtToken = getAccessToken();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [alertMessage, setAlertMessage] = useState(null);
   const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL;
 
@@ -114,7 +114,7 @@ export default function DeliveriesView() {
 
   const handleUpdateDelivery = async (order, orderId, statusText) => {
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 

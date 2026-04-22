@@ -26,7 +26,7 @@ import {
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
 import { validateJWT } from 'security.js';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Assets
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
@@ -35,7 +35,7 @@ export default function ColumnsTable(props) {
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const tableInstance = useTable(
     {
@@ -62,7 +62,7 @@ export default function ColumnsTable(props) {
 
   const seeAllOrdersForToday = () => {
     if (validateJWT) {
-      history.push('/admin/orders');
+      navigate('/admin/orders');
     }
   };
 

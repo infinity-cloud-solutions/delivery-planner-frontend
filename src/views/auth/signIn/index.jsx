@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -26,7 +26,7 @@ import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cogn
 import { validateJWT, isDriver, getAccessToken } from 'security.js';
 
 function SignIn() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
@@ -53,7 +53,7 @@ function SignIn() {
         const isInDriverGroup = isDriver();
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
 
-        history.push(redirectToPath);
+        navigate(redirectToPath);
       } else {
         setError("No estás autenticado. Inicia sesión para entrar al sistema");
 
@@ -99,7 +99,7 @@ function SignIn() {
         setIsLoading(false)
         const isInDriverGroup = isDriver();
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
-        history.push(redirectToPath);
+        navigate(redirectToPath);
 
       },
       newPasswordRequired: (userAttributes) => {
@@ -135,7 +135,7 @@ function SignIn() {
 
         const isInDriverGroup = isDriver();
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
-        history.push(redirectToPath);
+        navigate(redirectToPath);
       },
       onFailure: (err) => {
         console.error('Failed to submit new password:', err);

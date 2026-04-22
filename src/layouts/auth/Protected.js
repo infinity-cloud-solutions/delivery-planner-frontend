@@ -1,24 +1,14 @@
 import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { validateJWT, getAccessToken } from 'security.js';
 
-const isAuthenticated = () => {
-    return getAccessToken() && validateJWT();
-};
+const isAuthenticated = () => getAccessToken() && validateJWT();
 
-const ProtectedRoute = ({ component: Component, ...rest }) => {
-    return (
-        <Route
-            {...rest}
-            render={(props) => {
-                if (!isAuthenticated()) {
-                    return <Redirect to="/auth" />;
-                }
-
-                return <Component {...props} />;
-            }}
-        />
-    );
+const ProtectedRoute = ({ children }) => {
+  if (!isAuthenticated()) {
+    return <Navigate to="/auth" replace />;
+  }
+  return children;
 };
 
 export default ProtectedRoute;

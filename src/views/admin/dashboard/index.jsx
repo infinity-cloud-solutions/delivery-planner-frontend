@@ -25,7 +25,7 @@ import {
   columnsOrdersDashboard,
 } from "views/admin/dashboard/variables/columnsData";
 import { isDriver, validateJWT, getAccessToken } from 'security.js';
-import { Link as RouterLink, useHistory } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { getDateAsQueryParam } from "utils/Utility"
 
 export default function Dashboard() {
@@ -35,14 +35,14 @@ export default function Dashboard() {
   const userIsDriver = isDriver();
   const [loading, setLoading] = useState(false);
   const jwtToken = getAccessToken();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [tableDataOrdersDashboard, setTableDataOrdersDashboard] = useState([]);
   const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL
 
   useEffect(() => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 

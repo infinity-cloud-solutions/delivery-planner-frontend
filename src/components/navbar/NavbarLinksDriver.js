@@ -10,7 +10,7 @@ import {
 	useColorModeValue
 } from '@chakra-ui/react';
 
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
@@ -33,10 +33,10 @@ export default function DriverHeaderLinks(props) {
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
 	);
 
-	const history = useHistory();
+	const navigate = useNavigate();
 	const handleLogout = () => {
 		logout()
-		history.push('/auth');
+		navigate('/auth');
 	};
 
 	const firstName = getFullNameFromLocalStorage().split(' ');

@@ -19,7 +19,7 @@ import {
 
 import { format, addDays } from "date-fns";
 import es from "date-fns/locale/es";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const capitalizeFirstLetter = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -48,11 +48,11 @@ const generateDateOptions = () => {
 
 export default function Banner(props) {
   const { onDateSelect, ...rest } = props;
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleDateSelect = (date) => {
     onDateSelect(date);
-    history.push(`/admin/orders?date=${date.value}`);
+    navigate(`/admin/orders?date=${date.value}`);
     onClose1();
   };
 

@@ -17,7 +17,7 @@ import {
 import {
   MdNoAccounts
 } from "react-icons/md";
-import { Link as RouterLink, useHistory } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 // Custom components
 import Products from "views/admin/products/components/Products";
@@ -35,12 +35,12 @@ export default function ProductView() {
   const [loading, setLoading] = useState(false);
   const productsURL = `${process.env.REACT_APP_PRODUCTS_BASE_URL}`;
   const jwtToken = getAccessToken();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 
@@ -73,7 +73,7 @@ export default function ProductView() {
   const handleProductCreate = (product) => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
     setLoading(true);
@@ -101,7 +101,7 @@ export default function ProductView() {
   const handleProductUpdate = (product) => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 
@@ -132,7 +132,7 @@ export default function ProductView() {
   const handleProductDelete = (product) => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 

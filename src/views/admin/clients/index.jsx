@@ -17,7 +17,7 @@ import {
 import {
   MdNoAccounts
 } from "react-icons/md";
-import { Link as RouterLink, useHistory } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 
 // Custom components
 import Clients from "views/admin/clients/components/Clients";
@@ -33,19 +33,19 @@ export default function ClientView() {
   const [loading, setLoading] = useState(false);
   const clientsURL = `${process.env.REACT_APP_CLIENTS_BASE_URL}`;
   const jwtToken = getAccessToken();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
   }, []);
 
   const handleClientFetch = async (searchQuery) => {
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 
@@ -90,7 +90,7 @@ export default function ClientView() {
   const handleClientCreate = async (client) => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
     try {
@@ -111,7 +111,7 @@ export default function ClientView() {
 
   const handleClientUpdate = async (client) => {
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 
@@ -134,7 +134,7 @@ export default function ClientView() {
   const handleClientDelete = async (client) => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 

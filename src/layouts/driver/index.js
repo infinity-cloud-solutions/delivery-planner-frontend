@@ -6,7 +6,7 @@ import Navbar from 'components/navbar/NavbarDriver.js';
 import Sidebar from 'components/sidebar/Sidebar.js';
 import { SidebarContext } from 'contexts/SidebarContext';
 import React, { useState } from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import routes from 'driverRoutes.js';
 
 // Custom Chakra theme
@@ -85,7 +85,7 @@ export default function Driver(props) {
 	const getRoutes = (routes) => {
 		return routes.map((prop, key) => {
 			if (prop.layout === '/driver') {
-				return <Route path={prop.layout + prop.path} component={prop.component} key={key} />;
+				return <Route path={prop.path} element={<prop.component />} key={key} />;
 			}
 			if (prop.collapse) {
 				return getRoutes(prop.items);
@@ -139,10 +139,10 @@ export default function Driver(props) {
 
 						{getRoute() ? (
 							<Box mx='auto' p={{ base: '20px', md: '30px' }} pe='20px' minH='100vh' pt='50px'>
-								<Switch>
+								<Routes>
 									{getRoutes(routes)}
-									<Redirect from='/' to='/driver/deliveries' />
-								</Switch>
+									<Route path="/" element={<Navigate to="/driver/deliveries" replace />} />
+								</Routes>
 							</Box>
 						) : null}
 						<Box>

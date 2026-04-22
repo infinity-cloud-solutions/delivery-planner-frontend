@@ -17,7 +17,7 @@ import {
 import {
   MdNoAccounts
 } from "react-icons/md";
-import { Link as RouterLink, useHistory, useLocation } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 
 
 import Orders from "views/admin/orders/components/Orders";
@@ -35,7 +35,7 @@ export default function OrdersView() {
   const [alertMessage, setAlertMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const jwtToken = getAccessToken();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const queryParamDateValue = useQueryParam('date');
 
@@ -52,7 +52,7 @@ export default function OrdersView() {
   useEffect(() => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
     if (!queryParamDateValue) {
@@ -90,13 +90,13 @@ export default function OrdersView() {
 
   const handleDateChange = (date) => {
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 
     setSelectedDate(date.value);
     const newUrl = `/admin/orders?date=${date.value}`;
-    history.push(newUrl)
+    navigate(newUrl)
 
     fetchOrdersData(date.value);
   };
@@ -154,7 +154,7 @@ export default function OrdersView() {
 
   const handleOrderCreated = async (newOrder) => {
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 
@@ -197,7 +197,7 @@ export default function OrdersView() {
   const handleOrderUpdated = async (updatedOrder) => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
     const queryParams = {
@@ -254,7 +254,7 @@ export default function OrdersView() {
   const handleOrderDeleted = async (order) => {
 
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
     const queryParams = {
@@ -336,7 +336,7 @@ export default function OrdersView() {
 
   const handleClientFetched = async (searchQuery) => {
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
 
@@ -379,7 +379,7 @@ export default function OrdersView() {
 
   const handleSaveRoute = async (orders) => {
     if (!validateJWT()) {
-      history.push('/auth');
+      navigate('/auth');
       return;
     }
     try {

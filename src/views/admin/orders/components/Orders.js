@@ -48,7 +48,7 @@ import ConsolidatedModal from "./ConsolidatedModal";
 import MapModal from "./MapModal";
 import { useQueryParam, getDateAsQueryParam } from "utils/Utility"
 import { getAccessToken, validateJWT } from 'security.js';
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Assets
 import { MdCheckCircle, MdCancel, MdOutlineError, MdClear, MdAdd } from "react-icons/md";
@@ -65,7 +65,7 @@ function Orders(props) {
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   const jwtToken = getAccessToken();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const isButtonDisabled = () => {
     return data.length === 0 || data.some(row => row.status !== 'Creada' || row.errors.length > 0);

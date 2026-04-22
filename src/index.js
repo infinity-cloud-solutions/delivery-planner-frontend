@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import 'assets/css/App.css';
-import { HashRouter, Route, Switch, Redirect } from 'react-router-dom';
+import { HashRouter, Route, Routes, Navigate } from 'react-router-dom';
 import AuthLayout from 'layouts/auth';
 import AdminLayout from 'layouts/admin';
 import DriverLayout from 'layouts/driver';
@@ -16,12 +16,12 @@ root.render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
       <HashRouter>
-        <Switch>
-          <Route path="/auth" component={AuthLayout} />
-          <ProtectedRoute path="/admin" component={AdminLayout} />
-          <ProtectedRoute path="/driver" component={DriverLayout} />
-          <Redirect from="/" to="/auth" />
-        </Switch>
+        <Routes>
+          <Route path="/auth/*" element={<AuthLayout />} />
+          <Route path="/admin/*" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>} />
+          <Route path="/driver/*" element={<ProtectedRoute><DriverLayout /></ProtectedRoute>} />
+          <Route path="/" element={<Navigate to="/auth" replace />} />
+        </Routes>
       </HashRouter>
     </ChakraProvider>
   </React.StrictMode>
