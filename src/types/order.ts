@@ -29,6 +29,8 @@ export interface Order {
   latitude?: number | null;
   longitude?: number | null;
   order?: string;
+  notes?: string | null;
+  discount?: string | number | null;
 }
 
 export interface CreateOrderPayload {

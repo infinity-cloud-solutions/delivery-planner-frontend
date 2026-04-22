@@ -52,8 +52,10 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [clientName, setClientName] = useState(rowData.row.client_name || '');
   const [deliveryTime, setDeliveryTime] = useState(rowData.row.delivery_time || '');
   const [deliveryAddress, setDeliveryAddress] = useState(rowData.row.delivery_address || '');
-  const [deliveryLatitude, setDeliveryLatitude] = useState(String(rowData.row.latitude) || '');
-  const [deliveryLongitude, setDeliveryLongitude] = useState(String(rowData.row.longitude) || '');
+  const lat = rowData.row.latitude;
+  const lng = rowData.row.longitude;
+  const [deliveryLatitude, setDeliveryLatitude] = useState(lat != null ? String(lat) : '');
+  const [deliveryLongitude, setDeliveryLongitude] = useState(lng != null ? String(lng) : '');
   const [phoneNumber, setPhoneNumber] = useState(rowData.row.phone_number || '');
   const [paymentMethod, setPaymentMethod] = useState(rowData.row.payment_method || '')
   const [cartItemsSelection, setCartItemsSelection] = useState(
@@ -191,15 +193,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
 
   const deleteOrder = async () => {
     setLoadingDeleteRequest(true)
-    const order = {
-      item: {
-        id: rowData.row.id,
-        delivery_date: rowData.row.delivery_date
-      },
-      rowIndex: rowData.index
-    };
     try {
-      await onDelete(order);
+      await onDelete({ item: rowData.row, rowIndex: rowData.index });
       setClientName('');
       setDeliveryTime('');
       setDeliveryAddress('');
@@ -312,13 +307,15 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   };
 
   const calculateTotalAmount = () => {
+    const discountMultipliers: Record<string, number> = {
+      "5": 0.95, "10": 0.90, "15": 0.85, "20": 0.80, "100": 0.00,
+    };
+
     let totalAmount = 0;
     if (cartItems.length > 0) {
       totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      if (discount === "5") {
-        totalAmount *= 0.95;
-      } else if (discount === "10") {
-        totalAmount *= 0.9;
+      if (discount && Object.prototype.hasOwnProperty.call(discountMultipliers, String(discount))) {
+        totalAmount *= discountMultipliers[String(discount)];
       }
     }
     const calculatedTotalAmount = totalAmount.toLocaleString('es-MX', {
@@ -430,6 +427,23 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         <ModalBody>
           <VStack spacing="4">
             <OrderFormFields
+              part="A"
+              discountSlot={
+                <FormControl>
+                  <FormLabel>Descuento</FormLabel>
+                  <Select
+                    placeholder="Selecciona un descuento"
+                    value={discount}
+                    onChange={(e) => handleDiscount(e.target.value)}
+                  >
+                    <option value="0">Sin descuento</option>
+                    <option value="5">5% de descuento</option>
+                    <option value="10">10% de descuento</option>
+                    <option value="15">15% de descuento</option>
+                    <option value="100">100% de descuento</option>
+                  </Select>
+                </FormControl>
+              }
               phoneNumber={phoneNumber}
               onPhoneNumberChange={setPhoneNumber}
               onPhoneNumberBlur={() => setPhoneTouched(true)}
@@ -458,21 +472,6 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               onPaymentMethodBlur={() => setPaymentMethodTouched(true)}
               paymentMethodTouched={paymentMethodTouched}
             />
-
-            <FormControl>
-              <FormLabel>Descuento</FormLabel>
-              <Select
-                placeholder="Selecciona un descuento"
-                value={discount}
-                onChange={(e) => handleDiscount(e.target.value)}
-              >
-                <option value="0">Sin descuento</option>
-                <option value="5">5% de descuento</option>
-                <option value="10">10% de descuento</option>
-                <option value="15">15% de descuento</option>
-                <option value="100">100% de descuento</option>
-              </Select>
-            </FormControl>
 
             <FormControl isRequired>
               <FormLabel>Repartidor</FormLabel>
@@ -508,6 +507,37 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                 isDisabled={!isUserAdmin}
                 onChange={(e) => setDeliveryLongitude(e.target.value)} />
             </FormControl>
+
+            <OrderFormFields
+              part="B"
+              phoneNumber={phoneNumber}
+              onPhoneNumberChange={setPhoneNumber}
+              onPhoneNumberBlur={() => setPhoneTouched(true)}
+              phoneTouched={phoneTouched}
+              clientName={clientName}
+              onClientNameChange={setClientName}
+              onClientNameBlur={() => setNameTouched(true)}
+              nameTouched={nameTouched}
+              deliveryAddress={deliveryAddress}
+              onDeliveryAddressChange={setDeliveryAddress}
+              onDeliveryAddressBlur={() => setDeliveryAddressTouched(true)}
+              deliveryAddressTouched={deliveryAddressTouched}
+              deliveryDate={deliveryDate}
+              onDeliveryDateChange={handleDateChange}
+              onDeliveryDateBlur={() => setDeliveryDateTouched(true)}
+              deliveryDateTouched={deliveryDateTouched}
+              dateError={dateError}
+              apiError={apiError}
+              availableDeliveryTimes={availableDeliveryTimes}
+              deliveryTime={deliveryTime}
+              onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(false); }}
+              onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
+              deliveryTimeTouched={deliveryTimeTouched}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              onPaymentMethodBlur={() => setPaymentMethodTouched(true)}
+              paymentMethodTouched={paymentMethodTouched}
+            />
 
             <FormLabel>Lista de productos en pedido</FormLabel>
             {cartItemsSelection.map((item, index) => (

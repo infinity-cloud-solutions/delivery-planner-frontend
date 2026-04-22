@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Modal,
     ModalOverlay,
@@ -16,7 +16,7 @@ import {
     Box,
     Text,
 } from '@chakra-ui/react';
-import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -28,6 +28,16 @@ interface MapModalProps {
   onConfirmRoute: (orders: Order[]) => Promise<void>;
   orders: Order[];
 }
+
+const MapResizer = ({ isOpen }: { isOpen: boolean }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (isOpen) {
+            setTimeout(() => map.invalidateSize(), 100);
+        }
+    }, [isOpen, map]);
+    return null;
+};
 
 const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) => {
     const [selectedDriver, setSelectedDriver] = useState(null);
@@ -41,8 +51,6 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
     const bgColor = useColorModeValue('white', '#2D3748');
     const draggingColor = useColorModeValue('gray.700', 'navy.700');
     const rowBgColor = useColorModeValue('white', 'gray.800');
-
-    const mapRef = useRef();
 
     delete L.Icon.Default.prototype._getIconUrl;
 
@@ -73,12 +81,6 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
             setFilteredOrders(sorted);
         }
     }, [selectedDriver, selectedHours]);
-
-    useEffect(() => {
-        if (isOpen && mapRef.current) {
-            mapRef.current.invalidateSize();
-        }
-    }, [isOpen]);
 
     const onDragEnd = (result) => {
         if (!result.destination) return;
@@ -178,9 +180,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                 <ModalBody>
                     <Box display="flex">
                         <Box flex="1">
-                            <MapContainer center={[20.6783825, -103.348088]} zoom={11} style={{ height: '500px', width: '100%' }} whenCreated={(mapInstance) => {
-                                mapRef.current = mapInstance;
-                            }}>
+                            <MapContainer center={[20.6783825, -103.348088]} zoom={11} style={{ height: '500px', width: '100%' }}>
+                                <MapResizer isOpen={isOpen} />
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />

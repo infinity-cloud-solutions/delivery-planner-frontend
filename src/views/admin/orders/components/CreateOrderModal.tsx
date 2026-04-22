@@ -38,7 +38,8 @@ import {
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
 import { MappedClient } from 'types/client';
-import { Product, CreateOrderPayload } from 'types/order';
+import { CreateOrderPayload } from 'types/order';
+import { Product } from 'types/product';
 import { OrderFormFields } from './OrderFormFields';
 
 interface CreateOrderModalProps {
@@ -88,7 +89,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [clientErrorMessage, setClientErrorMessage] = useState(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [selectedAddressOption, setSelectedAddressOption] = useState('1');
-    const cancelRef = useRef();
+    const cancelRef = useRef<HTMLButtonElement>(null);
 
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -412,6 +413,23 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                 <ModalBody>
                     <VStack spacing="4">
                         <OrderFormFields
+                            part="all"
+                            discountSlot={
+                                <FormControl>
+                                    <FormLabel>Descuento</FormLabel>
+                                    <Select
+                                        placeholder="Selecciona un descuento"
+                                        value={discount}
+                                        onChange={(e) => handleDiscount(e.target.value)}
+                                    >
+                                        <option value="0">Sin descuento</option>
+                                        <option value="5">5% de descuento</option>
+                                        <option value="10">10% de descuento</option>
+                                        <option value="15">15% de descuento</option>
+                                        <option value="100">100% de descuento</option>
+                                    </Select>
+                                </FormControl>
+                            }
                             phoneNumber={phoneNumber}
                             onPhoneNumberChange={setPhoneNumber}
                             onPhoneNumberBlur={() => { setPhoneTouched(true); handlePhoneBlur(); }}
@@ -452,21 +470,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                         )}
                         {isValidationCompleted && (
                             <>
-                                <FormControl>
-                                    <FormLabel>Descuento</FormLabel>
-                                    <Select
-                                        placeholder="Selecciona un descuento"
-                                        value={discount}
-                                        onChange={(e) => handleDiscount(e.target.value)}
-                                    >
-                                        <option value="0">Sin descuento</option>
-                                        <option value="5">5% de descuento</option>
-                                        <option value="10">10% de descuento</option>
-                                        <option value="15">15% de descuento</option>
-                                        <option value="100">100% de descuento</option>
-                                    </Select>
-                                </FormControl>
-
                                 <FormLabel
                                     color={textColor}
                                     fontSize='18px'

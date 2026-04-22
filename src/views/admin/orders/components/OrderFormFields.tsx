@@ -60,6 +60,12 @@ interface OrderFormFieldsProps {
    * phone validation completes). Defaults to true — all 6 fields are shown.
    */
   showClientFields?: boolean;
+
+  /** Controls which section(s) to render. Defaults to 'all'. */
+  part?: 'A' | 'B' | 'all';
+
+  /** Rendered between clientName and deliveryAddress when Part A is shown. */
+  discountSlot?: React.ReactNode;
 }
 
 const OrderFormFields: React.FC<OrderFormFieldsProps> = ({
@@ -95,73 +101,87 @@ const OrderFormFields: React.FC<OrderFormFieldsProps> = ({
   onPaymentMethodBlur,
   paymentMethodTouched,
   showClientFields = true,
+  part = 'all',
+  discountSlot,
 }) => {
+  const showA = part !== 'B';
+  const showB = part !== 'A';
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
   return (
     <>
-      <FormControl isRequired isInvalid={phoneTouched && phoneNumber.length !== 10}>
-        <FormLabel>Teléfono</FormLabel>
-        <Input
-          type="number"
-          color={textColor}
-          borderColor={borderColor}
-          placeholder="Si el cliente existe, usaramos la información previamente salvada"
-          value={phoneNumber}
-          onChange={(e) => onPhoneNumberChange(e.target.value)}
-          onBlur={onPhoneNumberBlur}
-          isDisabled={isPhoneDisabled}
-        />
-        {isLoadingPhoneCheck && (
-          <Spinner
-            mt="5px"
-            thickness="5px"
-            speed="0.65s"
-            emptyColor={borderColor}
-            color={textColor}
-            size="lg"
-          />
-        )}
-        {phoneTouched && phoneNumber.length !== 10 && (
-          <FormErrorMessage>El número de teléfono debe tener 10 dígitos.</FormErrorMessage>
-        )}
-      </FormControl>
-
-      {showClientFields && (
+      {showA && (
         <>
-          <FormControl isRequired isInvalid={nameTouched && clientName.trim() === ''}>
-            <FormLabel>Nombre</FormLabel>
+          <FormControl isRequired isInvalid={phoneTouched && phoneNumber.length !== 10}>
+            <FormLabel>Teléfono</FormLabel>
             <Input
-              type="text"
+              type="number"
               color={textColor}
               borderColor={borderColor}
-              placeholder="Nombre y apellido"
-              value={clientName}
-              isDisabled={isNameDisabled}
-              onChange={(e) => onClientNameChange(e.target.value)}
-              onBlur={onClientNameBlur}
+              placeholder="Si el cliente existe, usaramos la información previamente salvada"
+              value={phoneNumber}
+              onChange={(e) => onPhoneNumberChange(e.target.value)}
+              onBlur={onPhoneNumberBlur}
+              isDisabled={isPhoneDisabled}
             />
-            <FormErrorMessage>El nombre es obligatorio.</FormErrorMessage>
+            {isLoadingPhoneCheck && (
+              <Spinner
+                mt="5px"
+                thickness="5px"
+                speed="0.65s"
+                emptyColor={borderColor}
+                color={textColor}
+                size="lg"
+              />
+            )}
+            {phoneTouched && phoneNumber.length !== 10 && (
+              <FormErrorMessage>El número de teléfono debe tener 10 dígitos.</FormErrorMessage>
+            )}
           </FormControl>
 
-          <FormControl isRequired isInvalid={deliveryAddressTouched && deliveryAddress.trim() === ''}>
-            <FormLabel>Dirección</FormLabel>
-            <Textarea
-              // @ts-ignore — Chakra Textarea forwards type prop via rest
-              type="text"
-              color={textColor}
-              rows={2}
-              borderColor={borderColor}
-              placeholder="Formato similar al de Google Maps"
-              value={deliveryAddress}
-              isDisabled={isAddressDisabled}
-              onChange={(e) => onDeliveryAddressChange(e.target.value)}
-              onBlur={onDeliveryAddressBlur}
-            />
-            <FormErrorMessage>La dirección es obligatoria.</FormErrorMessage>
-          </FormControl>
+          {showClientFields && (
+            <>
+              <FormControl isRequired isInvalid={nameTouched && clientName.trim() === ''}>
+                <FormLabel>Nombre</FormLabel>
+                <Input
+                  type="text"
+                  color={textColor}
+                  borderColor={borderColor}
+                  placeholder="Nombre y apellido"
+                  value={clientName}
+                  isDisabled={isNameDisabled}
+                  onChange={(e) => onClientNameChange(e.target.value)}
+                  onBlur={onClientNameBlur}
+                />
+                <FormErrorMessage>El nombre es obligatorio.</FormErrorMessage>
+              </FormControl>
 
+              {discountSlot}
+
+              <FormControl isRequired isInvalid={deliveryAddressTouched && deliveryAddress.trim() === ''}>
+                <FormLabel>Dirección</FormLabel>
+                <Textarea
+                  // @ts-ignore — Chakra Textarea forwards type prop via rest
+                  type="text"
+                  color={textColor}
+                  rows={2}
+                  borderColor={borderColor}
+                  placeholder="Formato similar al de Google Maps"
+                  value={deliveryAddress}
+                  isDisabled={isAddressDisabled}
+                  onChange={(e) => onDeliveryAddressChange(e.target.value)}
+                  onBlur={onDeliveryAddressBlur}
+                />
+                <FormErrorMessage>La dirección es obligatoria.</FormErrorMessage>
+              </FormControl>
+            </>
+          )}
+        </>
+      )}
+
+      {showB && showClientFields && (
+        <>
           <FormControl isRequired isInvalid={deliveryDateTouched && deliveryDate.trim() === ''}>
             <FormLabel>Fecha de entrega</FormLabel>
             <Input
