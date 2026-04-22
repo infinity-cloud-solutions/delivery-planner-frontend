@@ -17,12 +17,10 @@ import { useNavigate } from "react-router-dom";
 
 import routes from 'routes.js';
 import { getFullNameFromLocalStorage, logout } from 'security.js'
-import { ThemeEditor } from './ThemeEditor';
 
 export default function HeaderLinks(props) {
 	const { secondary } = props;
 	// Chakra Color Mode
-	const navbarIcon = useColorModeValue('gray.400', 'white');
 	let menuBg = useColorModeValue('white', 'navy.800');
 	const textColor = useColorModeValue('secondaryGray.900', 'white');
 
@@ -59,7 +57,6 @@ export default function HeaderLinks(props) {
 			</Flex>
 
 			<Flex alignItems="center">
-				<ThemeEditor navbarIcon={navbarIcon} />
 
 				<Menu>
 					<MenuButton p="0px">
