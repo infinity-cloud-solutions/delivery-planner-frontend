@@ -15,7 +15,6 @@ import {
 
 import CreateClientModal from 'views/admin/clients/components/CreateClientModal';
 import UpdateClientModal from 'views/admin/clients/components/UpdateClientModal';
-import { isAdmin } from 'security';
 import { CreateClientPayload, UpdateClientPayload, MappedClient } from 'types/client';
 
 interface ClientsProps {
@@ -35,8 +34,6 @@ function Clients(props: ClientsProps) {
   const [isSearchButtonEnable, setIsSearchButtonEnable] = useState(false);
   const [loadingSearchForClient, setLoadingSearchForClient] = useState(false);
   const [isError, setIsError] = useState(false);
-
-  const isUserAdmin = isAdmin();
 
   const onClientCreatedCallback = async (newClient: CreateClientPayload): Promise<void> => {
     try {
@@ -87,7 +84,7 @@ function Clients(props: ClientsProps) {
     const value = e.target.value;
     setSearchQuery(value);
     setIsSearchButtonEnable(value.length === 10);
-    setIsError(!value.length === false);
+    setIsError(false);
   };
 
   const handleSearch = async () => {

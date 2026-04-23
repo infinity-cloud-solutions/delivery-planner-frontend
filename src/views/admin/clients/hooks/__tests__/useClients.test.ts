@@ -1,11 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import axios from 'axios';
 import { getAccessToken } from 'security';
+import { useClients } from '../useClients';
 
 jest.mock('axios');
 jest.mock('security', () => ({ getAccessToken: jest.fn() }));
-
-import { useClients } from '../useClients';
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedGetAccessToken = getAccessToken as jest.Mock;

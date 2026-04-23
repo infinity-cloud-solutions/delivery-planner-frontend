@@ -174,7 +174,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
 
   const deleteClient = async () => {
     setLoadingDeleteRequest(true);
-    const client = { phone_number: clientPhoneNumber };
+    const client = { phone_number: originalPhoneNumber };
 
     try {
       await onDelete(client);
