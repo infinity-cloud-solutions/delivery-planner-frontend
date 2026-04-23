@@ -35,32 +35,6 @@ function Clients(props: ClientsProps) {
   const [loadingSearchForClient, setLoadingSearchForClient] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  const onClientCreatedCallback = async (newClient: CreateClientPayload): Promise<void> => {
-    try {
-      await onClientCreated(newClient);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const onClientUpdatedCallback = async (
-    updatedClient: UpdateClientPayload & { delete_old_record: boolean }
-  ): Promise<void> => {
-    try {
-      await onClientUpdated(updatedClient);
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const onClientDeletedCallback = async (client: { phone_number: string }): Promise<void> => {
-    try {
-      await onClientDeleted(client);
-    } catch (error) {
-      throw error;
-    }
-  };
-
   const textColor = useColorModeValue('navy.700', 'white');
 
   const openCreateModal = () => {
@@ -170,8 +144,8 @@ function Clients(props: ClientsProps) {
         <UpdateClientModal
           isOpen={isUpdateModalOpen}
           onClose={closeUpdateModal}
-          onUpdate={onClientUpdatedCallback}
-          onDelete={onClientDeletedCallback}
+          onUpdate={onClientUpdated}
+          onDelete={onClientDeleted}
           clientData={fetchedClientData}
         />
       )}
@@ -179,7 +153,7 @@ function Clients(props: ClientsProps) {
         <CreateClientModal
           isOpen={isCreateModalOpen}
           onClose={closeCreateModal}
-          onCreate={onClientCreatedCallback}
+          onCreate={onClientCreated}
           onClientExistsCheck={onClientExistsCheckCallback}
         />
       )}

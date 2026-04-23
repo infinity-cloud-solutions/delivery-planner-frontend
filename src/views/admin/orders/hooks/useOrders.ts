@@ -1,9 +1,10 @@
 // src/views/admin/orders/hooks/useOrders.ts
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { Order, CreateOrderPayload, UpdateOrderPayload, ConsolidatedProducts } from 'types/order';
+import { Order, CreateOrderPayload, ConsolidatedProducts } from 'types/order';
 import { getAccessToken } from 'security';
 import { DeliveryProcessor } from 'views/admin/orders/components/DeliveryProcessor';
+import { buildConsolidated } from 'utils/buildConsolidated';
 
 export interface UpdateOrderArgs {
   item: Order & { original_date?: string };
@@ -48,19 +49,6 @@ function sortOrders(orders: Order[]): Order[] {
     const orderB = STATUS_SORT_ORDER[b.status] ?? 99;
     return orderA - orderB;
   });
-}
-
-function buildConsolidated(orders: Order[]): ConsolidatedProducts {
-  const result: ConsolidatedProducts = {};
-  orders.forEach(({ driver, cart_items }) => {
-    const driverKey = String(driver);
-    cart_items.forEach(({ product, quantity }) => {
-      const qty = parseInt(String(quantity), 10);
-      if (!result[driverKey]) result[driverKey] = {};
-      result[driverKey][product] = (result[driverKey][product] ?? 0) + qty;
-    });
-  });
-  return result;
 }
 
 export function useOrders(initialDate: string | null): UseOrdersReturn {
@@ -108,6 +96,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
 
   const createOrder = useCallback(
     async (payload: CreateOrderPayload): Promise<Order> => {
+      if (!jwtToken) throw new Error('No authentication token');
       try {
         const response = await axios.post<Order>(ordersURL, payload, {
           headers: authHeaders,
@@ -130,6 +119,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
 
   const updateOrder = useCallback(
     async ({ item, rowIndex }: UpdateOrderArgs): Promise<void> => {
+      if (!jwtToken) throw new Error('No authentication token');
       try {
         const response = await axios.put<Order>(ordersURL, item, {
           headers: authHeaders,
@@ -160,6 +150,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
 
   const deleteOrder = useCallback(
     async ({ item, rowIndex }: DeleteOrderArgs): Promise<void> => {
+      if (!jwtToken) throw new Error('No authentication token');
       try {
         await axios.delete(ordersURL, {
           headers: authHeaders,
@@ -216,7 +207,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
     [jwtToken, authHeaders]
   );
 
-  const consolidatedProducts = buildConsolidated(orders);
+  const consolidatedProducts = useMemo(() => buildConsolidated(orders), [orders]);
 
   return {
     orders,

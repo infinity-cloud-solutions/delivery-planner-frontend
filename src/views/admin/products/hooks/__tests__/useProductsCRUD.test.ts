@@ -1,11 +1,10 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import axios from 'axios';
+import { useProductsCRUD } from '../useProductsCRUD';
+import * as security from 'security';
 
 jest.mock('axios');
 jest.mock('security', () => ({ getAccessToken: jest.fn(() => 'test-token') }));
-
-import { useProductsCRUD } from '../useProductsCRUD';
-import * as security from 'security';
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockGetAccessToken = security.getAccessToken as jest.Mock;
@@ -35,7 +34,7 @@ describe('useProductsCRUD', () => {
   it('should skip fetch when token is null', async () => {
     mockGetAccessToken.mockReturnValue(null);
     const { result } = renderHook(() => useProductsCRUD());
-    await act(async () => {});
+    await waitFor(() => expect(result.current.fetching).toBe(false));
     expect(mockAxios.get).not.toHaveBeenCalled();
     expect(result.current.products).toEqual([]);
   });

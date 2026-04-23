@@ -4,6 +4,7 @@ import { Delivery, DeliveryStatus } from 'types/delivery';
 import { ConsolidatedProducts } from 'types/order';
 import { getAccessToken, getEmailFromToken } from 'security';
 import { getDateAsQueryParam } from 'utils/Utility';
+import { buildConsolidated } from 'utils/buildConsolidated';
 
 export interface UpdateDeliveryArgs {
   order: Delivery;
@@ -38,19 +39,6 @@ function sortDeliveries(deliveries: Delivery[]): Delivery[] {
   });
 }
 
-function buildConsolidated(deliveries: Delivery[]): ConsolidatedProducts {
-  const result: ConsolidatedProducts = {};
-  deliveries.forEach(({ driver, cart_items }) => {
-    const key = String(driver);
-    cart_items.forEach(({ product, quantity }) => {
-      const qty = parseInt(String(quantity), 10);
-      if (!result[key]) result[key] = {};
-      result[key][product] = (result[key][product] ?? 0) + qty;
-    });
-  });
-  return result;
-}
-
 export function useDeliveries(): UseDeliveriesReturn {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +47,7 @@ export function useDeliveries(): UseDeliveriesReturn {
 
   const authHeaders = useMemo(() => ({
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${jwtToken}`,
+    ...(jwtToken ? { Authorization: `Bearer ${jwtToken}` } : {}),
   }), [jwtToken]);
 
   useEffect(() => {
@@ -108,11 +96,13 @@ export function useDeliveries(): UseDeliveriesReturn {
     [authHeaders]
   );
 
+  const consolidatedProducts = useMemo(() => buildConsolidated(deliveries), [deliveries]);
+
   return {
     deliveries,
     loading,
     error,
-    consolidatedProducts: buildConsolidated(deliveries),
+    consolidatedProducts,
     updateDelivery,
   };
 }
