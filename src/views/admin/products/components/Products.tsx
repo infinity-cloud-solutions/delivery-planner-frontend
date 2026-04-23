@@ -159,7 +159,7 @@ function Products(props: ProductsProps) {
                   <Tr {...row.getRowProps()} key={actualIndex} onClick={() => openUpdateModal(row.original, actualIndex)} >
                     {row.cells.map((cell, index) => {
                       let data = "";
-                      if (cell.column.Header === "Nombre") {
+                      if (cell.column.id === 'name') {
                         data = (
                           <Flex align='center'>
                             <Text
@@ -171,7 +171,7 @@ function Products(props: ProductsProps) {
                             </Text>
                           </Flex>
                         );
-                      } else if (cell.column.Header === "Precio") {
+                      } else if (cell.column.id === 'price') {
                         const formattedPrice = new Intl.NumberFormat(
                           "es-MX",
                           {
@@ -189,6 +189,8 @@ function Products(props: ProductsProps) {
                             {formattedPrice}
                           </Text>
                         );
+                      } else {
+                        data = <Text fontSize='sm'>{String(cell.value ?? '')}</Text>;
                       }
                       return (
                         <Td

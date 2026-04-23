@@ -25,7 +25,7 @@ const productsURL = process.env.REACT_APP_PRODUCTS_BASE_URL as string;
 
 export function useProductsCRUD(): UseProductsCRUDReturn {
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const jwtToken = getAccessToken();
 
   const authHeaders = useMemo(() => ({
@@ -45,6 +45,7 @@ export function useProductsCRUD(): UseProductsCRUDReturn {
 
   const createProduct = useCallback(
     async (payload: CreateProductPayload): Promise<void> => {
+      if (!jwtToken) return;
       setLoading(true);
       try {
         const res = await axios.post<{ id: string }>(productsURL, payload, { headers: authHeaders });
@@ -53,41 +54,35 @@ export function useProductsCRUD(): UseProductsCRUDReturn {
         setLoading(false);
       }
     },
-    [authHeaders]
+    [authHeaders, jwtToken]
   );
 
   const updateProduct = useCallback(
-    async ({ item, rowIndex }: UpdateProductArgs): Promise<void> => {
+    async ({ item, rowIndex: _rowIndex }: UpdateProductArgs): Promise<void> => {
+      if (!jwtToken) return;
       setLoading(true);
       try {
         await axios.put(productsURL, item, { headers: authHeaders });
-        setProducts((prev) => {
-          const next = [...prev];
-          next.splice(rowIndex, 1, item);
-          return next;
-        });
+        setProducts((prev) => prev.map((p) => (p.id === item.id ? item : p)));
       } finally {
         setLoading(false);
       }
     },
-    [authHeaders]
+    [authHeaders, jwtToken]
   );
 
   const deleteProduct = useCallback(
-    async ({ item, rowIndex }: DeleteProductArgs): Promise<void> => {
+    async ({ item, rowIndex: _rowIndex }: DeleteProductArgs): Promise<void> => {
+      if (!jwtToken) return;
       setLoading(true);
       try {
         await axios.delete(`${productsURL}?id=${item.id}`, { headers: authHeaders });
-        setProducts((prev) => {
-          const next = [...prev];
-          next.splice(rowIndex, 1);
-          return next;
-        });
+        setProducts((prev) => prev.filter((p) => p.id !== item.id));
       } finally {
         setLoading(false);
       }
     },
-    [authHeaders]
+    [authHeaders, jwtToken]
   );
 
   return { products, loading, createProduct, updateProduct, deleteProduct };

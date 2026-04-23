@@ -38,38 +38,46 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
 
     const updateProduct = async () => {
         const updatedProductName = productName || rowData.row.name || '';
-        const updatedProductPrice = parseFloat(productPrice) || rowData.row.price;
+        const updatedPrice = productPrice !== '' ? parseFloat(productPrice) : rowData.row.price;
 
         const product: UpdateProductArgs = {
             item: {
                 name: updatedProductName,
-                price: updatedProductPrice,
+                price: typeof updatedPrice === 'number' ? updatedPrice : parseFloat(String(updatedPrice)),
                 id: rowData.row.id || '',
             },
             rowIndex: rowData.index
         };
-        onUpdate(product);
-        setProductName('');
-        setProductPrice('');
-        onClose();
+        try {
+            await onUpdate(product);
+            setProductName('');
+            setProductPrice('');
+            onClose();
+        } catch {
+            // parent already shows the alert; don't close on failure
+        }
     };
 
     const deleteProduct = async () => {
         const updatedProductName = productName || rowData.row.name || '';
-        const updatedProductPrice = parseFloat(productPrice) || rowData.row.price;
+        const updatedPrice = productPrice !== '' ? parseFloat(productPrice) : rowData.row.price;
 
         const product: DeleteProductArgs = {
             item: {
                 name: updatedProductName,
-                price: updatedProductPrice,
+                price: typeof updatedPrice === 'number' ? updatedPrice : parseFloat(String(updatedPrice)),
                 id: rowData.row.id || '',
             },
             rowIndex: rowData.index
         };
-        onDelete(product);
-        setProductName('');
-        setProductPrice('');
-        onClose();
+        try {
+            await onDelete(product);
+            setProductName('');
+            setProductPrice('');
+            onClose();
+        } catch {
+            // parent already shows the alert; don't close on failure
+        }
     };
 
     return (

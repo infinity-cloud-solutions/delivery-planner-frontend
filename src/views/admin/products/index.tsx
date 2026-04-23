@@ -43,8 +43,9 @@ export default function ProductView() {
     try {
       await createProduct(product);
       showAlert('success', 'Producto guardado en la base de datos');
-    } catch {
+    } catch (err) {
       showAlert('error', 'Error al crear producto. Intenta de nuevo.');
+      throw err;
     }
   };
 
@@ -52,8 +53,9 @@ export default function ProductView() {
     try {
       await updateProduct(args);
       showAlert('success', 'Producto guardado en la base de datos');
-    } catch {
+    } catch (err) {
       showAlert('error', 'Error al crear producto. Intenta de nuevo.');
+      throw err;
     }
   };
 
@@ -61,8 +63,9 @@ export default function ProductView() {
     try {
       await deleteProduct(args);
       showAlert('success', 'Producto eliminado en la base de datos');
-    } catch {
+    } catch (err) {
       showAlert('error', 'Error al eliminar producto. Intenta de nuevo.');
+      throw err;
     }
   };
 

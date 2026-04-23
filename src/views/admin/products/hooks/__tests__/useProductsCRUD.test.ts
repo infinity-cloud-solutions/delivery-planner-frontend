@@ -99,4 +99,31 @@ describe('useProductsCRUD', () => {
     );
     expect(result.current.products).toHaveLength(0);
   });
+
+  it('should not call POST when token is null on createProduct', async () => {
+    mockGetAccessToken.mockReturnValue(null);
+    const { result } = renderHook(() => useProductsCRUD());
+    await act(async () => {
+      await result.current.createProduct({ name: 'Berry', price: 10 });
+    });
+    expect(mockAxios.post).not.toHaveBeenCalled();
+  });
+
+  it('should not call PUT when token is null on updateProduct', async () => {
+    mockGetAccessToken.mockReturnValue(null);
+    const { result } = renderHook(() => useProductsCRUD());
+    await act(async () => {
+      await result.current.updateProduct({ item: mockProduct, rowIndex: 0 });
+    });
+    expect(mockAxios.put).not.toHaveBeenCalled();
+  });
+
+  it('should not call DELETE when token is null on deleteProduct', async () => {
+    mockGetAccessToken.mockReturnValue(null);
+    const { result } = renderHook(() => useProductsCRUD());
+    await act(async () => {
+      await result.current.deleteProduct({ item: mockProduct, rowIndex: 0 });
+    });
+    expect(mockAxios.delete).not.toHaveBeenCalled();
+  });
 });

@@ -31,14 +31,16 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
     let menuBg = useColorModeValue('white', 'navy.900');
 
     const createProduct = async () => {
-        const newProduct: CreateProductPayload = {
-            name: productName,
-            price: parseFloat(productPrice),
-        };
-        onCreate(newProduct);
-        setProductName('');
-        setProductPrice('');
-        onClose();
+        const parsedPrice = parseFloat(productPrice);
+        if (Number.isNaN(parsedPrice)) return;
+        try {
+            await onCreate({ name: productName, price: parsedPrice });
+            setProductName('');
+            setProductPrice('');
+            onClose();
+        } catch {
+            // parent already shows the alert; don't close on failure
+        }
     };
 
     return (
