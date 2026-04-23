@@ -38,7 +38,7 @@ export default function DriverHeaderLinks(props) {
 		navigate('/auth');
 	};
 
-	const firstName = getFullNameFromLocalStorage().split(' ');
+	const firstName = getFullNameFromLocalStorage().split(' ')[0];
 
 	return (
 		<Flex

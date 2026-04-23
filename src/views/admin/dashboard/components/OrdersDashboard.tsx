@@ -130,7 +130,7 @@ export default function ColumnsTable(props: { columnsData: ColumnConfig[]; table
                   cursor="pointer"
                 >
                   {row.cells.map((cell, index) => {
-                    let data = "";
+                    let data: React.ReactNode = null;
                     if (cell.column.Header === "NOMBRE") {
                       data = (
                         <Tooltip label={row.original.client_name}>

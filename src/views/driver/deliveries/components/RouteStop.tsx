@@ -10,7 +10,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 // Custom components
-import Card from "components/card/Card.js";
+import Card from "components/card/Card";
 import React from "react";
 
 interface RouteStopProps {

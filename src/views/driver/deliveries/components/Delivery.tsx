@@ -46,7 +46,7 @@ import {
 } from "react-icons/fa6";
 import { IconType } from 'react-icons';
 
-import Card from "components/card/Card.js";
+import Card from "components/card/Card";
 import ConsolidatedDeliveryModal from "./ConsolidatedModalDeliver";
 import React, { useState, useEffect, useRef } from 'react';
 import { Delivery, DeliveryStatus } from 'types/delivery';
