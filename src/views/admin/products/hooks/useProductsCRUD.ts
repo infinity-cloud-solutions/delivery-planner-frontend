@@ -36,7 +36,10 @@ export function useProductsCRUD(): UseProductsCRUDReturn {
   }), [jwtToken]);
 
   useEffect(() => {
-    if (!jwtToken) return;
+    if (!jwtToken) {
+      setFetching(false);
+      return;
+    }
     setFetching(true);
     axios
       .get<Product[]>(productsURL, { headers: authHeaders })
