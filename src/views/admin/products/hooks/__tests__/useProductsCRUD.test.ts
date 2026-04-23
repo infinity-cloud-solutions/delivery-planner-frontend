@@ -21,7 +21,7 @@ describe('useProductsCRUD', () => {
   it('should fetch on mount and call GET with auth headers', async () => {
     mockAxios.get.mockResolvedValueOnce({ data: [mockProduct] });
     const { result } = renderHook(() => useProductsCRUD());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.fetching).toBe(false));
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
       expect.any(String),
@@ -44,7 +44,7 @@ describe('useProductsCRUD', () => {
     mockAxios.get.mockResolvedValueOnce({ data: [] });
     mockAxios.post.mockResolvedValueOnce({ data: { id: 'new-1' } });
     const { result } = renderHook(() => useProductsCRUD());
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.fetching).toBe(false));
 
     await act(async () => {
       await result.current.createProduct({ name: 'Berry', price: 10 });
@@ -103,27 +103,21 @@ describe('useProductsCRUD', () => {
   it('should not call POST when token is null on createProduct', async () => {
     mockGetAccessToken.mockReturnValue(null);
     const { result } = renderHook(() => useProductsCRUD());
-    await act(async () => {
-      await result.current.createProduct({ name: 'Berry', price: 10 });
-    });
+    await expect(result.current.createProduct({ name: 'Berry', price: 10 })).rejects.toThrow('No authentication token');
     expect(mockAxios.post).not.toHaveBeenCalled();
   });
 
   it('should not call PUT when token is null on updateProduct', async () => {
     mockGetAccessToken.mockReturnValue(null);
     const { result } = renderHook(() => useProductsCRUD());
-    await act(async () => {
-      await result.current.updateProduct({ item: mockProduct, rowIndex: 0 });
-    });
+    await expect(result.current.updateProduct({ item: mockProduct, rowIndex: 0 })).rejects.toThrow('No authentication token');
     expect(mockAxios.put).not.toHaveBeenCalled();
   });
 
   it('should not call DELETE when token is null on deleteProduct', async () => {
     mockGetAccessToken.mockReturnValue(null);
     const { result } = renderHook(() => useProductsCRUD());
-    await act(async () => {
-      await result.current.deleteProduct({ item: mockProduct, rowIndex: 0 });
-    });
+    await expect(result.current.deleteProduct({ item: mockProduct, rowIndex: 0 })).rejects.toThrow('No authentication token');
     expect(mockAxios.delete).not.toHaveBeenCalled();
   });
 });

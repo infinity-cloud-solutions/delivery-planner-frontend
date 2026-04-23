@@ -32,7 +32,7 @@ export default function ProductView() {
 
   useAuthGuard();
 
-  const { products, loading, createProduct, updateProduct, deleteProduct } = useProductsCRUD();
+  const { products, fetching, createProduct, updateProduct, deleteProduct } = useProductsCRUD();
 
   const showAlert = (type: AlertStatus, text: string) => {
     setAlertMessage({ type, text });
@@ -54,7 +54,7 @@ export default function ProductView() {
       await updateProduct(args);
       showAlert('success', 'Producto guardado en la base de datos');
     } catch (err) {
-      showAlert('error', 'Error al crear producto. Intenta de nuevo.');
+      showAlert('error', 'Error al actualizar producto. Intenta de nuevo.');
       throw err;
     }
   };
@@ -115,7 +115,7 @@ export default function ProductView() {
           mb='20px'
           columns={{ sm: 1, md: 1 }}
           spacing={{ base: "20px", xl: "20px" }}>
-          {loading ? (
+          {fetching ? (
             <Spinner
               thickness="4px"
               speed="0.65s"
