@@ -49,12 +49,12 @@ import { IconType } from 'react-icons';
 import Card from "components/card/Card.js";
 import ConsolidatedDeliveryModal from "./ConsolidatedModalDeliver";
 import React, { useState, useEffect, useRef } from 'react';
-import { Delivery } from 'types/delivery';
+import { Delivery, DeliveryStatus } from 'types/delivery';
 import { ConsolidatedProducts } from 'types/order';
 
 interface DeliveryCardProps {
     order: Delivery;
-    onUpdateDelivery: (order: Delivery, orderId: string, statusText: string) => Promise<void>;
+    onUpdateDelivery: (order: Delivery, orderId: string, statusText: DeliveryStatus) => Promise<void>;
     listOfConsolidatedProducts: ConsolidatedProducts;
     gridArea?: string;
     minH?: Record<string, string>;
@@ -86,10 +86,7 @@ export default function DeliveryCard(props: DeliveryCardProps) {
     useEffect(() => {
         setOrderStatus(order.status);
         setCooler(order.cooler != null ? String(order.cooler) : '');
-    }, [order.status]);
-
-    useEffect(() => {
-    }, [rescheduleReasonRef]);
+    }, [order.status, order.cooler]);
 
     const RenderTag = ({ size, paymentMethod }: RenderTagProps) => {
         let icon: IconType, colorScheme: string;
@@ -171,7 +168,11 @@ export default function DeliveryCard(props: DeliveryCardProps) {
             notes: rescheduleReasonRef.current,
         };
         closeRescheduleModal();
-        await onUpdateDelivery(updatedOrder, updatedOrder.id, 'Reprogramada');
+        try {
+            await onUpdateDelivery(updatedOrder, updatedOrder.id, 'Reprogramada');
+        } finally {
+            setLoadingRescheduleDelivery(false);
+        }
     };
 
     const closeRescheduleModal = () => {

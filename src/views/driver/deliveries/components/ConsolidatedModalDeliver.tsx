@@ -31,8 +31,8 @@ function ConsolidatedDeliveryModal({ isOpen, onClose, products }: ConsolidatedDe
                 <ModalHeader>Productos Consolidados</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    {Object.keys(products).map((driver, index) => (
-                        <React.Fragment key={index}>
+                    {Object.keys(products).map((driver) => (
+                        <React.Fragment key={driver}>
                             <Table variant="simple">
                                 <Thead>
                                     <Tr>
