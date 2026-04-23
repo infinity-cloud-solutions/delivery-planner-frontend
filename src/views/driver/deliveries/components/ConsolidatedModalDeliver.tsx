@@ -47,7 +47,7 @@ function ConsolidatedDeliveryModal({ isOpen, onClose, products }: ConsolidatedDe
                                     {Object.entries(products[driver]).map(([product, quantity]) => (
                                         <Tr key={product}>
                                             <Td>{product}</Td>
-                                            <Td>{quantity}</Td>
+                                            <Td>{quantity as number}</Td>
                                         </Tr>
                                     ))}
                                 </Tbody>

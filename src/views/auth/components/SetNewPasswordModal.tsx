@@ -3,7 +3,13 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter,
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 
-const NewPasswordModal = ({ isOpen, onClose, onSubmit }) => {
+interface NewPasswordModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (password: string) => void;
+}
+
+const NewPasswordModal: React.FC<NewPasswordModalProps> = ({ isOpen, onClose, onSubmit }) => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
@@ -34,7 +40,7 @@ const NewPasswordModal = ({ isOpen, onClose, onSubmit }) => {
             <ModalContent>
                 <ModalHeader>Cambia tu contraseña</ModalHeader>
                 <ModalBody>
-                    <FormControl isInvalid={error}>
+                    <FormControl isInvalid={!!error}>
                         <FormLabel
                             ms='4px'
                             fontSize='sm'

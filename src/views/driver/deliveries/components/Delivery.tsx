@@ -436,7 +436,6 @@ export default function DeliveryCard(props: DeliveryCardProps) {
                 )}
                 {orderStatus === 'Programada' && (
                     <Button
-                        spacing={{ base: 2, md: 4, lg: 6 }}
                         mt={{ base: 4, md: 6 }}
                         leftIcon={<FaTruckMoving />}
                         variant="brand"
@@ -454,7 +453,6 @@ export default function DeliveryCard(props: DeliveryCardProps) {
                     <div>
                         <ButtonGroup variant="outline" spacing="6">
                             <Button
-                                spacing={{ base: 2, md: 4, lg: 6 }}
                                 mt={{ base: 4, md: 6 }}
                                 leftIcon={<FaClipboardCheck />}
                                 variant="brand"
@@ -466,7 +464,6 @@ export default function DeliveryCard(props: DeliveryCardProps) {
                                 Entregada
                             </Button>
                             <Button
-                                spacing={{ base: 2, md: 4, lg: 6 }}
                                 mt={{ base: 4, md: 6 }}
                                 leftIcon={<FaRegCalendarMinus />}
                                 variant="outline"

@@ -41,7 +41,7 @@ export default function DeliveryInitialState(props: RouteStopProps) {
         <Box borderWidth="1px" borderRadius="lg" overflow="hidden">
           <Image src='https://i.redd.it/vtj6hk6q09291.png' alt={property.imageAlt} />
           <Box p="6">
-            <Box d="flex" alignItems="baseline">
+            <Box display="flex" alignItems="baseline">
               <Box
                 color="gray.500"
                 fontWeight="semibold"

@@ -158,7 +158,7 @@ function Products(props: ProductsProps) {
                 return (
                   <Tr {...row.getRowProps()} key={actualIndex} onClick={() => openUpdateModal(row.original, actualIndex)} >
                     {row.cells.map((cell, index) => {
-                      let data = "";
+                      let data: React.ReactNode = null;
                       if (cell.column.id === 'name') {
                         data = (
                           <Flex align='center'>

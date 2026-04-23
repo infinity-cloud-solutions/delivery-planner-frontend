@@ -72,7 +72,7 @@ export default function DeliveriesView() {
       )}
       <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
         <Grid>
-          <AnimatePresence>
+          <AnimatePresence initial={false}>
             {deliveries.map((order, index) => (
               <motion.div
                 key={order.id}

@@ -39,10 +39,10 @@ function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userAtt, setUserAtt] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isNewPasswordRequired, setIsNewPasswordRequired] = useState(false);
   const [isNewPasswordModalOpen, setNewPasswordModalOpen] = useState(false);
-  const [cognitoUsr, setCognitoUsr] = useState(null);
+  const [cognitoUsr, setCognitoUsr] = useState<CognitoUser | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -99,7 +99,7 @@ function SignIn() {
         setNewPasswordModalOpen(true);
         setUserAtt(userAttributes)
       },
-      onFailure: (err) => {
+      onFailure: (err: any) => {
         console.error('Authentication failed:', err);
         setError("Credenciales erróneas");
         setIsLoading(false)
@@ -108,11 +108,12 @@ function SignIn() {
 
   };
 
-  const handleNewPasswordSubmit = (newPassword) => {
+  const handleNewPasswordSubmit = (newPassword: string) => {
     setIsLoading(true);
 
+    if (!cognitoUsr) return;
     cognitoUsr.completeNewPasswordChallenge(newPassword, null, {
-      onSuccess: (session) => {
+      onSuccess: (session: any) => {
         const accessToken = session.getAccessToken().getJwtToken();
         const idToken = session.getIdToken().getJwtToken();
         const refreshToken = session.getRefreshToken().getToken();
@@ -127,7 +128,7 @@ function SignIn() {
         const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
         navigate(redirectToPath);
       },
-      onFailure: (err) => {
+      onFailure: (err: any) => {
         console.error('Failed to submit new password:', err);
         setError("Error al guardar la nueva contraseña. Intenta de nuevo.");
         setIsLoading(false);
