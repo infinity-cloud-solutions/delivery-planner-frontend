@@ -38,9 +38,7 @@ function SignIn() {
   const handleClick = () => setShow(!show);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userAtt, setUserAtt] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isNewPasswordRequired, setIsNewPasswordRequired] = useState(false);
   const [isNewPasswordModalOpen, setNewPasswordModalOpen] = useState(false);
   const [cognitoUsr, setCognitoUsr] = useState<CognitoUser | null>(null);
 
@@ -55,7 +53,6 @@ function SignIn() {
 
   const signIn = () => {
     setIsLoading(true)
-    setIsNewPasswordRequired(false);
     const poolData = {
       UserPoolId: process.env.REACT_APP_COGNITO_USER_POOL_ID!,
       ClientId: process.env.REACT_APP_COGNITO_CLIENT_ID!,
@@ -93,11 +90,9 @@ function SignIn() {
         navigate(redirectToPath);
 
       },
-      newPasswordRequired: (userAttributes) => {
+      newPasswordRequired: () => {
         setIsLoading(false);
-        setIsNewPasswordRequired(true);
         setNewPasswordModalOpen(true);
-        setUserAtt(userAttributes)
       },
       onFailure: (err: any) => {
         console.error('Authentication failed:', err);

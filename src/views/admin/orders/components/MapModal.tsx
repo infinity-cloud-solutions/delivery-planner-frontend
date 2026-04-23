@@ -80,6 +80,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
             const sorted = filtered.sort((a: any, b: any) => (a.delivery_sequence ?? 0) - (b.delivery_sequence ?? 0));
             setFilteredOrders(sorted);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedDriver, selectedHours]);
 
     const onDragEnd = (result: any) => {

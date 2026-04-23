@@ -28,7 +28,7 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
 
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-    let menuBg = useColorModeValue('white', 'navy.900');
+
 
     const createProduct = async () => {
         const parsedPrice = parseFloat(productPrice);

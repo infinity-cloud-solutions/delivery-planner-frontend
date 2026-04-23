@@ -114,7 +114,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         throw err;
       }
     },
-    [authHeaders]
+    [authHeaders, jwtToken]
   );
 
   const updateOrder = useCallback(
@@ -145,7 +145,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         throw err;
       }
     },
-    [authHeaders]
+    [authHeaders, jwtToken]
   );
 
   const deleteOrder = useCallback(
@@ -162,7 +162,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         throw err;
       }
     },
-    [authHeaders]
+    [authHeaders, jwtToken]
   );
 
   const scheduleOrders = useCallback(

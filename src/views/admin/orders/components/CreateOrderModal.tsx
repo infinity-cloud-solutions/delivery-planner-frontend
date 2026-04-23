@@ -20,20 +20,17 @@ import {
     ModalFooter,
     ModalBody,
     ModalCloseButton,
-    FormErrorMessage,
     FormControl,
     FormLabel,
     Input,
     Textarea,
     Text,
     Select,
-    Spinner,
     RadioGroup,
     Radio,
     VStack,
     HStack,
-    useColorModeValue,
-    useTheme
+    useColorModeValue
 } from '@chakra-ui/react';
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
@@ -83,7 +80,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [deliveryDateTouched, setDeliveryDateTouched] = useState(false);
     const [deliveryTimeTouched, setDeliveryTimeTouched] = useState(false);
     const [paymentMethodTouched, setPaymentMethodTouched] = useState(false);
-    const [discountTouched, setDiscountTouched] = useState(false);
+
     const [isValidationCompleted, setIsValidationCompleted] = useState(false);
     const [isAnExistingId, setIsAnExistingId] = useState(false);
     const [clientErrorMessage, setClientErrorMessage] = useState<string | boolean>(false);
@@ -128,6 +125,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     useEffect(() => {
         calculateTotalAmount();
         checkFormValidity();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, discount]);
 
     const checkFormValidity = () => {
@@ -365,7 +363,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                         setIsAlertOpen(true);
                     }
                     setNameTouched(true);
-                    setDiscountTouched(true);
                     setIsAnExistingId(true);
 
                 }

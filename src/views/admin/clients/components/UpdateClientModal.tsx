@@ -69,10 +69,11 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
   const isUserAdmin = isAdmin();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-  const menuBg = useColorModeValue('white', 'navy.900');
+
 
   useEffect(() => {
     checkFormValidity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     clientPhoneNumber,
     clientName,

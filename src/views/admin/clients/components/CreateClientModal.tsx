@@ -43,13 +43,14 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }: C
   const [nameTouched, setNameTouched] = useState(false);
   const [addressTouched, setAddressTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
-  const [discountTouched, setDiscountTouched] = useState(false);
+
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-  const menuBg = useColorModeValue('white', 'navy.900');
+
 
   useEffect(() => {
     checkFormValidity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientPhoneNumber, clientName, clientAddress, clientEmail, clientDiscount, isAnExistingId]);
 
   const checkFormValidity = () => {
@@ -86,7 +87,6 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }: C
           setNameTouched(true);
           setAddressTouched(true);
           setEmailTouched(true);
-          setDiscountTouched(true);
           setErrorMessage('El cliente con este número de teléfono ya existe.');
           setIsAnExistingId(true);
         }

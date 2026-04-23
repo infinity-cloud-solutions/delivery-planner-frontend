@@ -34,7 +34,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
     const isUserAdmin = isAdmin();
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-    let menuBg = useColorModeValue('white', 'navy.900');
+
 
     const updateProduct = async () => {
         const updatedProductName = productName || rowData.row.name || '';

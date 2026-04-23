@@ -16,7 +16,6 @@ import {
   ModalBody,
   ModalCloseButton,
   FormControl,
-  FormErrorMessage,
   FormLabel,
   Input,
   Textarea,
@@ -215,6 +214,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     setScheduleTimesBasedOnDate(deliveryDate);
     calculateTotalAmount();
     checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude, dateError, apiError, discount]);
 
   const checkFormValidity = () => {
