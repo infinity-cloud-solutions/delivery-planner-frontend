@@ -14,8 +14,15 @@ import {
     VStack,
     useColorModeValue,
 } from '@chakra-ui/react';
+import { CreateProductPayload } from 'types/product';
 
-const CreateProductModal = ({ isOpen, onClose, onCreate }) => {
+interface CreateProductModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onCreate: (payload: CreateProductPayload) => Promise<void>;
+}
+
+const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalProps) => {
     const [productName, setProductName] = useState('');
     const [productPrice, setProductPrice] = useState('');
 
@@ -24,16 +31,14 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }) => {
     let menuBg = useColorModeValue('white', 'navy.900');
 
     const createProduct = async () => {
-
-        const newProduct = {
+        const newProduct: CreateProductPayload = {
             name: productName,
-            price: productPrice,
+            price: parseFloat(productPrice),
         };
         onCreate(newProduct);
         setProductName('');
         setProductPrice('');
         onClose();
-
     };
 
     return (

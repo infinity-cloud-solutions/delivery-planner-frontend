@@ -16,21 +16,31 @@ import {
     useColorModeValue,
 } from '@chakra-ui/react';
 
-import { isAdmin, } from 'security';
+import { isAdmin } from 'security';
+import { Product } from 'types/product';
+import { UpdateProductArgs, DeleteProductArgs } from 'views/admin/products/hooks/useProductsCRUD';
 
-const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }) => {
+interface UpdateProductModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onUpdate: (args: UpdateProductArgs) => Promise<void>;
+    onDelete: (args: DeleteProductArgs) => Promise<void>;
+    rowData: { row: Product; index: number };
+}
+
+const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: UpdateProductModalProps) => {
     const [productName, setProductName] = useState('');
     const [productPrice, setProductPrice] = useState('');
-    let isUserAdmin = false;
+    const isUserAdmin = isAdmin();
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
     let menuBg = useColorModeValue('white', 'navy.900');
 
     const updateProduct = async () => {
         const updatedProductName = productName || rowData.row.name || '';
-        const updatedProductPrice = productPrice || rowData.row.price || '';
+        const updatedProductPrice = parseFloat(productPrice) || rowData.row.price;
 
-        const product = {
+        const product: UpdateProductArgs = {
             item: {
                 name: updatedProductName,
                 price: updatedProductPrice,
@@ -42,14 +52,13 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }) =>
         setProductName('');
         setProductPrice('');
         onClose();
-
     };
 
     const deleteProduct = async () => {
         const updatedProductName = productName || rowData.row.name || '';
-        const updatedProductPrice = productPrice || rowData.row.price || '';
+        const updatedProductPrice = parseFloat(productPrice) || rowData.row.price;
 
-        const product = {
+        const product: DeleteProductArgs = {
             item: {
                 name: updatedProductName,
                 price: updatedProductPrice,
@@ -61,9 +70,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }) =>
         setProductName('');
         setProductPrice('');
         onClose();
-
     };
-    isUserAdmin = isAdmin();
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>

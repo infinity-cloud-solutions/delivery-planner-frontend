@@ -18,44 +18,43 @@ import {
   usePagination,
   useSortBy,
   useTable,
+  Column,
 } from "react-table";
 
 import CreateProductModal from "views/admin/products/components/CreateProductModal";
 import UpdateProductModal from "views/admin/products/components/UpdateProductModal";
-import { isAdmin, } from 'security';
+import { isAdmin } from 'security';
+import { Product, CreateProductPayload } from 'types/product';
+import { UpdateProductArgs, DeleteProductArgs } from 'views/admin/products/hooks/useProductsCRUD';
 
+interface ProductsProps {
+  tableData: Product[];
+  columnsData: Column<Product>[];
+  onProductCreated: (product: CreateProductPayload) => Promise<void>;
+  onProductUpdated: (args: UpdateProductArgs) => Promise<void>;
+  onProductDeleted: (args: DeleteProductArgs) => Promise<void>;
+}
 
-function Products(props) {
+function Products(props: ProductsProps) {
   const { columnsData, tableData, onProductCreated, onProductUpdated, onProductDeleted } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
-  let isUserAdmin = false;
-  isUserAdmin = isAdmin();
-
-  const onProductCreatedCallback = (newProduct) => {
-    onProductCreated(newProduct);
-  };
-
-  const onProductUpdatedCallback = (updatedProduct) => {
-    onProductUpdated(updatedProduct);
-  };
-
-  const onProductDeletedCallback = (product) => {
-    onProductDeleted(product);
-  };
+  const isUserAdmin = isAdmin();
 
   const tableInstance = useTable(
     {
       columns,
       data,
+      initialState: { pageSize: 10 },
     },
     useGlobalFilter,
     useSortBy,
     usePagination
   );
 
-  const { getTableProps,
+  const {
+    getTableProps,
     getTableBodyProps,
     headerGroups,
     page,
@@ -66,28 +65,24 @@ function Products(props) {
     pageOptions,
     state: { pageIndex, pageSize },
     prepareRow,
-    initialState
-  } =
-    tableInstance;
-  initialState.pageSize = 10;
+  } = tableInstance;
 
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [selectedRowData, setSelectedRowData] = useState(null);
+  const [selectedRowData, setSelectedRowData] = useState<{ row: Product; index: number } | null>(null);
 
   const openCreateModal = () => {
     setCreateModalOpen(true);
   };
 
-  const openUpdateModal = (row, rowIndex) => {
+  const openUpdateModal = (row: Product, rowIndex: number) => {
     if (isUserAdmin) {
-      setSelectedRowData({ row: row, index: rowIndex });
+      setSelectedRowData({ row, index: rowIndex });
       setIsUpdateModalOpen(true);
     }
-
   };
 
   const closeUpdateModal = () => {
@@ -214,12 +209,12 @@ function Products(props) {
           </Table>
         )}
       </Flex>
-      {isUpdateModalOpen && (
+      {isUpdateModalOpen && selectedRowData && (
         <UpdateProductModal
           isOpen={isUpdateModalOpen}
           onClose={closeUpdateModal}
-          onUpdate={onProductUpdatedCallback}
-          onDelete={onProductDeletedCallback}
+          onUpdate={onProductUpdated}
+          onDelete={onProductDeleted}
           rowData={selectedRowData}
         />
       )}
@@ -227,7 +222,7 @@ function Products(props) {
         <CreateProductModal
           isOpen={isCreateModalOpen}
           onClose={closeCreateModal}
-          onCreate={onProductCreatedCallback}
+          onCreate={onProductCreated}
         />
       )}
       <Flex direction="column" align="center" mt="2" mb="2">
