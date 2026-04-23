@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Button,
   ButtonGroup,
@@ -10,29 +11,34 @@ import {
   Text,
   useColorModeValue,
   Box,
-} from "@chakra-ui/react";
-import React, { useState } from "react";
-import axios from 'axios';
+} from '@chakra-ui/react';
 
-import CreateClientModal from "views/admin/clients/components/CreateClientModal";
-import UpdateClientModal from "views/admin/clients/components/UpdateClientModal";
+import CreateClientModal from 'views/admin/clients/components/CreateClientModal';
+import UpdateClientModal from 'views/admin/clients/components/UpdateClientModal';
 import { isAdmin } from 'security';
+import { CreateClientPayload, UpdateClientPayload, MappedClient } from 'types/client';
 
-function Clients(props) {
+interface ClientsProps {
+  onClientCreated: (payload: CreateClientPayload) => Promise<void>;
+  onClientUpdated: (payload: UpdateClientPayload & { delete_old_record: boolean }) => Promise<void>;
+  onClientDeleted: (client: { phone_number: string }) => Promise<void>;
+  onClientFetched: (phoneNumber: string) => Promise<MappedClient | null>;
+}
+
+function Clients(props: ClientsProps) {
   const { onClientCreated, onClientUpdated, onClientDeleted, onClientFetched } = props;
 
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [fetchedClientData, setFetchedClientData] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [fetchedClientData, setFetchedClientData] = useState<MappedClient | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSearchButtonEnable, setIsSearchButtonEnable] = useState(false);
   const [loadingSearchForClient, setLoadingSearchForClient] = useState(false);
-  const [isError, setIsError] = useState(false)
+  const [isError, setIsError] = useState(false);
 
-  let isUserAdmin = false;
-  isUserAdmin = isAdmin();
+  const isUserAdmin = isAdmin();
 
-  const onClientCreatedCallback = async (newClient) => {
+  const onClientCreatedCallback = async (newClient: CreateClientPayload): Promise<void> => {
     try {
       await onClientCreated(newClient);
     } catch (error) {
@@ -40,7 +46,9 @@ function Clients(props) {
     }
   };
 
-  const onClientUpdatedCallback = async (updatedClient) => {
+  const onClientUpdatedCallback = async (
+    updatedClient: UpdateClientPayload & { delete_old_record: boolean }
+  ): Promise<void> => {
     try {
       await onClientUpdated(updatedClient);
     } catch (error) {
@@ -48,8 +56,7 @@ function Clients(props) {
     }
   };
 
-  const onClientDeletedCallback = async (client) => {
-    onClientDeleted(client);
+  const onClientDeletedCallback = async (client: { phone_number: string }): Promise<void> => {
     try {
       await onClientDeleted(client);
     } catch (error) {
@@ -57,15 +64,14 @@ function Clients(props) {
     }
   };
 
-  const textColor = useColorModeValue("navy.700", "white");
-  const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
+  const textColor = useColorModeValue('navy.700', 'white');
 
   const openCreateModal = () => {
     setCreateModalOpen(true);
   };
 
-  const openUpdateModal = (clientData) => {
-    setFetchedClientData(clientData)
+  const openUpdateModal = (clientData: MappedClient) => {
+    setFetchedClientData(clientData);
     setIsUpdateModalOpen(true);
   };
 
@@ -77,48 +83,42 @@ function Clients(props) {
     setCreateModalOpen(false);
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
     setIsSearchButtonEnable(value.length === 10);
-    setIsError(!value.length === 0);
+    setIsError(!value.length === false);
   };
 
   const handleSearch = async () => {
-    setLoadingSearchForClient(true)
+    setLoadingSearchForClient(true);
     const clientData = await onClientFetched(searchQuery);
     if (clientData) {
-      openUpdateModal(clientData)
+      openUpdateModal(clientData);
       setSearchQuery('');
       setIsError(false);
     } else {
       setIsError(true);
-
     }
-    setLoadingSearchForClient(false)
+    setLoadingSearchForClient(false);
   };
 
-  const onClientExistsCheckCallback = async (searchQuery) => {
-    const clientData = await onClientFetched(searchQuery);
-    if (clientData) {
-      return clientData;
-    } else {
-      return null;
-    }
-  }
+  const onClientExistsCheckCallback = async (phoneNumber: string): Promise<MappedClient | null> => {
+    return onClientFetched(phoneNumber);
+  };
 
   return (
     <>
       <Flex
         direction='column'
         w='100%'
-        maxW={{ base: "100%", sm: "450px", md: "750px", lg: "1200px" }}
-        minW={{ base: "100%", sm: "350px", md: "550px", lg: "800px" }}
+        maxW={{ base: '100%', sm: '450px', md: '750px', lg: '1200px' }}
+        minW={{ base: '100%', sm: '350px', md: '550px', lg: '800px' }}
         mx='auto'
-        overflowX={{ sm: "scroll", lg: "hidden" }}
+        overflowX={{ sm: 'scroll', lg: 'hidden' }}
       >
         <Flex
-          align={{ sm: "flex-start", lg: "center" }}
+          align={{ sm: 'flex-start', lg: 'center' }}
           justify='space-between'
           w='100%'
           px='22px'
@@ -129,18 +129,18 @@ function Clients(props) {
           <Text color={textColor} fontSize='xl' fontWeight='600'>
             Clientes
           </Text>
-          <Button variant="action" onClick={openCreateModal}>
+          <Button variant='action' onClick={openCreateModal}>
             Crear
           </Button>
         </Flex>
 
-        <Box px="22px">
+        <Box px='22px'>
           <FormControl isRequired isInvalid={isError}>
             <FormLabel htmlFor='phone'>Teléfono a 10 dígitos</FormLabel>
             <Input
-              type="number"
-              id="phone"
-              placeholder="Ingresa solo números"
+              type='number'
+              id='phone'
+              placeholder='Ingresa solo números'
               value={searchQuery}
               color={textColor}
               onChange={handleInputChange}
@@ -154,8 +154,8 @@ function Clients(props) {
             )}
             <ButtonGroup>
               <Button
-                mt="20px"
-                variant="outline"
+                mt='20px'
+                variant='outline'
                 onClick={handleSearch}
                 isLoading={loadingSearchForClient}
                 loadingText='Buscando'
@@ -169,7 +169,7 @@ function Clients(props) {
         </Box>
       </Flex>
 
-      {isUpdateModalOpen && (
+      {isUpdateModalOpen && fetchedClientData && (
         <UpdateClientModal
           isOpen={isUpdateModalOpen}
           onClose={closeUpdateModal}
