@@ -1,13 +1,11 @@
 import React from "react";
-
 import { Icon } from "@chakra-ui/react";
-import {
-  MdOutlineRoute,
-} from "react-icons/md";
+import { MdOutlineRoute } from "react-icons/md";
+import { RouteConfig } from "routes";
 
 import Deliveries from "views/driver/deliveries";
 
-const driverRoutes = [
+const driverRoutes: RouteConfig[] = [
   {
     name: "Repartos",
     layout: "/driver",

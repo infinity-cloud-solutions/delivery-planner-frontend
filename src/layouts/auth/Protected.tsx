@@ -4,11 +4,15 @@ import { validateJWT, getAccessToken } from 'security';
 
 const isAuthenticated = () => getAccessToken() && validateJWT();
 
-const ProtectedRoute = ({ children }) => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (!isAuthenticated()) {
     return <Navigate to="/auth" replace />;
   }
-  return children;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

@@ -4,9 +4,7 @@ import { Icon } from "@chakra-ui/react";
 import {
   MdHome,
   MdOutlineReceiptLong,
-  MdOutlineRoute,
   MdOutlineShoppingCart,
-  MdLock
 } from "react-icons/md";
 import { FaHandshake } from "react-icons/fa6";
 
@@ -14,13 +12,22 @@ import { FaHandshake } from "react-icons/fa6";
 import MainDashboard from "views/admin/dashboard";
 import Product from "views/admin/products";
 import Client from "views/admin/clients";
-import Deliveries from "views/driver/deliveries";
 import Orders from "views/admin/orders";
 
-// Auth Imports
-import SignInCentered from "views/auth/signIn";
+export interface RouteConfig {
+  name: string;
+  layout: string;
+  path: string;
+  icon: React.ReactElement;
+  component: React.ComponentType;
+  secondary?: boolean;
+  collapse?: boolean;
+  category?: boolean;
+  items?: RouteConfig[];
+  messageNavbar?: string;
+}
 
-const routes = [
+const routes: RouteConfig[] = [
   {
     name: "Dashboard",
     layout: "/admin",

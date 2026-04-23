@@ -1,6 +1,5 @@
 // Chakra imports
 import { Box, Flex, Icon, Text } from "@chakra-ui/react";
-import PropTypes from "prop-types";
 import React from "react";
 import Footer from "components/footer/FooterAuth";
 import FixedPlugin from "components/fixedPlugin/FixedPlugin";
@@ -9,8 +8,13 @@ import { NavLink } from "react-router-dom";
 // Assets
 import { FaChevronLeft } from "react-icons/fa";
 
-function AuthIllustration(props) {
-  const { children, illustrationBackground } = props;
+interface AuthIllustrationProps {
+  children?: React.ReactNode;
+  illustrationBackground?: string;
+  image?: string;
+}
+
+function AuthIllustration({ children, illustrationBackground }: AuthIllustrationProps) {
   // Chakra color mode
   return (
     <Flex position='relative' h='max-content'>
@@ -54,11 +58,5 @@ function AuthIllustration(props) {
     </Flex>
   );
 }
-// PROPS
-
-AuthIllustration.propTypes = {
-  illustrationBackground: PropTypes.string,
-  image: PropTypes.any,
-};
 
 export default AuthIllustration;

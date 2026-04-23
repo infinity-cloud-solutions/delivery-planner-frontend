@@ -45,21 +45,13 @@ function SignIn() {
   const [cognitoUsr, setCognitoUsr] = useState(null);
 
   useEffect(() => {
-    let isTokenValid = getAccessToken()
-    if (isTokenValid) {
-      isTokenValid = validateJWT();
-
-      if (isTokenValid) {
-        const isInDriverGroup = isDriver();
-        const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
-
-        navigate(redirectToPath);
-      } else {
-        setError("No estás autenticado. Inicia sesión para entrar al sistema");
-
-      }
+    const token = getAccessToken();
+    if (token && validateJWT()) {
+      const isInDriverGroup = isDriver();
+      const redirectToPath = isInDriverGroup ? '/driver/deliveries' : '/admin/dashboard';
+      navigate(redirectToPath);
     }
-  }, [history]);
+  }, [navigate]);
 
   const signIn = () => {
     setIsLoading(true)
@@ -88,7 +80,6 @@ function SignIn() {
 
     cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: (session) => {
-        console.log('Authentication Successful!', session);
         const accessToken = session.getAccessToken().getJwtToken();
         const idToken = session.getIdToken().getJwtToken();
         const refreshToken = session.getRefreshToken().getToken();
@@ -122,7 +113,6 @@ function SignIn() {
 
     cognitoUsr.completeNewPasswordChallenge(newPassword, null, {
       onSuccess: (session) => {
-        console.log('New password submitted successfully!', session);
         const accessToken = session.getAccessToken().getJwtToken();
         const idToken = session.getIdToken().getJwtToken();
         const refreshToken = session.getRefreshToken().getToken();

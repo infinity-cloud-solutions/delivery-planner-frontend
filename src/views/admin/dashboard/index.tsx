@@ -15,7 +15,6 @@ import IconBox from "components/icons/IconBox";
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import {
-  MdAttachMoney,
   MdPriceChange,
   MdNoAccounts
 } from "react-icons/md";
@@ -24,28 +23,24 @@ import OrdersDashboard from "views/admin/dashboard/components/OrdersDashboard";
 import {
   columnsOrdersDashboard,
 } from "views/admin/dashboard/variables/columnsData";
-import { isDriver, validateJWT, getAccessToken } from 'security';
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { isDriver, getAccessToken } from 'security';
+import { useAuthGuard } from 'hooks/useAuthGuard';
+import { Link as RouterLink } from "react-router-dom";
 import { getDateAsQueryParam } from "utils/Utility"
 
 export default function Dashboard() {
+  useAuthGuard();
+
   // Chakra Color Mode
   const brandColor = useColorModeValue("brand.500", "white");
   const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
   const userIsDriver = isDriver();
   const [loading, setLoading] = useState(false);
   const jwtToken = getAccessToken();
-  const navigate = useNavigate();
-  const [tableDataOrdersDashboard, setTableDataOrdersDashboard] = useState([]);
+  const [tableDataOrdersDashboard, setTableDataOrdersDashboard] = useState<any[]>([]);
   const ordersURL = process.env.REACT_APP_ORDERS_BASE_URL
 
   useEffect(() => {
-
-    if (!validateJWT()) {
-      navigate('/auth');
-      return;
-    }
-
     const queryParams = {
       date: getDateAsQueryParam(),
     };
@@ -74,8 +69,8 @@ export default function Dashboard() {
           setTableDataOrdersDashboard([]);
         } else {
 
-          responseData.sort((a, b) => {
-            const statusOrder = {
+          responseData.sort((a: any, b: any) => {
+            const statusOrder: Record<string, number> = {
               "Error": 1,
               "Reprogramada": 2,
             };

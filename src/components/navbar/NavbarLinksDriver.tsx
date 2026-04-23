@@ -16,7 +16,7 @@ import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import routes from 'driverRoutes.js';
+import routes from 'driverRoutes';
 import { getFullNameFromLocalStorage, logout } from 'security'
 
 export default function DriverHeaderLinks(props) {

@@ -25,12 +25,17 @@ import {
 // Custom components
 import Card from "components/card/Card";
 import Menu from "components/menu/MainMenu";
-import { validateJWT } from 'security';
 import { useNavigate } from "react-router-dom";
 
 // Assets
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
-export default function ColumnsTable(props) {
+
+interface ColumnConfig {
+  Header: string;
+  accessor: string;
+}
+
+export default function ColumnsTable(props: { columnsData: ColumnConfig[]; tableData: any[] }) {
   const { columnsData, tableData } = props;
 
   const columns = useMemo(() => columnsData, [columnsData]);
@@ -61,9 +66,7 @@ export default function ColumnsTable(props) {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
   const seeAllOrdersForToday = () => {
-    if (validateJWT) {
-      navigate('/admin/orders');
-    }
+    navigate('/admin/orders');
   };
 
   return (

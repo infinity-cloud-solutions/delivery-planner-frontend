@@ -162,8 +162,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
 
             calculateTotalAmount();
             checkFormValidity();
-        } else {
-            console.log("Please select a product and quantity before adding to the cart.");
         }
     };
 

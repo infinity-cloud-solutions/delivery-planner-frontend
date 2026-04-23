@@ -262,8 +262,6 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       ]);
       calculateTotalAmount();
       checkFormValidity();
-    } else {
-      console.log("Please select a product and quantity before adding to the cart.");
     }
   };
 

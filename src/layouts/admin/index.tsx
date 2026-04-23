@@ -1,23 +1,23 @@
 // Chakra imports
-import { Portal, Box, useDisclosure, Text, Button, Link } from '@chakra-ui/react';
-import Footer from 'components/footer/FooterAdmin.js';
+import { Portal, Box, useDisclosure } from '@chakra-ui/react';
+import Footer from 'components/footer/FooterAdmin';
 // Layout components
-import Navbar from 'components/navbar/NavbarDriver.js';
-import Sidebar from 'components/sidebar/Sidebar.js';
+import Navbar from 'components/navbar/NavbarAdmin';
+import Sidebar from 'components/sidebar/Sidebar';
 import { SidebarContext } from 'contexts/SidebarContext';
 import React, { useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import routes from 'driverRoutes.js';
+import routes from 'routes';
 
 // Custom Chakra theme
-export default function Driver(props) {
+export default function Dashboard(props) {
 	const { ...rest } = props;
 	// states and functions
-	const [fixed] = useState(false);
-	const [toggleSidebar, setToggleSidebar] = useState(false);
+	const [ fixed ] = useState(false);
+	const [ toggleSidebar, setToggleSidebar ] = useState(false);
 	// functions for changing the states from components
 	const getRoute = () => {
-		return window.location.pathname !== '/driver/full-screen-maps';
+		return window.location.pathname !== '/admin/full-screen-maps';
 	};
 	const getActiveRoute = (routes) => {
 		let activeRoute = 'Default Brand Text';
@@ -84,7 +84,7 @@ export default function Driver(props) {
 	};
 	const getRoutes = (routes) => {
 		return routes.map((prop, key) => {
-			if (prop.layout === '/driver') {
+			if (prop.layout === '/admin') {
 				return <Route path={prop.path} element={<prop.component />} key={key} />;
 			}
 			if (prop.collapse) {
@@ -97,7 +97,6 @@ export default function Driver(props) {
 			}
 		});
 	};
-
 	document.documentElement.dir = 'ltr';
 	const { onOpen } = useDisclosure();
 	document.documentElement.dir = 'ltr';
@@ -140,9 +139,9 @@ export default function Driver(props) {
 						{getRoute() ? (
 							<Box mx='auto' p={{ base: '20px', md: '30px' }} pe='20px' minH='100vh' pt='50px'>
 								<Routes>
-									{getRoutes(routes)}
-									<Route path="/" element={<Navigate to="/driver/deliveries" replace />} />
-								</Routes>
+								{getRoutes(routes)}
+								<Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
+							</Routes>
 							</Box>
 						) : null}
 						<Box>
