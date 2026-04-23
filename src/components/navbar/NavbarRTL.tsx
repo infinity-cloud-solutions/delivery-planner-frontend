@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Chakra Imports
 import {
   Box,

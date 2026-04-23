@@ -1,6 +1,6 @@
 export class TravelPlanner {
 
-    calculateDistance(point1, point2) {
+    calculateDistance(point1: any, point2: any) {
         const lat1 = parseFloat(point1.latitude);
         const lon1 = parseFloat(point1.longitude);
         const lat2 = parseFloat(point2.latitude);
@@ -8,7 +8,7 @@ export class TravelPlanner {
         return Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
     }
 
-    findShortestPath(locations, startPoint) {
+    findShortestPath(locations: any, startPoint: any) {
         let unvisited = [...locations];
         let currentLocation = startPoint;
         const path = [];

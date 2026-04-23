@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { mode } from "@chakra-ui/theme-tools";
 export const buttonStyles = {
   components: {

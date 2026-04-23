@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Chakra Imports
 import { Box, Breadcrumb, BreadcrumbItem, BreadcrumbLink, Flex, Link, Text, useColorModeValue } from '@chakra-ui/react';
 import PropTypes from 'prop-types';

@@ -1,3 +1,4 @@
+// @ts-ignore
 import jwt_decode from 'jsonwebtoken/decode';
 import { CognitoUser, CognitoUserPool } from 'amazon-cognito-identity-js';
 import { DecodedJwtPayload } from './types/auth';

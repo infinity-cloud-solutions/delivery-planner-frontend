@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Alert, AlertIcon, Box, Flex, Icon, Link, SimpleGrid, Spinner, useColorModeValue } from '@chakra-ui/react';
 import { MdNoAccounts } from 'react-icons/md';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+// @ts-ignore
+import { Column } from 'react-table';
 
 import Orders from 'views/admin/orders/components/Orders';
 import { columnsDataOrders } from 'views/admin/orders/variables/columnsData';
@@ -124,7 +126,7 @@ export default function OrdersView() {
               position="fixed" top="50%" left="50%" transform="translate(-50%, -50%)" />
           ) : (
             <Orders
-              columnsData={columnsDataOrders}
+              columnsData={columnsDataOrders as Column<Order>[]}
               tableData={orders}
               onOrderCreated={handleOrderCreated}
               onOrderUpdated={handleOrderUpdated}

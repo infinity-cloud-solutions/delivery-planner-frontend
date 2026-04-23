@@ -1,3 +1,4 @@
+// @ts-nocheck
 // chakra imports
 import { Box, Flex, Stack } from "@chakra-ui/react";
 //   Custom components

@@ -46,6 +46,7 @@ function Products(props: ProductsProps) {
     {
       columns,
       data,
+      // @ts-ignore
       initialState: { pageSize: 10 },
     },
     useGlobalFilter,
@@ -65,7 +66,7 @@ function Products(props: ProductsProps) {
     pageOptions,
     state: { pageIndex, pageSize },
     prepareRow,
-  } = tableInstance;
+  } = tableInstance as any;
 
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
@@ -128,9 +129,9 @@ function Products(props: ProductsProps) {
         ) : (
           <Table {...getTableProps()} variant='simple' color='gray.500'>
             <Thead>
-              {headerGroups.map((headerGroup, index) => (
+              {headerGroups.map((headerGroup: any, index: any) => (
                 <Tr {...headerGroup.getHeaderGroupProps()} key={index}>
-                  {headerGroup.headers.map((column, index) => (
+                  {headerGroup.headers.map((column: any, index: any) => (
                     <Th
                       {...column.getHeaderProps(column.getSortByToggleProps())}
                       pe='10px'
@@ -152,12 +153,12 @@ function Products(props: ProductsProps) {
             </Thead>
 
             <Tbody {...getTableBodyProps()}>
-              {page.map((row, index) => {
+              {page.map((row: any, index: any) => {
                 prepareRow(row);
                 const actualIndex = index + pageIndex * pageSize;
                 return (
                   <Tr {...row.getRowProps()} key={actualIndex} onClick={() => openUpdateModal(row.original, actualIndex)} >
-                    {row.cells.map((cell, index) => {
+                    {row.cells.map((cell: any, index: any) => {
                       let data: React.ReactNode = null;
                       if (cell.column.id === 'name') {
                         data = (

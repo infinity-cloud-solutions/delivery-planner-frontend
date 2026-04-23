@@ -43,6 +43,7 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }: C
   const [nameTouched, setNameTouched] = useState(false);
   const [addressTouched, setAddressTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
+  const [discountTouched, setDiscountTouched] = useState(false);
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
   const menuBg = useColorModeValue('white', 'navy.900');
@@ -126,7 +127,7 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }: C
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Crear Cliente</ModalHeader>

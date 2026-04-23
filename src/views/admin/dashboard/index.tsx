@@ -46,7 +46,7 @@ export default function Dashboard() {
     };
     setLoading(true);
 
-    axios.get(ordersURL, {
+    axios.get(ordersURL!, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${jwtToken}`
@@ -54,9 +54,9 @@ export default function Dashboard() {
       params: queryParams
     })
       .then(response => {
-        const responseData = response.data.map(order => {
+        const responseData = response.data.map((order: any) => {
           const words = order.client_name.split(' ');
-          const abbreviatedName = words.shift() + ' ' + words.map(word => word[0]).join('');
+          const abbreviatedName = words.shift() + ' ' + words.map((word: any) => word[0]).join('');
           const paymentMethod = order.payment_method.toUpperCase() === "PAID" ? "Pagada" : order.payment_method;
           return {
             ...order,

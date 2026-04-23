@@ -1,14 +1,14 @@
 import { TravelPlanner } from "./TravelPlanner";
 
-export const DeliveryProcessor = (selectedDrivers, ordersForToday) => {
+export const DeliveryProcessor = (selectedDrivers: any, ordersForToday: any) => {
 
-    const selectOrdersByDeliveryRangeTime = (orderRecords, deliveryTimeToMatch, driverToMatch) => {
-        return orderRecords.filter(order =>
+    const selectOrdersByDeliveryRangeTime = (orderRecords: any, deliveryTimeToMatch: any, driverToMatch: any) => {
+        return orderRecords.filter((order: any) =>
             order.delivery_time === deliveryTimeToMatch && Number(order.driver) === driverToMatch
         );
     };
 
-    const processRecordsForDriver = (driverNumber, ordersForToday) => {
+    const processRecordsForDriver = (driverNumber: any, ordersForToday: any) => {
         const planner = new TravelPlanner();
 
         const morningRecords = selectOrdersByDeliveryRangeTime(ordersForToday, "9 AM - 1 PM", Number(driverNumber));
@@ -22,7 +22,7 @@ export const DeliveryProcessor = (selectedDrivers, ordersForToday) => {
                 driver: location.driver
             }));
 
-            ordersForToday = ordersForToday.map(order => {
+            ordersForToday = ordersForToday.map((order: any) => {
                 const updatedOrder = reducedMorningOrderedLocations.find(loc => loc.id === order.id);
                 return updatedOrder ? { ...order, ...updatedOrder } : order;
             });
@@ -46,7 +46,7 @@ export const DeliveryProcessor = (selectedDrivers, ordersForToday) => {
                 driver: location.driver
             }));
 
-            ordersForToday = ordersForToday.map(order => {
+            ordersForToday = ordersForToday.map((order: any) => {
                 const updatedOrder = reducedAfternoonOrderedLocations.find(loc => loc.id === order.id);
                 return updatedOrder ? { ...order, ...updatedOrder } : order;
             });
@@ -55,7 +55,7 @@ export const DeliveryProcessor = (selectedDrivers, ordersForToday) => {
         return ordersForToday;
     };
 
-    selectedDrivers.forEach(driverNumber => {
+    selectedDrivers.forEach((driverNumber: any) => {
         ordersForToday = processRecordsForDriver(driverNumber, ordersForToday);
     });
 

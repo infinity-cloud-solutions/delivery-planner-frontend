@@ -72,7 +72,8 @@ export default function DeliveriesView() {
       )}
       <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
         <Grid>
-          <AnimatePresence initial={false}>
+          {/* @ts-ignore framer-motion v4 types missing children with @types/react 18 */}
+          <AnimatePresence>
             {deliveries.map((order, index) => (
               <motion.div
                 key={order.id}

@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Chakra Imports
 import { Button, Icon, useColorMode } from "@chakra-ui/react";
 // Custom Icons

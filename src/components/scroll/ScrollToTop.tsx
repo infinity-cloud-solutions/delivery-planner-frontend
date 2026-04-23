@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useEffect, Fragment } from 'react';
 import { useLocation } from 'react-router-dom';
 

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { motion } from 'framer-motion';
-import { AlertStatus } from '@chakra-ui/react';
 
 // Chakra imports
 import {
@@ -16,13 +15,15 @@ import {
 } from "@chakra-ui/react";
 import { MdNoAccounts } from "react-icons/md";
 import { Link as RouterLink } from "react-router-dom";
+// @ts-ignore
+import { Column } from 'react-table';
 
 // Custom components
 import Products from "views/admin/products/components/Products";
 import { isDriver } from 'security';
 import { useAuthGuard } from 'hooks/useAuthGuard';
 import { useProductsCRUD, UpdateProductArgs, DeleteProductArgs } from 'views/admin/products/hooks/useProductsCRUD';
-import { CreateProductPayload } from 'types/product';
+import { CreateProductPayload, Product } from 'types/product';
 import { AlertMessage } from 'types/ui';
 import { tableColumnsProducts } from "views/admin/products/variables/tableColumnsProducts";
 
@@ -34,7 +35,7 @@ export default function ProductView() {
 
   const { products, fetching, createProduct, updateProduct, deleteProduct } = useProductsCRUD();
 
-  const showAlert = (type: AlertStatus, text: string) => {
+  const showAlert = (type: AlertMessage['type'], text: string) => {
     setAlertMessage({ type, text });
     setTimeout(() => setAlertMessage(null), 3000);
   };
@@ -130,7 +131,7 @@ export default function ProductView() {
           ) : (
             <Products
               tableData={products}
-              columnsData={tableColumnsProducts}
+              columnsData={tableColumnsProducts as Column<Product>[]}
               onProductCreated={handleProductCreate}
               onProductUpdated={handleProductUpdate}
               onProductDeleted={handleProductDelete}

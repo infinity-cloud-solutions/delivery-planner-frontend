@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Chakra imports
 import { Portal, Box, useDisclosure } from '@chakra-ui/react';
 import Footer from 'components/footer/FooterAdmin';

@@ -195,7 +195,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Ver Cliente</ModalHeader>

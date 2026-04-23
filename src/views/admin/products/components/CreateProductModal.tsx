@@ -44,7 +44,7 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
+        <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>Crear Producto</ModalHeader>

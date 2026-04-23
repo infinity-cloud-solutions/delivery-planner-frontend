@@ -48,7 +48,7 @@ function ScheduleButton({
                   <FormControl mt={"4"}>
                     <FormLabel>Programar todas las órdenes para un solo repartidor</FormLabel>
                     <Select
-                      value={selectedAvailableDrivers}
+                      value={selectedAvailableDrivers as any}
                       onChange={onDriverChange}
                       placeholder="Elegir a un repartidor"
                     >

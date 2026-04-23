@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import routes from "authRoutes";

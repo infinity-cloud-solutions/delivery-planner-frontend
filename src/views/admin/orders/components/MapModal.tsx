@@ -40,10 +40,10 @@ const MapResizer = ({ isOpen }: { isOpen: boolean }) => {
 };
 
 const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) => {
-    const [selectedDriver, setSelectedDriver] = useState(null);
-    const [selectedHours, setSelectedHours] = useState(null);
-    const [filteredOrders, setFilteredOrders] = useState([]);
-    const [confirmedOrders, setConfirmedOrders] = useState([]);
+    const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
+    const [selectedHours, setSelectedHours] = useState<string | null>(null);
+    const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
+    const [confirmedOrders, setConfirmedOrders] = useState<any[]>([]);
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
@@ -52,7 +52,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
     const draggingColor = useColorModeValue('gray.700', 'navy.700');
     const rowBgColor = useColorModeValue('white', 'gray.800');
 
-    delete L.Icon.Default.prototype._getIconUrl;
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
 
     L.Icon.Default.mergeOptions({
         iconUrl: require('leaflet/dist/images/marker-icon.png'),
@@ -77,12 +77,12 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                 order.delivery_time === selectedHours
             );
 
-            const sorted = filtered.sort((a, b) => a.delivery_sequence - b.delivery_sequence);
+            const sorted = filtered.sort((a: any, b: any) => (a.delivery_sequence ?? 0) - (b.delivery_sequence ?? 0));
             setFilteredOrders(sorted);
         }
     }, [selectedDriver, selectedHours]);
 
-    const onDragEnd = (result) => {
+    const onDragEnd = (result: any) => {
         if (!result.destination) return;
 
         const reorderedOrders = Array.from(filteredOrders);
@@ -96,9 +96,9 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
         setFilteredOrders(updatedOrders);
 
         const combined = [...confirmedOrders, ...updatedOrders].reduce((acc, current) => {
-            const x = acc.find(item => item.id === current.id);
+            const x = acc.find((item: any) => item.id === current.id);
             if (x) {
-                return acc.map(item => item.id === current.id ? current : item);
+                return acc.map((item: any) => item.id === current.id ? current : item);
             } else {
                 return [...acc, current];
             }
@@ -131,7 +131,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                     delivery_sequence: Number(order.delivery_sequence),
                 };
             });
-            await onConfirmRoute(finalOrders);
+            await onConfirmRoute(finalOrders as any);
             onClose();
         } catch (error) {
             setLoadingRequest(false);
@@ -172,9 +172,9 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="6xl" bg={bgColor}>
+        <Modal isOpen={isOpen} onClose={onClose} size="6xl">
             <ModalOverlay />
-            <ModalContent>
+            <ModalContent bg={bgColor}>
                 <ModalHeader>Mapa de entregas por repartidor</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
@@ -185,7 +185,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                 />
-                                <Marker position={[20.7257943, -103.3792193]} icon={yellowStarIcon} />
+                                <Marker position={[20.7257943, -103.3792193] as any} icon={yellowStarIcon} />
 
                                 {filteredOrders.map((position, idx) => {
                                     const defaultIcon = L.icon({
@@ -207,16 +207,16 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
 
                                     return (
                                         <React.Fragment key={idx}>
-                                            <Marker position={[position.latitude, position.longitude]} icon={defaultIcon} />
-                                            <Marker position={[position.latitude, position.longitude]} icon={labelIcon} interactive={false} />
+                                            <Marker position={[position.latitude, position.longitude] as any} icon={defaultIcon} />
+                                            <Marker position={[position.latitude, position.longitude] as any} icon={labelIcon} interactive={false} />
                                         </React.Fragment>
                                     );
                                 })}
                                 <Polyline
                                     positions={
-                                        selectedHours === '9 AM - 1 PM'
+                                        (selectedHours === '9 AM - 1 PM'
                                             ? [[20.7257943, -103.3792193], ...filteredOrders.map(order => [order.latitude, order.longitude])]
-                                            : [...filteredOrders.map(order => [order.latitude, order.longitude]), [20.7257943, -103.3792193]]
+                                            : [...filteredOrders.map(order => [order.latitude, order.longitude]), [20.7257943, -103.3792193]]) as any
                                     }
                                     color="blue"
                                     weight={2}
@@ -230,7 +230,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 <FormLabel>Selecciona un repartidor</FormLabel>
                                 <Select
                                     placeholder="Selecciona un repartidor"
-                                    value={selectedDriver}
+                                    value={selectedDriver ?? undefined}
                                     onChange={(e) => setSelectedDriver(e.target.value)}
                                 >
                                     <option value="1">1</option>
@@ -242,7 +242,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 <FormLabel>Selecciona el horario</FormLabel>
                                 <Select
                                     placeholder="Selecciona el horario"
-                                    value={selectedHours}
+                                    value={selectedHours ?? undefined}
                                     onChange={(e) => setSelectedHours(e.target.value)}
                                 >
                                     <option value="9 AM - 1 PM">9 AM - 1 PM</option>
@@ -253,7 +253,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                             <Box w="full" mt="4">
                                 <DragDropContext onDragEnd={onDragEnd}>
                                     <Droppable droppableId="orders">
-                                        {(provided) => (
+                                        {(provided: any) => (
                                             <table {...provided.droppableProps} ref={provided.innerRef} style={{ width: '100%' }}>
                                                 <thead>
                                                     <tr>
@@ -265,7 +265,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                                 <tbody>
                                                     {filteredOrders.map((order, index) => (
                                                         <Draggable key={order.id} draggableId={order.id.toString()} index={index}>
-                                                            {(provided, snapshot) => (
+                                                            {(provided: any, snapshot: any) => (
                                                                 <tr
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
@@ -279,7 +279,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                                                     }}
                                                                 >
                                                                     {snapshot.isDragging ? (
-                                                                        <td colSpan="3">{order.delivery_address}</td>
+                                                                        <td colSpan={3}>{order.delivery_address}</td>
                                                                     ) : (
                                                                         <>
                                                                             <td style={{

@@ -55,25 +55,25 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [clientName, setClientName] = useState('');
     const [deliveryTime, setDeliveryTime] = useState('');
     const [deliveryAddress, setDeliveryAddress] = useState('');
-    const [deliveryAddressLatitude, setDeliveryAddressLatitude] = useState(null);
-    const [deliveryAddressLongitude, setDeliveryAddressLongitude] = useState(null);
-    const [address, setAddress] = useState(null);
-    const [addressLatitude, setAddressLatitude] = useState(null);
-    const [addressLongitude, setAddressLongitude] = useState(null);
-    const [secondAddress, setSecondAddress] = useState(null);
-    const [secondAddressLatitude, setSecondAddressLatitude] = useState(null);
-    const [secondAddressLongitude, setSecondAddressLongitude] = useState(null);
+    const [deliveryAddressLatitude, setDeliveryAddressLatitude] = useState<number | null>(null);
+    const [deliveryAddressLongitude, setDeliveryAddressLongitude] = useState<number | null>(null);
+    const [address, setAddress] = useState<string | null>(null);
+    const [addressLatitude, setAddressLatitude] = useState<number | null>(null);
+    const [addressLongitude, setAddressLongitude] = useState<number | null>(null);
+    const [secondAddress, setSecondAddress] = useState<string | null>(null);
+    const [secondAddressLatitude, setSecondAddressLatitude] = useState<number | null>(null);
+    const [secondAddressLongitude, setSecondAddressLongitude] = useState<number | null>(null);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [deliveryDate, setDeliveryDate] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('')
-    const [cartItemsSelection, setCartItemsSelection] = useState([{ product: null, quantity: null }]);
-    const [cartItems, setCartItems] = useState([{ product: '', quantity: '', price: '' }]);
-    const [dateError, setDateError] = useState(null);
+    const [cartItemsSelection, setCartItemsSelection] = useState<Array<{product: any; quantity: any}>>([{ product: null, quantity: null }]);
+    const [cartItems, setCartItems] = useState<Array<{product: string; quantity: number | string; price: number | string}>>([{ product: '', quantity: '', price: '' }]);
+    const [dateError, setDateError] = useState<string | null>(null);
     const [totalAmountDisplay, setTotalAmountDisplay] = useState("0.00");
     const [isFormValid, setIsFormValid] = useState(false);
     const [loadingRequest, setLoadingRequest] = useState(false);
-    const [apiError, setApiError] = useState(null);
-    const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState([]);
+    const [apiError, setApiError] = useState<string | null>(null);
+    const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState<string[]>([]);
     const [discount, setDiscount] = useState("");
     const [notes, setNotes] = useState("");
     const [phoneTouched, setPhoneTouched] = useState(false);
@@ -86,7 +86,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [discountTouched, setDiscountTouched] = useState(false);
     const [isValidationCompleted, setIsValidationCompleted] = useState(false);
     const [isAnExistingId, setIsAnExistingId] = useState(false);
-    const [clientErrorMessage, setClientErrorMessage] = useState(false);
+    const [clientErrorMessage, setClientErrorMessage] = useState<string | boolean>(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [selectedAddressOption, setSelectedAddressOption] = useState('1');
     const cancelRef = useRef<HTMLButtonElement>(null);
@@ -98,7 +98,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const bgColor = useColorModeValue('white', '#2D3748');
 
     const customStyles = {
-        control: (provided) => ({
+        control: (provided: any) => ({
             ...provided,
             borderColor: borderColor,
             boxShadow: 'none',
@@ -106,20 +106,20 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             width: '200px',
             maxWidth: '200px'
         }),
-        option: (provided, state) => ({
+        option: (provided: any, state: any) => ({
             ...provided,
             backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : bgColor,
             color: state.isFocused ? textColor : 'grey',
         }),
-        menu: (provided) => ({
+        menu: (provided: any) => ({
             ...provided,
             backgroundColor: bgColor,
         }),
-        input: (provided) => ({
+        input: (provided: any) => ({
             ...provided,
             color: textColor,
         }),
-        singleValue: (provided) => ({
+        singleValue: (provided: any) => ({
             ...provided,
             color: textColor,
         }),
@@ -165,7 +165,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         }
     };
 
-    const removeCartItem = (index) => {
+    const removeCartItem = (index: any) => {
         setCartItems((prevCartItems) => {
             const updatedCartItems = [...prevCartItems];
             updatedCartItems.splice(index, 1);
@@ -190,7 +190,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         calculateTotalAmount();
     };
 
-    const handleProductSelect = (selectedOption, index) => {
+    const handleProductSelect = (selectedOption: any, index: any) => {
         setCartItemsSelection(prevCartItemsSelection => {
             const updatedCartItemsSelection = [...prevCartItemsSelection];
             updatedCartItemsSelection[index] = { ...updatedCartItemsSelection[index], product: selectedOption };
@@ -198,7 +198,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         });
     };
 
-    const handleQuantityChange = (index, newQuantity) => {
+    const handleQuantityChange = (index: any, newQuantity: any) => {
         setCartItemsSelection(prevCartItemsSelection => {
             const updatedCartItemsSelection = [...prevCartItemsSelection];
             updatedCartItemsSelection[index] = { ...updatedCartItemsSelection[index], quantity: newQuantity };
@@ -207,7 +207,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     };
 
     const calculateTotalAmount = () => {
-        const discountMultipliers = {
+        const discountMultipliers: Record<string, number> = {
             "5": 0.95,
             "10": 0.90,
             "15": 0.85,
@@ -217,7 +217,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
 
         let totalAmount = 0;
         if (cartItems.length > 0) {
-            totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            totalAmount = cartItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
 
             if (discount && discountMultipliers.hasOwnProperty(discount)) {
                 totalAmount *= discountMultipliers[discount];
@@ -261,7 +261,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             }
         });
         try {
-            await onCreate(newOrder);
+            await onCreate(newOrder as any);
             setClientName('');
             setDeliveryTime('');
             setDeliveryAddress('');
@@ -273,7 +273,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             setDiscount('');
             onClose();
         } catch (error) {
-            const responseData = error.response.data;
+            const responseData = (error as any).response.data;
             const responseBody = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
             const errorMessage = responseBody.message;
 
@@ -284,7 +284,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         }
     };
 
-    const validateDate = (selectedDate) => {
+    const validateDate = (selectedDate: any) => {
         const selectedDateObj = new Date(selectedDate + 'T00:00:00');
 
         selectedDateObj.setHours(0, 0, 0, 0);
@@ -319,7 +319,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         checkFormValidity();
     };
 
-    const setScheduleTimesBasedOnDate = (selectedDate) => {
+    const setScheduleTimesBasedOnDate = (selectedDate: any) => {
         const selectedDateObj = new Date(selectedDate + 'T00:00:00');
         const dayOfWeek = selectedDateObj.getDay();
         if (dayOfWeek === 6) { // saturday
@@ -331,14 +331,14 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         }
     }
 
-    const handleDateChange = (selectedDate) => {
+    const handleDateChange = (selectedDate: any) => {
         setDeliveryDate(selectedDate);
-        setApiError(false)
+        setApiError(null)
         validateDate(selectedDate);
         setScheduleTimesBasedOnDate(selectedDate);
     };
 
-    const handleDiscount = (selectedDiscount) => {
+    const handleDiscount = (selectedDiscount: any) => {
         setDiscount(selectedDiscount)
         calculateTotalAmount();
     }
@@ -353,15 +353,15 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                     setClientName(clientData.clientName);
                     setAddress(clientData.clientAddress);
                     setDeliveryAddress(clientData.clientAddress);
-                    setDeliveryAddressLatitude(clientData.clientLatitude);
-                    setDeliveryAddressLongitude(clientData.clientLongitude)
-                    setAddressLongitude(clientData.clientLongitude);
-                    setAddressLatitude(clientData.clientLatitude);
+                    setDeliveryAddressLatitude(clientData.clientLatitude ?? null);
+                    setDeliveryAddressLongitude(clientData.clientLongitude ?? null)
+                    setAddressLongitude(clientData.clientLongitude ?? null);
+                    setAddressLatitude(clientData.clientLatitude ?? null);
                     handleDiscount((clientData.clientDiscount));
                     if (clientData.clientSecondAddress) {
                         setSecondAddress(clientData.clientSecondAddress);
-                        setSecondAddressLatitude(clientData.clientSecondLatitude);
-                        setSecondAddressLongitude(clientData.clientSecondLongitude);
+                        setSecondAddressLatitude(clientData.clientSecondLatitude ?? null);
+                        setSecondAddressLongitude(clientData.clientSecondLongitude ?? null);
                         setIsAlertOpen(true);
                     }
                     setNameTouched(true);
@@ -379,21 +379,21 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const handleAddressSelection = () => {
         switch (selectedAddressOption) {
             case '1':
-                setDeliveryAddress(address);
+                setDeliveryAddress(address ?? '');
                 setDeliveryAddressLatitude(addressLatitude);
                 setDeliveryAddressLongitude(addressLongitude);
                 setDeliveryAddressTouched(true);
                 break;
             case '2':
-                setDeliveryAddress(secondAddress);
+                setDeliveryAddress(secondAddress ?? '');
                 setDeliveryAddressLatitude(secondAddressLatitude);
                 setDeliveryAddressLongitude(secondAddressLongitude);
                 setDeliveryAddressTouched(true);
                 break;
             case 'none':
                 setDeliveryAddress('');
-                setDeliveryAddressLatitude('');
-                setDeliveryAddressLongitude('');
+                setDeliveryAddressLatitude(null);
+                setDeliveryAddressLongitude(null);
                 setDeliveryAddressTouched(true);
                 break;
             default:
@@ -403,7 +403,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} bg={bgColor}>
+        <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>Crear orden</ModalHeader>
@@ -452,7 +452,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                             apiError={apiError}
                             availableDeliveryTimes={availableDeliveryTimes}
                             deliveryTime={deliveryTime}
-                            onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(false); }}
+                            onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(null); }}
                             onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
                             deliveryTimeTouched={deliveryTimeTouched}
                             paymentMethod={paymentMethod}
@@ -526,9 +526,8 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                             </h2>
                                             <AccordionPanel pb={4}>
                                                 <Textarea
-                                                    type="text"
                                                     color={textColor}
-                                                    rows="1"
+                                                    rows={1}
                                                     borderColor={borderColor}
                                                     placeholder="Instrucciones para la entrega"
                                                     value={notes}

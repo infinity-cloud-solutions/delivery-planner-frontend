@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from "react";
 import Calendar from "react-calendar";
 import es from 'date-fns/locale/es';

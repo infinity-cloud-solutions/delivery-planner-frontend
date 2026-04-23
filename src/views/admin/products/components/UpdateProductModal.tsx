@@ -81,7 +81,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
+        <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>Editar Producto</ModalHeader>

@@ -17,8 +17,13 @@ import {
 
 } from '@chakra-ui/react';
 
+interface ConsolidatedModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  products: { [driver: string]: { [product: string]: number } };
+}
 
-function ConsolidatedModal({ isOpen, onClose, products }) {
+function ConsolidatedModal({ isOpen, onClose, products }: ConsolidatedModalProps) {
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -42,7 +47,7 @@ function ConsolidatedModal({ isOpen, onClose, products }) {
                                     {Object.entries(products[driver]).map(([product, quantity]) => (
                                         <Tr key={product}>
                                             <Td>{product}</Td>
-                                            <Td>{quantity}</Td>
+                                            <Td>{quantity as React.ReactNode}</Td>
                                         </Tr>
                                     ))}
                                 </Tbody>

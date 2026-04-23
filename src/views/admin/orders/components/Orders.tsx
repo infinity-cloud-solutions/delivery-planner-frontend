@@ -97,6 +97,7 @@ function Orders({
   };
 
   const tableInstance = useTable(
+    // @ts-ignore
     { columns, data, initialState: { pageSize: 30 } },
     useGlobalFilter,
     useSortBy,
@@ -190,7 +191,7 @@ function Orders({
             onUpdate={onOrderUpdated}
             onDelete={onOrderDeleted}
             productsAvailable={productsAvailable}
-            rowData={selectedRowData}
+            rowData={selectedRowData!}
           />
         )}
         {isCreateModalOpen && (

@@ -58,7 +58,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [deliveryLongitude, setDeliveryLongitude] = useState(lng != null ? String(lng) : '');
   const [phoneNumber, setPhoneNumber] = useState(rowData.row.phone_number || '');
   const [paymentMethod, setPaymentMethod] = useState(rowData.row.payment_method || '')
-  const [cartItemsSelection, setCartItemsSelection] = useState(
+  const [cartItemsSelection, setCartItemsSelection] = useState<Array<{product: any; quantity: any; price?: any}>>(
     (rowData.row.cart_items || []).map((item) => ({
       product: item.product,
       quantity: Number(item.quantity),
@@ -66,20 +66,20 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     })) || [{ product: null, quantity: null }]
   );
 
-  const [cartItems, setCartItems] = useState(
+  const [cartItems, setCartItems] = useState<Array<{product: string; quantity: number | string; price: number | string}>>(
     (rowData.row.cart_items || []).map((item) => ({
       product: item.product,
       quantity: Number(item.quantity),
       price: Number(item.price),
     })) || [{ product: null, quantity: null }]
   );
-  const [dateError, setDateError] = useState(null);
+  const [dateError, setDateError] = useState<string | null>(null);
   const [selectedDriver, setSelectedDriver] = useState(rowData.row.driver || '');
   const [totalAmountDisplay, setTotalAmountDisplay] = useState(rowData.row.total_amount || "0.00");
   const [isFormValid, setIsFormValid] = useState(false);
   const [loadingUpdateRequest, setLoadingUpdateRequest] = useState(false);
   const [loadingDeleteRequest, setLoadingDeleteRequest] = useState(false);
-  const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState([]);
+  const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState<string[]>([]);
   const [discount, setDiscount] = useState(rowData.row.discount || '');
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [nameTouched, setNameTouched] = useState(false);
@@ -88,7 +88,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [deliveryTimeTouched, setDeliveryTimeTouched] = useState(false);
   const [paymentMethodTouched, setPaymentMethodTouched] = useState(false);
 
-  const [apiError, setApiError] = useState(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const [deliveryDate, setDeliveryDate] = useState(rowData.row.delivery_date || '');
   const [deliveryNotes, setDeliveryNotes] = useState(rowData.row.notes || '');
@@ -103,7 +103,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const bgColor = useColorModeValue('white', '#2D3748');
 
   const customStyles = {
-    control: (provided) => ({
+    control: (provided: any) => ({
       ...provided,
       borderColor: borderColor,
       boxShadow: 'none',
@@ -111,20 +111,20 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       width: '200px',
       maxWidth: '200px'
     }),
-    option: (provided, state) => ({
+    option: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : bgColor,
       color: state.isFocused ? textColor : 'grey',
     }),
-    menu: (provided) => ({
+    menu: (provided: any) => ({
       ...provided,
       backgroundColor: bgColor,
     }),
-    input: (provided) => ({
+    input: (provided: any) => ({
       ...provided,
       color: textColor,
     }),
-    singleValue: (provided) => ({
+    singleValue: (provided: any) => ({
       ...provided,
       color: textColor,
     }),
@@ -146,7 +146,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         delivery_date: deliveryDate,
         delivery_time: deliveryTime,
         phone_number: phoneNumber,
-        total_amount: parseFloat(totalAmountDisplay.replace(/[^\d.]/g, '')),
+        total_amount: parseFloat(String(totalAmountDisplay).replace(/[^\d.]/g, '')),
         cart_items: cartItems,
         payment_method: paymentMethod,
         notes: formattedNotes,
@@ -167,7 +167,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     });
 
     try {
-      await onUpdate(updOrder);
+      await onUpdate(updOrder as any);
       setClientName('');
       setDeliveryTime('');
       setDeliveryAddress('');
@@ -180,7 +180,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
       setLoadingUpdateRequest(false)
       onClose();
     } catch (error) {
-      const responseData = error.response.data;
+      const responseData = (error as any).response.data;
       const responseBody = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
       const errorMessage = responseBody.message;
 
@@ -265,7 +265,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     }
   };
 
-  const removeCartItem = (index) => {
+  const removeCartItem = (index: any) => {
     setCartItems((prevCartItems) => {
       const updatedCartItems = [...prevCartItems];
       updatedCartItems.splice(index, 1);
@@ -281,7 +281,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     calculateTotalAmount();
   };
 
-  const handleProductSelect = (selectedOption, index) => {
+  const handleProductSelect = (selectedOption: any, index: any) => {
     setCartItemsSelection((prevCartItemsSelection) => {
       const updatedCartItemsSelection = [...prevCartItemsSelection];
       updatedCartItemsSelection[index] = {
@@ -293,7 +293,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     });
   };
 
-  const handleQuantityChange = (index, newQuantity) => {
+  const handleQuantityChange = (index: any, newQuantity: any) => {
     setCartItemsSelection((prevCartItemsSelection) => {
       const updatedCartItemsSelection = [...prevCartItemsSelection];
       updatedCartItemsSelection[index] = {
@@ -311,7 +311,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
 
     let totalAmount = 0;
     if (cartItems.length > 0) {
-      totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      totalAmount = cartItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
       if (discount && Object.prototype.hasOwnProperty.call(discountMultipliers, String(discount))) {
         totalAmount *= discountMultipliers[String(discount)];
       }
@@ -324,7 +324,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     setTotalAmountDisplay(calculatedTotalAmount);
   };
 
-  const validateDate = (selectedDate) => {
+  const validateDate = (selectedDate: any) => {
     const selectedDateObj = new Date(selectedDate + 'T00:00:00');
 
     selectedDateObj.setHours(0, 0, 0, 0);
@@ -359,7 +359,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     checkFormValidity();
   };
 
-  const setScheduleTimesBasedOnDate = (selectedDate) => {
+  const setScheduleTimesBasedOnDate = (selectedDate: any) => {
     const selectedDateObj = new Date(selectedDate + 'T00:00:00');
     const dayOfWeek = selectedDateObj.getDay();
     if (dayOfWeek === 6) { // saturday
@@ -371,14 +371,14 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     }
   }
 
-  const handleDateChange = (selectedDate) => {
+  const handleDateChange = (selectedDate: any) => {
     setDeliveryDate(selectedDate);
-    setApiError(false)
+    setApiError(null)
     validateDate(selectedDate);
     setScheduleTimesBasedOnDate(selectedDate);
   };
 
-  const handleDiscount = (selectedDiscount) => {
+  const handleDiscount = (selectedDiscount: any) => {
     setDiscount(selectedDiscount)
     calculateTotalAmount();
   }
@@ -417,7 +417,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} bg={menuBg}>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Editar orden</ModalHeader>
@@ -462,7 +462,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               apiError={apiError}
               availableDeliveryTimes={availableDeliveryTimes}
               deliveryTime={deliveryTime}
-              onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(false); }}
+              onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(null); }}
               onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
               deliveryTimeTouched={deliveryTimeTouched}
               paymentMethod={paymentMethod}
@@ -485,9 +485,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
             <FormControl>
               <FormLabel>Latitud</FormLabel>
               <Textarea
-                type="text"
                 color={textColor}
-                rows="1"
+                rows={1}
                 borderColor={borderColor}
                 value={deliveryLatitude}
                 isDisabled={!isUserAdmin}
@@ -497,9 +496,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
             <FormControl>
               <FormLabel>Longitud</FormLabel>
               <Textarea
-                type="text"
                 color={textColor}
-                rows="1"
+                rows={1}
                 borderColor={borderColor}
                 value={deliveryLongitude}
                 isDisabled={!isUserAdmin}
@@ -528,7 +526,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
               apiError={apiError}
               availableDeliveryTimes={availableDeliveryTimes}
               deliveryTime={deliveryTime}
-              onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(false); }}
+              onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(null); }}
               onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
               deliveryTimeTouched={deliveryTimeTouched}
               paymentMethod={paymentMethod}
@@ -545,7 +543,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                   <ReactSelect
                     isSearchable={true}
                     styles={customStyles}
-                    options={productsAvailable}
+                    options={productsAvailable as any}
                     placeholder="Buscar producto"
                     noOptionsMessage={() => "No hay opción"}
                     isDisabled={index !== 0}
@@ -588,9 +586,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                   </h2>
                   <AccordionPanel pb={4}>
                     <Textarea
-                      type="text"
                       color={textColor}
-                      rows="1"
+                      rows={1}
                       borderColor={borderColor}
                       placeholder="Instrucciones para la entrega"
                       value={deliveryNotes}

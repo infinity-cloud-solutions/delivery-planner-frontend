@@ -39,7 +39,7 @@ function OrdersTable({ tableInstance, onRowClick }: OrdersTableProps) {
     // @ts-ignore
     state: { pageIndex, pageSize },
     prepareRow,
-  } = tableInstance;
+  } = tableInstance as any;
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -164,7 +164,7 @@ function OrdersTable({ tableInstance, onRowClick }: OrdersTableProps) {
                           h="24px"
                           me="5px"
                           color={
-                            cell.value === "Programada" ||
+                            (cell.value === "Programada" ||
                             cell.value === "Creada" ||
                             cell.value === "En ruta"
                               ? "green.500"
@@ -174,10 +174,10 @@ function OrdersTable({ tableInstance, onRowClick }: OrdersTableProps) {
                               ? "red.500"
                               : cell.value === "Reprogramada"
                               ? "orange.500"
-                              : null
+                              : null) as any
                           }
                           as={
-                            cell.value === "Programada" ||
+                            (cell.value === "Programada" ||
                             cell.value === "Creada" ||
                             cell.value === "En ruta" ||
                             cell.value === "Entregada"
@@ -186,7 +186,7 @@ function OrdersTable({ tableInstance, onRowClick }: OrdersTableProps) {
                               ? MdOutlineError
                               : cell.value === "Error"
                               ? MdCancel
-                              : null
+                              : null) as any
                           }
                         />
                         {cell.value === "Error" ? (
