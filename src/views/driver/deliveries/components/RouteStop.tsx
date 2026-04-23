@@ -13,11 +13,16 @@ import {
 import Card from "components/card/Card.js";
 import React from "react";
 
-export default function DeliveryInitialState(props) {
+interface RouteStopProps {
+  used?: number;
+  total?: number;
+  [key: string]: unknown;
+}
+
+export default function DeliveryInitialState(props: RouteStopProps) {
   const { used, total, ...rest } = props;
   // Chakra Color Mode
   const textColorPrimary = useColorModeValue("secondaryGray.900", "white");
-  // const brandColor = useColorModeValue("brand.500", "white");
   const textColorSecondary = "gray.400";
   const property = {
     imageUrl: "https://bit.ly/2Z4KKcF",
@@ -28,7 +33,7 @@ export default function DeliveryInitialState(props) {
     formattedPrice: "$1,900.00",
     reviewCount: 34,
     rating: 4,
-  }
+  };
 
   return (
     <Card {...rest} mb='20px' align='center' p='20px'>
@@ -37,9 +42,6 @@ export default function DeliveryInitialState(props) {
           <Image src='https://i.redd.it/vtj6hk6q09291.png' alt={property.imageAlt} />
           <Box p="6">
             <Box d="flex" alignItems="baseline">
-              {/* <Badge borderRadius="full" px="2" colorScheme="brand">
-                New
-              </Badge> */}
               <Box
                 color="gray.500"
                 fontWeight="semibold"
@@ -117,16 +119,6 @@ export default function DeliveryInitialState(props) {
               <Button variant="brand">Entregado</Button>
               <Button variant="outline">Reprogramar</Button>
             </ButtonGroup>
-            {/* <Button
-              me='100%'
-              mb='50px'
-              w='140px'
-              minW='140px'
-              mt={{ base: "20px", "2xl": "auto" }}
-              variant='brand'
-              fontWeight='500'>
-              Entregado
-            </Button> */}
           </Flex>
         </Flex>
       </Flex>

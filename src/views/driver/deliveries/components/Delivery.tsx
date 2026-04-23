@@ -44,12 +44,33 @@ import {
     FaMoneyCheckDollar,
     FaNoteSticky
 } from "react-icons/fa6";
+import { IconType } from 'react-icons';
 
 import Card from "components/card/Card.js";
 import ConsolidatedDeliveryModal from "./ConsolidatedModalDeliver";
 import React, { useState, useEffect, useRef } from 'react';
+import { Delivery } from 'types/delivery';
+import { ConsolidatedProducts } from 'types/order';
 
-export default function DeliveryCard(props) {
+interface DeliveryCardProps {
+    order: Delivery;
+    onUpdateDelivery: (order: Delivery, orderId: string, statusText: string) => Promise<void>;
+    listOfConsolidatedProducts: ConsolidatedProducts;
+    gridArea?: string;
+    minH?: Record<string, string>;
+    pe?: string;
+    pb?: Record<string, string>;
+    mx?: string;
+    maxW?: Record<string, string>;
+    [key: string]: unknown;
+}
+
+interface RenderTagProps {
+    size: string;
+    paymentMethod: string;
+}
+
+export default function DeliveryCard(props: DeliveryCardProps) {
     const { order, onUpdateDelivery, listOfConsolidatedProducts, ...rest } = props;
     const textColorPrimary = useColorModeValue("secondaryGray.900", "white");
     const [cooler, setCooler] = useState('');
@@ -64,14 +85,14 @@ export default function DeliveryCard(props) {
 
     useEffect(() => {
         setOrderStatus(order.status);
-        setCooler(order.cooler)
+        setCooler(order.cooler != null ? String(order.cooler) : '');
     }, [order.status]);
 
     useEffect(() => {
     }, [rescheduleReasonRef]);
 
-    const RenderTag = ({ size, paymentMethod }) => {
-        let icon, colorScheme;
+    const RenderTag = ({ size, paymentMethod }: RenderTagProps) => {
+        let icon: IconType, colorScheme: string;
 
         switch (paymentMethod) {
             case 'Efectivo':
@@ -105,96 +126,52 @@ export default function DeliveryCard(props) {
 
     const handleAddToDeliveryClick = async () => {
         setLoadingAddToDelivery(true);
-        const updatedOrder = {
-            client_name: order.client_name,
-            delivery_address: order.delivery_address,
-            delivery_date: order.delivery_date,
-            original_date: order.delivery_date,
-            delivery_time: order.delivery_time,
-            phone_number: order.phone_number,
-            total_amount: parseFloat(order.total_amount),
-            cart_items: order.cart_items,
-            payment_method: order.payment_method,
-            status: "En ruta",
-            order: "Ver detalles",
+        const updatedOrder: Delivery = {
+            ...order,
+            total_amount: parseFloat(String(order.total_amount)),
+            status: 'En ruta',
+            order: 'Ver detalles',
             cooler: Number(cooler),
-            created_at: order.created_at,
-            created_by: order.created_by,
+            original_date: order.delivery_date,
             delivery_sequence: Number(order.delivery_sequence),
             driver: Number(order.driver),
-            errors: order.errors,
-            id: order.id,
-            latitude: order.latitude,
-            longitude: order.longitude,
-            notes: order.notes,
-            discount: order.discount
         };
-        await onUpdateDelivery(updatedOrder, updatedOrder.id, "En ruta");
-
+        await onUpdateDelivery(updatedOrder, updatedOrder.id, 'En ruta');
         setLoadingAddToDelivery(false);
     };
 
     const handleCompleteDeliveryClick = async () => {
         setLoadingCompleteDelivery(true);
-
-        const updatedOrder = {
-            client_name: order.client_name,
-            delivery_address: order.delivery_address,
-            delivery_date: order.delivery_date,
-            original_date: order.delivery_date,
-            delivery_time: order.delivery_time,
-            phone_number: order.phone_number,
-            total_amount: parseFloat(order.total_amount),
-            cart_items: order.cart_items,
-            payment_method: order.payment_method,
-            status: "Entregada",
-            order: "Ver detalles",
+        const updatedOrder: Delivery = {
+            ...order,
+            total_amount: parseFloat(String(order.total_amount)),
+            status: 'Entregada',
+            order: 'Ver detalles',
             cooler: Number(cooler),
-            created_at: order.created_at,
-            created_by: order.created_by,
+            original_date: order.delivery_date,
             delivery_sequence: Number(order.delivery_sequence),
             driver: Number(order.driver),
-            errors: order.errors,
-            id: order.id,
-            latitude: order.latitude,
-            longitude: order.longitude,
-            notes: order.notes,
-            discount: order.discount
         };
-        await onUpdateDelivery(updatedOrder, updatedOrder.id, "Entregada");
-
+        await onUpdateDelivery(updatedOrder, updatedOrder.id, 'Entregada');
         setLoadingCompleteDelivery(false);
         setIsCompletedModalOpen(false);
     };
 
     const handleRescheduleDeliveryClick = async () => {
         setLoadingRescheduleDelivery(true);
-        const updatedOrder = {
-            client_name: order.client_name,
-            delivery_address: order.delivery_address,
-            delivery_date: order.delivery_date,
-            original_date: order.delivery_date,
-            delivery_time: order.delivery_time,
-            phone_number: order.phone_number,
-            total_amount: parseFloat(order.total_amount),
-            cart_items: order.cart_items,
-            payment_method: order.payment_method,
-            status: "Reprogramada",
-            order: "Ver detalles",
+        const updatedOrder: Delivery = {
+            ...order,
+            total_amount: parseFloat(String(order.total_amount)),
+            status: 'Reprogramada',
+            order: 'Ver detalles',
             cooler: Number(cooler),
-            created_at: order.created_at,
-            created_by: order.created_by,
+            original_date: order.delivery_date,
             delivery_sequence: Number(order.delivery_sequence),
             driver: Number(order.driver),
-            errors: order.errors,
-            id: order.id,
-            latitude: order.latitude,
-            longitude: order.longitude,
             notes: rescheduleReasonRef.current,
-            discount: order.discount
         };
-        closeRescheduleModal()
-        await onUpdateDelivery(updatedOrder, updatedOrder.id, "Reprogramada");
+        closeRescheduleModal();
+        await onUpdateDelivery(updatedOrder, updatedOrder.id, 'Reprogramada');
     };
 
     const closeRescheduleModal = () => {
@@ -234,9 +211,9 @@ export default function DeliveryCard(props) {
         );
     };
 
-    const handleOnChange = (e) => {
+    const handleOnChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         rescheduleReasonRef.current = e.target.value;
-    }
+    };
 
     const RescheduleModal = () => {
         return (
@@ -252,11 +229,8 @@ export default function DeliveryCard(props) {
                         <FormControl>
                             <FormLabel>Motivo de la reprogramación</FormLabel>
                             <Textarea
-
                                 placeholder="Motivo de la reprogramación"
-
                                 onChange={handleOnChange}
-                                type="text"
                                 id="reschedule-reason"
                                 name="reschedule-reason"
                             />
@@ -269,7 +243,6 @@ export default function DeliveryCard(props) {
                             onClick={() => {
                                 handleRescheduleDeliveryClick();
                             }}
-
                         >
                             Reprogramar
                         </Button>
@@ -287,7 +260,6 @@ export default function DeliveryCard(props) {
         const address = order.delivery_address;
         const encodedAddress = encodeURIComponent(address);
         const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
-
         window.open(googleMapsUrl, '_blank');
     };
 
@@ -324,7 +296,6 @@ export default function DeliveryCard(props) {
                     <Box display="flex" alignItems="flex-start" mb="2">
                         <FaMapLocationDot color="gray.500" size={25} />
                         <Box
-                            // color="gray.500"
                             fontWeight="semibold"
                             letterSpacing={{ base: "normal", md: "wide", lg: "wider" }}
                             fontSize={{ base: "xs", sm: "sm", md: "md" }}

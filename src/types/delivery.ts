@@ -17,4 +17,13 @@ export interface Delivery {
   cart_items: CartItem[];
   latitude?: number | null;
   longitude?: number | null;
+  // fields used by Delivery.js card component
+  cooler?: number | null;
+  original_date?: string;
+  created_at?: string;
+  created_by?: string;
+  errors?: string[];
+  notes?: string | null;
+  discount?: number | null;
+  order?: string;
 }

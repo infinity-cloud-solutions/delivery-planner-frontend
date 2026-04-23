@@ -14,11 +14,16 @@ import {
     Td,
     Th,
     Thead,
-
 } from '@chakra-ui/react';
+import { ConsolidatedProducts } from 'types/order';
 
+interface ConsolidatedDeliveryModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    products: ConsolidatedProducts;
+}
 
-function ConsolidatedDeliveryModal({ isOpen, onClose, products }) {
+function ConsolidatedDeliveryModal({ isOpen, onClose, products }: ConsolidatedDeliveryModalProps) {
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -60,6 +65,5 @@ function ConsolidatedDeliveryModal({ isOpen, onClose, products }) {
         </Modal>
     );
 }
-
 
 export default ConsolidatedDeliveryModal;
