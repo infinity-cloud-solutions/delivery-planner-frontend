@@ -134,10 +134,12 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         if (!phoneToCheck || phoneToCheck.length !== 10) return;
         
         let isMounted = true;
+        console.log('Phone lookup effect running for phone:', phoneToCheck);
         setLoadingCheck(true);
         
         onClientExistsCheck(phoneToCheck)
             .then((clientData) => {
+                console.log('Client data received:', clientData);
                 if (!isMounted) return;
                 
                 if (clientData) {
@@ -150,21 +152,24 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                     setAddressLatitude(clientData.clientLatitude ?? null);
                     setNameTouched(true);
                     setIsAnExistingId(true);
-                    
-                    // Handle discount (this calls handleDiscount which updates state and calculates totals)
                     setDiscount(String(clientData.clientDiscount || ''));
                     
-                    // Handle second address
+                    // Auto-select first address, only show dialog if second address exists
                     if (clientData.clientSecondAddress) {
                         setSecondAddress(clientData.clientSecondAddress);
                         setSecondAddressLatitude(clientData.clientSecondLatitude ?? null);
                         setSecondAddressLongitude(clientData.clientSecondLongitude ?? null);
-                        setIsAlertOpen(true);
+                        // Auto-select first address by default
+                        setSelectedAddressOption('1');
+                        // Show dialog only if user explicitly wants to choose different address
+                        // For now, we'll just use the first address automatically
+                        console.log('Second address found, using first address by default');
                     }
                 }
                 setIsValidationCompleted(true);
             })
             .catch((error) => {
+                console.log('Client lookup error:', error);
                 if (!isMounted) return;
                 setClientErrorMessage('Error al verificar el cliente.');
                 setIsValidationCompleted(true);
@@ -174,9 +179,10 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             });
         
         return () => {
+            console.log('Phone lookup effect cleanup');
             isMounted = false;
         };
-    }, [phoneToCheck, onClientExistsCheck]);
+    }, [phoneToCheck]); // Remove onClientExistsCheck from dependencies to prevent effect re-running
 
     const checkFormValidity = () => {
         const isCartItemsValid = cartItems.length > 1;
@@ -399,6 +405,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     }, [phoneNumber]);
 
     const handleAddressSelection = () => {
+        console.log('handleAddressSelection called, selectedAddressOption:', selectedAddressOption);
         switch (selectedAddressOption) {
             case '1':
                 setDeliveryAddress(address ?? '');
@@ -421,6 +428,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             default:
                 break;
         }
+        console.log('Calling setIsAlertOpen(false)');
         setIsAlertOpen(false);
     };
 
