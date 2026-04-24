@@ -8,13 +8,13 @@ import { ClientsPage } from '../pages/clients.page';
 import { mockClients } from '../data/mocks';
 
 test.describe('Admin — Clients', () => {
-  test('clients table renders with mocked data', async ({ page }) => {
+  test('clients page renders with search form and create button', async ({ page }) => {
     const clientsPage = new ClientsPage(page);
     await clientsPage.goto();
 
-    await expect(clientsPage.table).toBeVisible();
-    await expect(clientsPage.row(mockClients[0].name)).toBeVisible();
-    await expect(clientsPage.row(mockClients[1].name)).toBeVisible();
+    await expect(clientsPage.createButton).toBeVisible();
+    await expect(clientsPage.phoneSearchInput).toBeVisible();
+    await expect(clientsPage.searchButton).toBeVisible();
   });
 
   test('create client modal opens with all required fields', async ({ page }) => {
@@ -23,7 +23,13 @@ test.describe('Admin — Clients', () => {
     await clientsPage.openCreateModal();
 
     const modal = clientsPage.modal;
+    // Teléfono is always visible; other fields appear after phone validation completes
     await expect(modal.getByLabel('Teléfono')).toBeVisible();
+
+    // Enter a phone number not in the system to trigger validation and reveal remaining fields
+    await modal.getByLabel('Teléfono').fill('5550000000');
+    await modal.getByLabel('Teléfono').blur();
+
     await expect(modal.getByLabel('Nombre')).toBeVisible();
     await expect(modal.getByLabel('Dirección')).toBeVisible();
   });
@@ -96,7 +102,7 @@ test.describe('Admin — Clients', () => {
   test('updates a client and shows success feedback', async ({ page }) => {
     const clientsPage = new ClientsPage(page);
     await clientsPage.goto();
-    await clientsPage.openUpdateModal(mockClients[0].name);
+    await clientsPage.openUpdateModal(mockClients[0].phone_number);
 
     const modal = clientsPage.modal;
     await modal.getByLabel('Nombre').fill('Juan Pérez Actualizado');

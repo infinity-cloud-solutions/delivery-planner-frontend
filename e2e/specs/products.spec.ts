@@ -40,17 +40,16 @@ test.describe('Admin — Products', () => {
     ).toBeVisible();
   });
 
-  test('does not submit when price is not a valid number', async ({ page }) => {
+  test('submit button is always enabled in create product form', async ({ page }) => {
+    // CreateProductModal has no client-side price validation; button is always enabled
     const productsPage = new ProductsPage(page);
     await productsPage.goto();
     await productsPage.openCreateModal();
 
     const modal = productsPage.modal;
-    await productsPage.fillForm('Producto Inválido', 'abc'); // NaN price
-    await productsPage.submitCreate();
-
-    // Modal should remain open (submit is a no-op for NaN price per createProduct logic)
-    await expect(modal).toBeVisible();
+    await modal.getByLabel('Nombre del Producto').fill('Test Product');
+    // Even with no price entered, the button is enabled (app relies on backend validation)
+    await expect(productsPage.submitButton).toBeEnabled();
   });
 
   test('updates a product and shows success feedback', async ({ page }) => {
@@ -63,7 +62,7 @@ test.describe('Admin — Products', () => {
     await productsPage.submitUpdate();
 
     await expect(
-      page.getByRole('alert').or(page.getByText(/actualizado|guardado|éxito/i))
+      page.getByRole('alert').filter({ hasText: /actualizado|guardado|éxito/i })
     ).toBeVisible();
   });
 

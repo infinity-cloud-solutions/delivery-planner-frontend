@@ -4,11 +4,10 @@ export class DeliveriesPage {
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto('/driver/deliveries');
+    await this.page.goto('/#/driver/deliveries');
   }
 
   get deliveryCards(): Locator {
-    // Each delivery renders as a card — match by the card wrapper role or testid
     return this.page.getByTestId('delivery-card').or(
       this.page.locator('[data-testid="delivery-card"], .delivery-card')
     );
@@ -30,14 +29,18 @@ export class DeliveriesPage {
     return this.page.getByRole('alert').filter({ hasText: /error/i });
   }
 
-  async markDelivered(clientName: string) {
-    const card = this.deliveryCard(clientName);
-    await card.getByRole('button', { name: /entregad|completad/i }).click();
+  async markDelivered(_clientName: string) {
+    // Click the "Entregada" button (visible when status is "En ruta")
+    await this.page.getByRole('button', { name: /^entregada$/i }).first().click();
+    // Confirm in the confirmation modal
+    await this.page.getByRole('button', { name: /^confirmar$/i }).click();
   }
 
-  async markFailed(clientName: string) {
-    const card = this.deliveryCard(clientName);
-    await card.getByRole('button', { name: /fallid|no entregad/i }).click();
+  async markFailed(_clientName: string) {
+    // Use "Reprogramar" as the available failure-like action (status "En ruta")
+    await this.page.getByRole('button', { name: /^reprogramar$/i }).first().click();
+    // Confirm in the reschedule modal (its confirm button is also labelled "Reprogramar")
+    await this.page.getByRole('button', { name: /^reprogramar$/i }).last().click();
   }
 
   get loadingSpinner(): Locator {

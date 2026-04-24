@@ -3,36 +3,47 @@
  * All data is in Spanish to match actual API response format.
  */
 
+const _today = new Date();
+const TODAY = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}-${String(_today.getDate()).padStart(2, '0')}`;
+
 export const mockOrders = [
   {
     id: 'order-1',
     client_name: 'Juan Pérez',
     phone_number: '5551234567',
     delivery_address: 'Av. Insurgentes 100, CDMX',
-    delivery_date: '2026-04-25',
+    delivery_date: TODAY,
     delivery_time: '10:00 - 12:00',
     payment_method: 'Tarjeta',
+    driver: 999,
     driver_id: 1,
     delivery_sequence: 1,
-    status: 'pending',
+    status: 'Creada',
     discount: 0,
     total_amount: 150.0,
-    products: [],
+    cart_items: [{ product: 'Producto Alpha', quantity: 1, price: 99.99 }],
+    errors: [],
+    latitude: 19.4326,
+    longitude: -99.1332,
   },
   {
     id: 'order-2',
     client_name: 'María López',
     phone_number: '5559876543',
     delivery_address: 'Calle Reforma 200, CDMX',
-    delivery_date: '2026-04-25',
+    delivery_date: TODAY,
     delivery_time: '14:00 - 16:00',
     payment_method: 'Efectivo',
+    driver: 999,
     driver_id: 2,
-    delivery_sequence: 1,
-    status: 'pending',
+    delivery_sequence: 2,
+    status: 'Creada',
     discount: 10,
     total_amount: 200.0,
-    products: [],
+    cart_items: [{ product: 'Producto Beta', quantity: 2, price: 149.50 }],
+    errors: [],
+    latitude: 19.4270,
+    longitude: -99.1671,
   },
 ];
 
@@ -60,30 +71,48 @@ export const mockProducts = [
   { id: 'prod-2', name: 'Producto Beta', price: 149.50 },
 ];
 
+/**
+ * Deliveries use different client names from mockOrders to avoid table row collisions.
+ * driver: 999 matches getDriverValue() for the fake driver JWT (email not in DRIVERS_MAP).
+ */
 export const mockDeliveries = [
   {
     id: 'delivery-1',
-    order_id: 'order-1',
-    client_name: 'Juan Pérez',
+    order_id: 'order-3',
+    client_name: 'Ana García',
+    phone_number: '5551111111',
     delivery_address: 'Av. Insurgentes 100, CDMX',
+    delivery_date: TODAY,
     delivery_time: '10:00 - 12:00',
     payment_method: 'Tarjeta',
-    status: 'pending',
-    products: [{ name: 'Producto Alpha', quantity: 2 }],
-    latitude: '19.4326',
-    longitude: '-99.1332',
+    driver: 999,
+    delivery_sequence: 1,
+    status: 'En ruta',
+    total_amount: 100.0,
+    cart_items: [{ product: 'Producto Alpha', quantity: 2 }],
+    errors: [],
+    latitude: 19.4326,
+    longitude: -99.1332,
+    cooler: 1,
   },
   {
     id: 'delivery-2',
-    order_id: 'order-2',
-    client_name: 'María López',
+    order_id: 'order-4',
+    client_name: 'Pedro Martín',
+    phone_number: '5552222222',
     delivery_address: 'Calle Reforma 200, CDMX',
+    delivery_date: TODAY,
     delivery_time: '14:00 - 16:00',
     payment_method: 'Efectivo',
-    status: 'pending',
-    products: [{ name: 'Producto Beta', quantity: 1 }],
-    latitude: '19.4270',
-    longitude: '-99.1671',
+    driver: 999,
+    delivery_sequence: 2,
+    status: 'En ruta',
+    total_amount: 150.0,
+    cart_items: [{ product: 'Producto Beta', quantity: 1 }],
+    errors: [],
+    latitude: 19.4270,
+    longitude: -99.1671,
+    cooler: 2,
   },
 ];
 
@@ -92,15 +121,17 @@ export const mockNewOrder = {
   client_name: 'Carlos Ruiz',
   phone_number: '5550001111',
   delivery_address: 'Calle Nueva 500, CDMX',
-  delivery_date: '2026-04-26',
+  delivery_date: TODAY,
   delivery_time: '10:00 - 12:00',
   payment_method: 'Transferencia',
+  driver: null,
   driver_id: 1,
   delivery_sequence: 3,
-  status: 'pending',
+  status: 'Creada',
   discount: 0,
   total_amount: 300.0,
-  products: [],
+  cart_items: [],
+  errors: [],
 };
 
 export const mockNewClient = {

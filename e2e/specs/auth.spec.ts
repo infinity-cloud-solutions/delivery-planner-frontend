@@ -23,12 +23,12 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Authentication', () => {
   test('unauthenticated user is redirected to sign-in from admin route', async ({ page }) => {
-    await page.goto('/admin/dashboard');
+    await page.goto('/#/admin/dashboard');
     await expect(page).toHaveURL(/auth\/sign-in|sign-in/);
   });
 
   test('unauthenticated user is redirected to sign-in from driver route', async ({ page }) => {
-    await page.goto('/driver/deliveries');
+    await page.goto('/#/driver/deliveries');
     await expect(page).toHaveURL(/auth\/sign-in|sign-in/);
   });
 

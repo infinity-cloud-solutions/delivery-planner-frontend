@@ -4,7 +4,7 @@ export class ProductsPage {
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto('/admin/products');
+    await this.page.goto('/#/admin/products');
   }
 
   get table(): Locator {
@@ -16,7 +16,7 @@ export class ProductsPage {
   }
 
   get createButton(): Locator {
-    return this.page.getByRole('button', { name: /nuevo producto|crear producto/i });
+    return this.page.getByRole('button', { name: /^crear$/i });
   }
 
   get modal(): Locator {
@@ -24,7 +24,7 @@ export class ProductsPage {
   }
 
   get submitButton(): Locator {
-    return this.modal.getByRole('button', { name: /guardar|crear|confirmar/i });
+    return this.modal.getByRole('button', { name: /guardar|crear|confirmar|actualizar/i });
   }
 
   async openCreateModal() {
@@ -42,7 +42,7 @@ export class ProductsPage {
   }
 
   async openUpdateModal(productName: string) {
-    await this.row(productName).getByRole('button', { name: /editar|actualizar/i }).click();
+    await this.row(productName).click();
     await this.modal.waitFor({ state: 'visible' });
   }
 
@@ -51,10 +51,8 @@ export class ProductsPage {
   }
 
   async deleteProduct(productName: string) {
-    await this.row(productName).getByRole('button', { name: /eliminar|borrar/i }).click();
-    const confirmBtn = this.page.getByRole('button', { name: /confirmar|sí/i });
-    if (await confirmBtn.isVisible()) {
-      await confirmBtn.click();
-    }
+    await this.row(productName).click();
+    await this.modal.waitFor({ state: 'visible' });
+    await this.modal.getByRole('button', { name: /^eliminar$/i }).click();
   }
 }

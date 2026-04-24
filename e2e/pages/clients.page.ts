@@ -12,19 +12,21 @@ export class ClientsPage {
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto('/admin/clients');
+    await this.page.goto('/#/admin/clients');
   }
 
-  get table(): Locator {
-    return this.page.getByRole('table');
+  /** The phone search input on the clients page. */
+  get phoneSearchInput(): Locator {
+    return this.page.locator('#phone');
   }
 
-  row(name: string): Locator {
-    return this.page.getByRole('row', { name: new RegExp(name, 'i') });
+  /** The "Buscar" button that triggers client lookup. */
+  get searchButton(): Locator {
+    return this.page.getByRole('button', { name: /buscar/i });
   }
 
   get createButton(): Locator {
-    return this.page.getByRole('button', { name: /nuevo cliente|crear cliente/i });
+    return this.page.getByRole('button', { name: /^crear$/i });
   }
 
   get modal(): Locator {
@@ -32,7 +34,7 @@ export class ClientsPage {
   }
 
   get submitButton(): Locator {
-    return this.modal.getByRole('button', { name: /guardar|crear|confirmar/i });
+    return this.modal.getByRole('button', { name: /guardar|crear|confirmar|actualizar/i });
   }
 
   async openCreateModal() {
@@ -43,13 +45,14 @@ export class ClientsPage {
   async fillForm(data: CreateClientData) {
     await this.modal.getByLabel('Teléfono').fill(data.phone);
     await this.modal.getByLabel('Teléfono').blur();
+    // Wait for phone validation to complete and fields to appear
     await this.modal.getByLabel('Nombre').fill(data.name);
     await this.modal.getByLabel('Dirección').fill(data.address);
     if (data.email) {
-      await this.modal.getByLabel(/correo/i).fill(data.email);
+      await this.modal.getByLabel(/email/i).fill(data.email);
     }
     if (data.discount) {
-      await this.modal.getByLabel(/descuento/i).fill(data.discount);
+      await this.modal.getByLabel(/descuento/i).selectOption(data.discount);
     }
   }
 
@@ -57,8 +60,13 @@ export class ClientsPage {
     await this.submitButton.click();
   }
 
-  async openUpdateModal(clientName: string) {
-    await this.row(clientName).getByRole('button', { name: /editar|actualizar/i }).click();
+  /**
+   * Opens the update modal by searching for a client via phone number.
+   * @param phoneNumber The 10-digit phone number of the client to edit.
+   */
+  async openUpdateModal(phoneNumber: string) {
+    await this.phoneSearchInput.fill(phoneNumber);
+    await this.searchButton.click();
     await this.modal.waitFor({ state: 'visible' });
   }
 
@@ -66,12 +74,9 @@ export class ClientsPage {
     await this.submitButton.click();
   }
 
-  async deleteClient(clientName: string) {
-    await this.row(clientName).getByRole('button', { name: /eliminar|borrar/i }).click();
-    const confirmBtn = this.page.getByRole('button', { name: /confirmar|sí/i });
-    if (await confirmBtn.isVisible()) {
-      await confirmBtn.click();
-    }
+  async deleteClient(phoneNumber: string) {
+    await this.openUpdateModal(phoneNumber);
+    await this.modal.getByRole('button', { name: /^eliminar$/i }).click();
   }
 
   get errorMessage(): Locator {

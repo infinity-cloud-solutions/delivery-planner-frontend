@@ -26,28 +26,21 @@ async function wireAPIMocks(page: Page) {
     route.fulfill({ json: { keys: [] } })
   );
 
-  // Orders — GET list
-  await page.route(`${ORDERS_URL}`, (route) => {
-    if (route.request().method() === 'GET') {
-      return route.fulfill({ json: mockOrders });
-    }
-    return route.continue();
-  });
-
-  // Orders — POST create
-  await page.route(`${ORDERS_URL}`, (route) => {
-    if (route.request().method() === 'POST') {
-      const body = JSON.parse(route.request().postData() || '{}');
-      return route.fulfill({ json: { ...body, id: 'order-new' } });
-    }
-    return route.continue();
-  });
-
-  // Orders — PUT/PATCH update & DELETE
-  await page.route(`${ORDERS_URL}/**`, (route) => {
+  // Orders — single handler for all methods.
+  // GET returns combined mockOrders (status Creada) + mockDeliveries (status En ruta).
+  // Admin page shows all rows; driver filter selects only En ruta + today + driver 999.
+  await page.route(`${ORDERS_URL}*`, (route) => {
     const method = route.request().method();
+    if (method === 'GET') {
+      return route.fulfill({ json: [...mockOrders, ...mockDeliveries] });
+    }
+    if (method === 'POST') {
+      const body = JSON.parse(route.request().postData() || '{}');
+      return route.fulfill({ json: { ...body, id: 'order-new', errors: [] } });
+    }
     if (method === 'PUT' || method === 'PATCH') {
-      return route.fulfill({ json: { success: true } });
+      // Include errors:[] so Orders.tsx isButtonDisabled() doesn't crash on undefined.errors.length
+      return route.fulfill({ json: { success: true, errors: [] } });
     }
     if (method === 'DELETE') {
       return route.fulfill({ status: 204, body: '' });
@@ -55,14 +48,18 @@ async function wireAPIMocks(page: Page) {
     return route.continue();
   });
 
-  // Clients — GET (list and single lookup)
-  await page.route(`${CLIENTS_URL}/**`, (route) => {
+  // Clients — single handler for all methods.
+  // GET uses phone_number query param for individual lookup.
+  await page.route(`${CLIENTS_URL}*`, (route) => {
     const method = route.request().method();
     if (method === 'GET') {
-      const url = route.request().url();
-      const phone = url.split('/').pop();
-      const found = mockClients.find((c) => c.phone_number === phone);
-      return route.fulfill({ json: found || null });
+      const url = new URL(route.request().url());
+      const phone = url.searchParams.get('phone_number');
+      if (phone) {
+        const found = mockClients.find((c) => c.phone_number === phone);
+        return route.fulfill({ json: found ?? null });
+      }
+      return route.fulfill({ json: mockClients });
     }
     if (method === 'POST') {
       const body = JSON.parse(route.request().postData() || '{}');
@@ -77,15 +74,8 @@ async function wireAPIMocks(page: Page) {
     return route.continue();
   });
 
-  await page.route(`${CLIENTS_URL}`, (route) => {
-    if (route.request().method() === 'GET') {
-      return route.fulfill({ json: mockClients });
-    }
-    return route.continue();
-  });
-
   // Products — all CRUD
-  await page.route(`${PRODUCTS_URL}`, (route) => {
+  await page.route(`${PRODUCTS_URL}*`, (route) => {
     const method = route.request().method();
     if (method === 'GET') {
       return route.fulfill({ json: mockProducts });
@@ -94,25 +84,11 @@ async function wireAPIMocks(page: Page) {
       const body = JSON.parse(route.request().postData() || '{}');
       return route.fulfill({ json: { ...body, id: 'prod-new' } });
     }
-    return route.continue();
-  });
-
-  await page.route(`${PRODUCTS_URL}/**`, (route) => {
-    const method = route.request().method();
     if (method === 'PUT' || method === 'PATCH') {
       return route.fulfill({ json: { success: true } });
     }
     if (method === 'DELETE') {
       return route.fulfill({ status: 204, body: '' });
-    }
-    return route.continue();
-  });
-
-  // Deliveries (driver) — uses same orders endpoint filtered by driver
-  // The driver view fetches from orders endpoint with driver param
-  await page.route(`${ORDERS_URL}*`, (route) => {
-    if (route.request().method() === 'GET') {
-      return route.fulfill({ json: mockDeliveries });
     }
     return route.continue();
   });

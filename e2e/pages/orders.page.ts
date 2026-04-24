@@ -19,7 +19,7 @@ export class OrdersPage {
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto('/admin/orders');
+    await this.page.goto('/#/admin/orders');
   }
 
   get table(): Locator {
@@ -31,7 +31,7 @@ export class OrdersPage {
   }
 
   get createButton(): Locator {
-    return this.page.getByRole('button', { name: /nueva orden|crear orden/i });
+    return this.page.getByRole('button', { name: /^crear$/i });
   }
 
   get modal(): Locator {
@@ -39,7 +39,7 @@ export class OrdersPage {
   }
 
   get submitButton(): Locator {
-    return this.modal.getByRole('button', { name: /guardar|crear|confirmar/i });
+    return this.modal.getByRole('button', { name: /guardar|crear|confirmar|actualizar/i });
   }
 
   async openCreateModal() {
@@ -49,7 +49,6 @@ export class OrdersPage {
 
   async fillCreateForm(data: CreateOrderData) {
     await this.modal.getByLabel('Teléfono').fill(data.phone);
-    // wait for client lookup to settle
     await this.modal.getByLabel('Teléfono').blur();
     await this.modal.getByLabel('Nombre').fill(data.name);
     await this.modal.getByLabel('Dirección').fill(data.address);
@@ -63,7 +62,7 @@ export class OrdersPage {
   }
 
   async openUpdateModal(clientName: string) {
-    await this.row(clientName).getByRole('button', { name: /editar|actualizar/i }).click();
+    await this.row(clientName).click();
     await this.modal.waitFor({ state: 'visible' });
   }
 
@@ -78,11 +77,9 @@ export class OrdersPage {
   }
 
   async deleteOrder(clientName: string) {
-    await this.row(clientName).getByRole('button', { name: /eliminar|borrar/i }).click();
-    // Confirm deletion if there's a confirmation dialog
-    const confirmBtn = this.page.getByRole('button', { name: /confirmar|sí/i });
-    if (await confirmBtn.isVisible()) {
-      await confirmBtn.click();
-    }
+    await this.row(clientName).click();
+    await this.modal.waitFor({ state: 'visible' });
+    await this.modal.getByRole('button', { name: /^eliminar$/i }).click();
+    await this.page.getByRole('button', { name: /^confirmar$/i }).click();
   }
 }

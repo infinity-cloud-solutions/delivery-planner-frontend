@@ -13,12 +13,16 @@ const DRIVER_AUTH_FILE = path.join(__dirname, '../.auth/driver.json');
 
 // Minimal JWT structure (header.payload.signature) that passes our validateJWT() check.
 // security.ts decodes the payload; we embed the cognito:groups and exp fields it reads.
+function base64urlEncode(str: string): string {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 function makeFakeJWT(groups: string[]): string {
-  const header = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
-  const payload = btoa(
+  const header = base64urlEncode(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const payload = base64urlEncode(
     JSON.stringify({
       sub: 'fake-user-id',
-      email: groups.includes('admins') ? 'admin@test.com' : 'driver@test.com',
+      email: groups.includes('Admin') ? 'admin@test.com' : 'driver@test.com',
       'cognito:groups': groups,
       iss: process.env.REACT_APP_COGNITO_ISS || 'https://cognito-idp.us-east-1.amazonaws.com/test',
       exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour
@@ -35,11 +39,11 @@ setup('create admin auth state', async ({ page }) => {
     route.fulfill({ json: { keys: [] } })
   );
 
-  await page.goto('/auth/sign-in');
+  await page.goto('/#/auth/sign-in');
 
   await page.evaluate((token: string) => {
     localStorage.setItem('idToken', token);
-  }, makeFakeJWT(['admins']));
+  }, makeFakeJWT(['Admin']));
 
   await page.context().storageState({ path: ADMIN_AUTH_FILE });
 });
@@ -49,11 +53,11 @@ setup('create driver auth state', async ({ page }) => {
     route.fulfill({ json: { keys: [] } })
   );
 
-  await page.goto('/auth/sign-in');
+  await page.goto('/#/auth/sign-in');
 
   await page.evaluate((token: string) => {
     localStorage.setItem('idToken', token);
-  }, makeFakeJWT(['drivers']));
+  }, makeFakeJWT(['Repartidor']));
 
   await page.context().storageState({ path: DRIVER_AUTH_FILE });
 });

@@ -5,7 +5,7 @@
  */
 import { test, expect } from '../fixtures';
 import { DeliveriesPage } from '../pages/deliveries.page';
-import { mockDeliveries } from '../data/mocks';
+import { mockDeliveries, mockOrders } from '../data/mocks';
 
 test.describe('Driver — Deliveries', () => {
   test('deliveries page renders delivery cards with mocked data', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('Driver — Deliveries', () => {
   });
 
   test('shows empty state when no deliveries are scheduled', async ({ page }) => {
-    // Override orders mock to return empty list
+    // Override orders mock to return empty list (higher priority than fixture)
     const ORDERS_URL = process.env.REACT_APP_ORDERS_BASE_URL || '**/orders**';
     await page.route(`${ORDERS_URL}*`, (route) =>
       route.fulfill({ json: [] })
@@ -40,11 +40,15 @@ test.describe('Driver — Deliveries', () => {
   });
 
   test('marks a delivery as delivered and shows success toast', async ({ page }) => {
-    // Mock the update endpoint
+    // Override to ensure the PUT returns success (200); handle GET to preserve delivery data
     const ORDERS_URL = process.env.REACT_APP_ORDERS_BASE_URL || '**/orders**';
-    await page.route(`${ORDERS_URL}/**`, (route) => {
-      if (route.request().method() === 'PUT' || route.request().method() === 'PATCH') {
-        return route.fulfill({ json: { success: true } });
+    await page.route(`${ORDERS_URL}*`, (route) => {
+      const method = route.request().method();
+      if (method === 'GET') {
+        return route.fulfill({ json: [...mockOrders, ...mockDeliveries] });
+      }
+      if (method === 'PUT' || method === 'PATCH') {
+        return route.fulfill({ status: 200, json: { success: true, errors: [] } });
       }
       return route.continue();
     });
@@ -59,9 +63,13 @@ test.describe('Driver — Deliveries', () => {
 
   test('marks a delivery as failed and shows success toast', async ({ page }) => {
     const ORDERS_URL = process.env.REACT_APP_ORDERS_BASE_URL || '**/orders**';
-    await page.route(`${ORDERS_URL}/**`, (route) => {
-      if (route.request().method() === 'PUT' || route.request().method() === 'PATCH') {
-        return route.fulfill({ json: { success: true } });
+    await page.route(`${ORDERS_URL}*`, (route) => {
+      const method = route.request().method();
+      if (method === 'GET') {
+        return route.fulfill({ json: [...mockOrders, ...mockDeliveries] });
+      }
+      if (method === 'PUT' || method === 'PATCH') {
+        return route.fulfill({ status: 200, json: { success: true, errors: [] } });
       }
       return route.continue();
     });
@@ -76,8 +84,12 @@ test.describe('Driver — Deliveries', () => {
 
   test('shows error toast when delivery update API fails', async ({ page }) => {
     const ORDERS_URL = process.env.REACT_APP_ORDERS_BASE_URL || '**/orders**';
-    await page.route(`${ORDERS_URL}/**`, (route) => {
-      if (route.request().method() === 'PUT' || route.request().method() === 'PATCH') {
+    await page.route(`${ORDERS_URL}*`, (route) => {
+      const method = route.request().method();
+      if (method === 'GET') {
+        return route.fulfill({ json: [...mockOrders, ...mockDeliveries] });
+      }
+      if (method === 'PUT' || method === 'PATCH') {
         return route.fulfill({ status: 500, json: { error: 'Internal Server Error' } });
       }
       return route.continue();
