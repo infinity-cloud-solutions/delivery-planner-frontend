@@ -8,17 +8,21 @@ export class TravelPlanner {
         return Math.sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2);
     }
 
+    findNearestLocation(unvisited: any[], currentLocation: any): any {
+        return unvisited.reduce((closest, loc) => {
+            const distanceToLoc = this.calculateDistance(currentLocation, loc);
+            const distanceToClosest = this.calculateDistance(currentLocation, closest);
+            return distanceToLoc < distanceToClosest ? loc : closest;
+        });
+    }
+
     findShortestPath(locations: any, startPoint: any) {
         let unvisited = [...locations];
         let currentLocation = startPoint;
         const path = [];
 
         while (unvisited.length > 0) {
-            const nearestLocation = unvisited.reduce((closest, loc) => {
-                const distanceToLoc = this.calculateDistance(currentLocation, loc);
-                const distanceToClosest = this.calculateDistance(currentLocation, closest);
-                return distanceToLoc < distanceToClosest ? loc : closest;
-            });
+            const nearestLocation = this.findNearestLocation(unvisited, currentLocation);
 
             path.push(nearestLocation);
             currentLocation = nearestLocation;
