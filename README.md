@@ -327,8 +327,8 @@ All JavaScript/JSX files have been converted to TypeScript:
 The project uses feature branches and pull requests for all changes:
 
 - `main` - Production-ready code
-- `dev` - Integration branch for features
-- `refactor/*` - Feature/refactor branches
+- `uat` - Integration branch for features
+- `feature/*` - Feature branches
 
 **Creating a PR:**
 1. Create feature branch: `git checkout -b feature/your-feature`
