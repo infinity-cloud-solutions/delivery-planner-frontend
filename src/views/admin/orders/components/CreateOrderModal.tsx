@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Accordion,
     AccordionItem,
@@ -86,6 +86,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [clientErrorMessage, setClientErrorMessage] = useState<string | boolean>(false);
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [selectedAddressOption, setSelectedAddressOption] = useState('1');
+    const [phoneToCheck, setPhoneToCheck] = useState<string | null>(null);
     const cancelRef = useRef<HTMLButtonElement>(null);
 
 
@@ -126,7 +127,56 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         calculateTotalAmount();
         checkFormValidity();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, discount]);
+    }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, discount, dateError, apiError]);
+
+    // Handle async phone lookup in a separate effect to avoid state update batching issues
+    useEffect(() => {
+        if (!phoneToCheck || phoneToCheck.length !== 10) return;
+        
+        let isMounted = true;
+        setLoadingCheck(true);
+        
+        onClientExistsCheck(phoneToCheck)
+            .then((clientData) => {
+                if (!isMounted) return;
+                
+                if (clientData) {
+                    setClientName(clientData.clientName);
+                    setAddress(clientData.clientAddress);
+                    setDeliveryAddress(clientData.clientAddress);
+                    setDeliveryAddressLatitude(clientData.clientLatitude ?? null);
+                    setDeliveryAddressLongitude(clientData.clientLongitude ?? null);
+                    setAddressLongitude(clientData.clientLongitude ?? null);
+                    setAddressLatitude(clientData.clientLatitude ?? null);
+                    setNameTouched(true);
+                    setIsAnExistingId(true);
+                    
+                    // Handle discount (this calls handleDiscount which updates state and calculates totals)
+                    setDiscount(String(clientData.clientDiscount || ''));
+                    
+                    // Handle second address
+                    if (clientData.clientSecondAddress) {
+                        setSecondAddress(clientData.clientSecondAddress);
+                        setSecondAddressLatitude(clientData.clientSecondLatitude ?? null);
+                        setSecondAddressLongitude(clientData.clientSecondLongitude ?? null);
+                        setIsAlertOpen(true);
+                    }
+                }
+                setIsValidationCompleted(true);
+            })
+            .catch((error) => {
+                if (!isMounted) return;
+                setClientErrorMessage('Error al verificar el cliente.');
+                setIsValidationCompleted(true);
+            })
+            .finally(() => {
+                if (isMounted) setLoadingCheck(false);
+            });
+        
+        return () => {
+            isMounted = false;
+        };
+    }, [phoneToCheck, onClientExistsCheck]);
 
     const checkFormValidity = () => {
         const isCartItemsValid = cartItems.length > 1;
@@ -341,37 +391,12 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         calculateTotalAmount();
     }
 
-    const handlePhoneBlur = async () => {
+    const handlePhoneBlur = useCallback(() => {
+        setPhoneTouched(true);
         if (phoneNumber.length === 10) {
-            setLoadingCheck(true);
-            try {
-                const clientData = await onClientExistsCheck(phoneNumber);
-                setIsValidationCompleted(true)
-                if (clientData) {
-                    setClientName(clientData.clientName);
-                    setAddress(clientData.clientAddress);
-                    setDeliveryAddress(clientData.clientAddress);
-                    setDeliveryAddressLatitude(clientData.clientLatitude ?? null);
-                    setDeliveryAddressLongitude(clientData.clientLongitude ?? null)
-                    setAddressLongitude(clientData.clientLongitude ?? null);
-                    setAddressLatitude(clientData.clientLatitude ?? null);
-                    handleDiscount((clientData.clientDiscount));
-                    if (clientData.clientSecondAddress) {
-                        setSecondAddress(clientData.clientSecondAddress);
-                        setSecondAddressLatitude(clientData.clientSecondLatitude ?? null);
-                        setSecondAddressLongitude(clientData.clientSecondLongitude ?? null);
-                        setIsAlertOpen(true);
-                    }
-                    setNameTouched(true);
-                    setIsAnExistingId(true);
-
-                }
-            } catch (error) {
-                setClientErrorMessage('Error al verificar el cliente.');
-            }
-            setLoadingCheck(false);
+            setPhoneToCheck(phoneNumber);
         }
-    };
+    }, [phoneNumber]);
 
     const handleAddressSelection = () => {
         switch (selectedAddressOption) {
@@ -427,7 +452,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                             }
                             phoneNumber={phoneNumber}
                             onPhoneNumberChange={setPhoneNumber}
-                            onPhoneNumberBlur={() => { setPhoneTouched(true); handlePhoneBlur(); }}
+                            onPhoneNumberBlur={handlePhoneBlur}
                             phoneTouched={phoneTouched}
                             isPhoneDisabled={isValidationCompleted}
                             isLoadingPhoneCheck={loadingCheck}
