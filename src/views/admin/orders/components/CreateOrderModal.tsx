@@ -134,12 +134,12 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         if (!phoneToCheck || phoneToCheck.length !== 10) return;
         
         let isMounted = true;
-        console.log('Phone lookup effect running for phone:', phoneToCheck);
+
         setLoadingCheck(true);
         
         onClientExistsCheck(phoneToCheck)
             .then((clientData) => {
-                console.log('Client data received:', clientData);
+
                 if (!isMounted) return;
                 
                 if (clientData) {
@@ -163,13 +163,13 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                         setSelectedAddressOption('1');
                         // Show dialog only if user explicitly wants to choose different address
                         // For now, we'll just use the first address automatically
-                        console.log('Second address found, using first address by default');
+
                     }
                 }
                 setIsValidationCompleted(true);
             })
             .catch((error) => {
-                console.log('Client lookup error:', error);
+
                 if (!isMounted) return;
                 setClientErrorMessage('Error al verificar el cliente.');
                 setIsValidationCompleted(true);
@@ -179,7 +179,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             });
         
         return () => {
-            console.log('Phone lookup effect cleanup');
+
             isMounted = false;
         };
     }, [phoneToCheck]); // Remove onClientExistsCheck from dependencies to prevent effect re-running
@@ -405,7 +405,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     }, [phoneNumber]);
 
     const handleAddressSelection = () => {
-        console.log('handleAddressSelection called, selectedAddressOption:', selectedAddressOption);
+
         switch (selectedAddressOption) {
             case '1':
                 setDeliveryAddress(address ?? '');
@@ -428,7 +428,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             default:
                 break;
         }
-        console.log('Calling setIsAlertOpen(false)');
+
         setIsAlertOpen(false);
     };
 
