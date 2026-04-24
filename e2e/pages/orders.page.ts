@@ -1,0 +1,88 @@
+import { type Page, type Locator } from '@playwright/test';
+
+interface CreateOrderData {
+  phone: string;
+  name: string;
+  address: string;
+  date: string;
+  time: string;
+  payment: string;
+}
+
+interface UpdateOrderData {
+  date?: string;
+  time?: string;
+  payment?: string;
+}
+
+export class OrdersPage {
+  constructor(private readonly page: Page) {}
+
+  async goto() {
+    await this.page.goto('/admin/orders');
+  }
+
+  get table(): Locator {
+    return this.page.getByRole('table');
+  }
+
+  row(name: string): Locator {
+    return this.page.getByRole('row', { name: new RegExp(name, 'i') });
+  }
+
+  get createButton(): Locator {
+    return this.page.getByRole('button', { name: /nueva orden|crear orden/i });
+  }
+
+  get modal(): Locator {
+    return this.page.getByRole('dialog');
+  }
+
+  get submitButton(): Locator {
+    return this.modal.getByRole('button', { name: /guardar|crear|confirmar/i });
+  }
+
+  async openCreateModal() {
+    await this.createButton.click();
+    await this.modal.waitFor({ state: 'visible' });
+  }
+
+  async fillCreateForm(data: CreateOrderData) {
+    await this.modal.getByLabel('Teléfono').fill(data.phone);
+    // wait for client lookup to settle
+    await this.modal.getByLabel('Teléfono').blur();
+    await this.modal.getByLabel('Nombre').fill(data.name);
+    await this.modal.getByLabel('Dirección').fill(data.address);
+    await this.modal.getByLabel('Fecha de entrega').fill(data.date);
+    await this.modal.getByLabel('Horario de entrega').selectOption(data.time);
+    await this.modal.getByLabel('Método de pago').selectOption(data.payment);
+  }
+
+  async submitCreate() {
+    await this.submitButton.click();
+  }
+
+  async openUpdateModal(clientName: string) {
+    await this.row(clientName).getByRole('button', { name: /editar|actualizar/i }).click();
+    await this.modal.waitFor({ state: 'visible' });
+  }
+
+  async fillUpdateForm(data: UpdateOrderData) {
+    if (data.date) await this.modal.getByLabel('Fecha de entrega').fill(data.date);
+    if (data.time) await this.modal.getByLabel('Horario de entrega').selectOption(data.time);
+    if (data.payment) await this.modal.getByLabel('Método de pago').selectOption(data.payment);
+  }
+
+  async submitUpdate() {
+    await this.submitButton.click();
+  }
+
+  async deleteOrder(clientName: string) {
+    await this.row(clientName).getByRole('button', { name: /eliminar|borrar/i }).click();
+    // Confirm deletion if there's a confirmation dialog
+    const confirmBtn = this.page.getByRole('button', { name: /confirmar|sí/i });
+    if (await confirmBtn.isVisible()) {
+      await confirmBtn.click();
+    }
+  }
+}

@@ -28,3 +28,7 @@ yarn-error.log*
 .vscode
 node_modules
 .env
+# Playwright
+.auth/
+test-results/
+playwright-report/
