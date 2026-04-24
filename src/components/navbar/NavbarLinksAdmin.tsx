@@ -2,14 +2,18 @@
 // Chakra Imports
 import {
 	Avatar,
+	Button,
 	Flex,
+	Icon,
 	Menu,
 	MenuButton,
 	MenuItem,
 	MenuList,
 	Text,
+	useColorMode,
 	useColorModeValue
 } from '@chakra-ui/react';
+import { IoMdMoon, IoMdSunny } from 'react-icons/io';
 
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
@@ -31,6 +35,10 @@ export default function HeaderLinks(props) {
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.18)',
 		'14px 17px 40px 4px rgba(112, 144, 176, 0.06)'
 	);
+
+	const { colorMode, toggleColorMode } = useColorMode();
+	const toggleBg = useColorModeValue('gray.100', 'whiteAlpha.100');
+	const toggleIconColor = useColorModeValue('gray.600', 'white');
 
 	const navigate = useNavigate();
 	const handleLogout = () => {
@@ -57,7 +65,25 @@ export default function HeaderLinks(props) {
 
 			</Flex>
 
-			<Flex alignItems="center">
+			<Flex alignItems="center" gap="8px">
+
+				<Button
+					variant="no-effects"
+					borderRadius="50%"
+					w="37px"
+					h="37px"
+					minW="37px"
+					p="0px"
+					onClick={toggleColorMode}
+					bg="transparent"
+					_hover={{ bg: toggleBg }}>
+					<Icon
+						as={colorMode === 'light' ? IoMdMoon : IoMdSunny}
+						w="18px"
+						h="18px"
+						color={toggleIconColor}
+					/>
+				</Button>
 
 				<Menu>
 					<MenuButton p="0px">
