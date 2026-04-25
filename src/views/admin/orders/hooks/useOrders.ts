@@ -55,6 +55,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentDate, setCurrentDate] = useState<string | null>(initialDate);
   const jwtToken = getAccessToken();
 
   const authHeaders = useMemo(
@@ -67,6 +68,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
 
   const fetchOrders = useCallback(
     async (date: string): Promise<void> => {
+      setCurrentDate(date);
       setLoading(true);
       setError(null);
       try {
@@ -107,14 +109,16 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
           order: 'Ver detalles',
           delivery_sequence: null,
         };
-        setOrders((prev) => [...prev, created]);
+        if (payload.delivery_date === currentDate) {
+          setOrders((prev) => [...prev, created]);
+        }
         return created;
       } catch (err) {
         console.error('Error creating order:', err);
         throw err;
       }
     },
-    [authHeaders, jwtToken]
+    [authHeaders, jwtToken, currentDate]
   );
 
   const updateOrder = useCallback(
