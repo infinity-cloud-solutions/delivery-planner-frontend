@@ -1,18 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Accordion,
     AccordionItem,
     AccordionButton,
     AccordionPanel,
     AccordionIcon,
-    AlertDialog,
-    AlertDialogOverlay,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogBody,
-    AlertDialogFooter,
     Box,
     Button,
+    Divider,
     Modal,
     ModalOverlay,
     ModalContent,
@@ -87,7 +82,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [selectedAddressOption, setSelectedAddressOption] = useState('1');
     const [phoneToCheck, setPhoneToCheck] = useState<string | null>(null);
-    const cancelRef = useRef<HTMLButtonElement>(null);
 
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -429,7 +423,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     };
 
     return (
-        <>
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
@@ -492,6 +485,28 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                             <Text color="red.500" mt="4">
                                 {clientErrorMessage}
                             </Text>
+                        )}
+                        {isAlertOpen && (
+                            <Box w="100%" borderWidth="1px" borderRadius="md" borderColor="blue.300" p={4}>
+                                <Text fontWeight="bold" mb={1}>Cliente encontrado</Text>
+                                <Divider mb={3} />
+                                <Text fontSize="sm" mb={3}>Seleccione una de las direcciones guardadas</Text>
+                                <RadioGroup onChange={setSelectedAddressOption} value={selectedAddressOption}>
+                                    <VStack align="start">
+                                        <Radio value="1">{address}</Radio>
+                                        <Radio value="2">{secondAddress}</Radio>
+                                        <Radio value="none">No usar ninguna</Radio>
+                                    </VStack>
+                                </RadioGroup>
+                                <HStack mt={4} justify="flex-end">
+                                    <Button size="sm" variant="outline" onClick={() => setIsAlertOpen(false)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button size="sm" colorScheme="blue" onClick={handleAddressSelection}>
+                                        Aceptar
+                                    </Button>
+                                </HStack>
+                            </Box>
                         )}
                         {isValidationCompleted && (
                             <>
@@ -585,38 +600,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                 </ModalFooter>
             </ModalContent>
         </Modal>
-        <AlertDialog
-            isOpen={isAlertOpen}
-            leastDestructiveRef={cancelRef}
-            onClose={() => setIsAlertOpen(false)}
-        >
-            <AlertDialogOverlay>
-                <AlertDialogContent>
-                    <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                        Cliente encontrado
-                    </AlertDialogHeader>
-                    <AlertDialogBody>
-                        <Text fontSize="md" fontWeight="thin" mb={{ sm: '5px', md: '8px', lg: '15px' }}> Seleccione una de las direcciones guardadas</Text>
-                        <RadioGroup onChange={setSelectedAddressOption} value={selectedAddressOption}>
-                            <VStack align="start">
-                                <Radio value="1">{address}</Radio>
-                                <Radio value="2">{secondAddress}</Radio>
-                                <Radio value="none">No usar ninguna</Radio>
-                            </VStack>
-                        </RadioGroup>
-                    </AlertDialogBody>
-                    <AlertDialogFooter>
-                        <Button ref={cancelRef} onClick={() => setIsAlertOpen(false)}>
-                            Cancelar
-                        </Button>
-                        <Button colorScheme="blue" onClick={handleAddressSelection} ml={3}>
-                            Aceptar
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialogOverlay>
-        </AlertDialog>
-    </>
     );
 };
 
