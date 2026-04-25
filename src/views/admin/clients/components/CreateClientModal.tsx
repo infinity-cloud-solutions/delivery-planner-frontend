@@ -109,7 +109,7 @@ const CreateClientModal = ({ isOpen, onClose, onCreate, onClientExistsCheck }: C
       second_address: null,
       second_address_geolocation: null,
       email: clientEmail,
-      discount: Number(clientDiscount),
+      discount: clientDiscount,
     };
 
     try {

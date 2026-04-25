@@ -151,7 +151,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
               longitude: clientSecondLongitude === '' ? null : Number(clientSecondLongitude),
             },
       email: clientEmail,
-      discount: Number(clientDiscount),
+      discount: clientDiscount,
       delete_old_record: deleteOldRecord,
     };
 

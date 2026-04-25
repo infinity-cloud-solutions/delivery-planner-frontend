@@ -37,7 +37,7 @@ export interface CreateClientPayload {
   second_address?: string | null;
   second_address_geolocation?: GeoLocation | null;
   email?: string;
-  discount?: number;
+  discount?: string;
 }
 
 export interface UpdateClientPayload extends CreateClientPayload {
