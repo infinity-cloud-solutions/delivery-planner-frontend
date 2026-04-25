@@ -433,8 +433,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing="4">
+                        {/* Part A: Phone, Name, Discount, Address */}
                         <OrderFormFields
-                            part="all"
+                            part="A"
                             discountSlot={
                                 <FormControl>
                                     <FormLabel>Descuento</FormLabel>
@@ -489,6 +490,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                 {clientErrorMessage}
                             </Text>
                         )}
+                        {/* Address chooser — shown immediately after the Address field */}
                         {isAlertOpen && (
                             <Box w="100%" borderWidth="1px" borderRadius="md" borderColor="blue.300" p={4}>
                                 <Text fontWeight="bold" mb={1}>Cliente encontrado</Text>
@@ -511,6 +513,32 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                 </HStack>
                             </Box>
                         )}
+                        {/* Part B: Date, Time, Payment — only after phone lookup completes */}
+                        <OrderFormFields
+                            part="B"
+                            phoneNumber={phoneNumber}
+                            onPhoneNumberChange={setPhoneNumber}
+                            clientName={clientName}
+                            onClientNameChange={setClientName}
+                            deliveryAddress={deliveryAddress}
+                            onDeliveryAddressChange={setDeliveryAddress}
+                            deliveryDate={deliveryDate}
+                            onDeliveryDateChange={handleDateChange}
+                            onDeliveryDateBlur={() => setDeliveryDateTouched(true)}
+                            deliveryDateTouched={deliveryDateTouched}
+                            dateError={dateError}
+                            apiError={apiError}
+                            availableDeliveryTimes={availableDeliveryTimes}
+                            deliveryTime={deliveryTime}
+                            onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(null); }}
+                            onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
+                            deliveryTimeTouched={deliveryTimeTouched}
+                            paymentMethod={paymentMethod}
+                            onPaymentMethodChange={setPaymentMethod}
+                            onPaymentMethodBlur={() => setPaymentMethodTouched(true)}
+                            paymentMethodTouched={paymentMethodTouched}
+                            showClientFields={isValidationCompleted && !isAlertOpen}
+                        />
                         {isValidationCompleted && (
                             <>
                                 <FormLabel
