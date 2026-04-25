@@ -139,9 +139,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                 if (clientData) {
                     setClientName(clientData.clientName);
                     setAddress(clientData.clientAddress);
-                    setDeliveryAddress(clientData.clientAddress);
-                    setDeliveryAddressLatitude(clientData.clientLatitude ?? null);
-                    setDeliveryAddressLongitude(clientData.clientLongitude ?? null);
                     setAddressLongitude(clientData.clientLongitude ?? null);
                     setAddressLatitude(clientData.clientLatitude ?? null);
                     setNameTouched(true);
@@ -149,11 +146,17 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                     setDiscount(String(clientData.clientDiscount || ''));
                     
                     if (clientData.clientSecondAddress) {
+                        // Two addresses — let user pick; don't auto-fill address field
                         setSecondAddress(clientData.clientSecondAddress);
                         setSecondAddressLatitude(clientData.clientSecondLatitude ?? null);
                         setSecondAddressLongitude(clientData.clientSecondLongitude ?? null);
                         setSelectedAddressOption('1');
                         setIsAlertOpen(true);
+                    } else {
+                        // Single address — auto-fill immediately
+                        setDeliveryAddress(clientData.clientAddress);
+                        setDeliveryAddressLatitude(clientData.clientLatitude ?? null);
+                        setDeliveryAddressLongitude(clientData.clientLongitude ?? null);
                     }
                 }
                 setIsValidationCompleted(true);
