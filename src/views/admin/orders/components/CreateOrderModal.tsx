@@ -147,18 +147,13 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                     setDiscount(String(clientData.clientDiscount || ''));
                     
                     if (clientData.clientSecondAddress) {
-                        // Two addresses — let user pick; don't auto-fill address field
                         setSecondAddress(clientData.clientSecondAddress);
                         setSecondAddressLatitude(clientData.clientSecondLatitude ?? null);
                         setSecondAddressLongitude(clientData.clientSecondLongitude ?? null);
-                        setSelectedAddressOption('1');
-                        setIsAlertOpen(true);
-                    } else {
-                        // Single address — auto-fill immediately
-                        setDeliveryAddress(clientData.clientAddress);
-                        setDeliveryAddressLatitude(clientData.clientLatitude ?? null);
-                        setDeliveryAddressLongitude(clientData.clientLongitude ?? null);
                     }
+                    // Always show the chooser so admin can pick stored address or enter a new one
+                    setSelectedAddressOption('1');
+                    setIsAlertOpen(true);
                 }
                 setIsValidationCompleted(true);
             })
@@ -501,7 +496,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                 <RadioGroup onChange={setSelectedAddressOption} value={selectedAddressOption}>
                                     <VStack align="start">
                                         <Radio value="1">{address}</Radio>
-                                        <Radio value="2">{secondAddress}</Radio>
+                                        {secondAddress && <Radio value="2">{secondAddress}</Radio>}
                                         <Radio value="none">No usar ninguna</Radio>
                                     </VStack>
                                 </RadioGroup>
