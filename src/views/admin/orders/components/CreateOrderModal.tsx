@@ -16,6 +16,7 @@ import {
     ModalBody,
     ModalCloseButton,
     FormControl,
+    FormErrorMessage,
     FormLabel,
     Input,
     Textarea,
@@ -433,9 +434,10 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing="4">
-                        {/* Part A: Phone, Name, Discount, Address */}
+                        {/* Part A: Phone, Name, Discount — address is rendered separately below */}
                         <OrderFormFields
                             part="A"
+                            hideAddress={true}
                             discountSlot={
                                 <FormControl>
                                     <FormLabel>Descuento</FormLabel>
@@ -490,7 +492,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                 {clientErrorMessage}
                             </Text>
                         )}
-                        {/* Address chooser — shown immediately after the Address field */}
+                        {/* Address chooser — appears after Name/Discount when client has two addresses */}
                         {isAlertOpen && (
                             <Box w="100%" borderWidth="1px" borderRadius="md" borderColor="blue.300" p={4}>
                                 <Text fontWeight="bold" mb={1}>Cliente encontrado</Text>
@@ -513,7 +515,24 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                 </HStack>
                             </Box>
                         )}
-                        {/* Part B: Date, Time, Payment — only after phone lookup completes */}
+                        {/* Dirección — visible only after selection is made (or for single-address clients) */}
+                        {isValidationCompleted && !isAlertOpen && (
+                            <FormControl w="100%" isRequired isInvalid={deliveryAddressTouched && deliveryAddress.trim() === ''}>
+                                <FormLabel>Dirección</FormLabel>
+                                <Textarea
+                                    color={textColor}
+                                    rows={2}
+                                    borderColor={borderColor}
+                                    placeholder="Formato similar al de Google Maps"
+                                    value={deliveryAddress}
+                                    isDisabled={isAnExistingId && deliveryAddress !== ''}
+                                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                                    onBlur={() => setDeliveryAddressTouched(true)}
+                                />
+                                <FormErrorMessage>La dirección es obligatoria.</FormErrorMessage>
+                            </FormControl>
+                        )}
+                        {/* Part B: Date, Time, Payment — only after address is confirmed */}
                         <OrderFormFields
                             part="B"
                             phoneNumber={phoneNumber}

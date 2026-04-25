@@ -66,6 +66,9 @@ interface OrderFormFieldsProps {
 
   /** Rendered between clientName and deliveryAddress when Part A is shown. */
   discountSlot?: React.ReactNode;
+
+  /** When true, the deliveryAddress field is not rendered in Part A (caller renders it elsewhere). */
+  hideAddress?: boolean;
 }
 
 const OrderFormFields: React.FC<OrderFormFieldsProps> = ({
@@ -103,6 +106,7 @@ const OrderFormFields: React.FC<OrderFormFieldsProps> = ({
   showClientFields = true,
   part = 'all',
   discountSlot,
+  hideAddress = false,
 }) => {
   const showA = part !== 'B';
   const showB = part !== 'A';
@@ -159,6 +163,7 @@ const OrderFormFields: React.FC<OrderFormFieldsProps> = ({
 
               {discountSlot}
 
+              {!hideAddress && (
               <FormControl isRequired isInvalid={deliveryAddressTouched && deliveryAddress.trim() === ''}>
                 <FormLabel>Dirección</FormLabel>
                 <Textarea
@@ -175,6 +180,7 @@ const OrderFormFields: React.FC<OrderFormFieldsProps> = ({
                 />
                 <FormErrorMessage>La dirección es obligatoria.</FormErrorMessage>
               </FormControl>
+              )}
             </>
           )}
         </>
