@@ -25,6 +25,7 @@ interface CreateProductModalProps {
 const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalProps) => {
     const [productName, setProductName] = useState('');
     const [productPrice, setProductPrice] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -33,6 +34,7 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
     const createProduct = async () => {
         const parsedPrice = parseFloat(productPrice);
         if (Number.isNaN(parsedPrice)) return;
+        setIsLoading(true);
         try {
             await onCreate({ name: productName, price: parsedPrice });
             setProductName('');
@@ -40,6 +42,8 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
             onClose();
         } catch {
             // parent already shows the alert; don't close on failure
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -89,7 +93,7 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="brand" onClick={createProduct}>
+                    <Button variant="brand" onClick={createProduct} isLoading={isLoading} isDisabled={isLoading}>
                         Crear Producto
                     </Button>
                 </ModalFooter>

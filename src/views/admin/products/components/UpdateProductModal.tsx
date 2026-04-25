@@ -31,6 +31,8 @@ interface UpdateProductModalProps {
 const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: UpdateProductModalProps) => {
     const [productName, setProductName] = useState('');
     const [productPrice, setProductPrice] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const isUserAdmin = isAdmin();
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -48,6 +50,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
             },
             rowIndex: rowData.index
         };
+        setIsUpdating(true);
         try {
             await onUpdate(product);
             setProductName('');
@@ -55,6 +58,8 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
             onClose();
         } catch {
             // parent already shows the alert; don't close on failure
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -70,6 +75,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
             },
             rowIndex: rowData.index
         };
+        setIsDeleting(true);
         try {
             await onDelete(product);
             setProductName('');
@@ -77,6 +83,8 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
             onClose();
         } catch {
             // parent already shows the alert; don't close on failure
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -118,11 +126,22 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
                 <ModalFooter>
                     <ButtonGroup spacing='6'>
                         {isUserAdmin && (
-                            <Button colorScheme='red' variant='outline' onClick={deleteProduct}>
+                            <Button
+                                colorScheme='red'
+                                variant='outline'
+                                onClick={deleteProduct}
+                                isLoading={isDeleting}
+                                isDisabled={isUpdating || isDeleting}
+                            >
                                 Eliminar
                             </Button>
                         )}
-                        <Button variant="brand" onClick={updateProduct}>
+                        <Button
+                            variant="brand"
+                            onClick={updateProduct}
+                            isLoading={isUpdating}
+                            isDisabled={isUpdating || isDeleting}
+                        >
                             Actualizar
                         </Button>
                     </ButtonGroup>
