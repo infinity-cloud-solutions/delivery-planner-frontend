@@ -12,6 +12,7 @@ import {
     FormControl,
     FormLabel,
     Input,
+    Spinner,
     VStack,
     useColorModeValue,
 } from '@chakra-ui/react';
@@ -130,21 +131,17 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
                                 colorScheme='red'
                                 variant='outline'
                                 onClick={deleteProduct}
-                                isLoading={isDeleting}
-                                loadingText="Eliminando..."
                                 isDisabled={isUpdating || isDeleting}
                             >
-                                Eliminar
+                                {isDeleting ? <><Spinner size="sm" mr={2} />Eliminando...</> : 'Eliminar'}
                             </Button>
                         )}
                         <Button
                             variant="brand"
                             onClick={updateProduct}
-                            isLoading={isUpdating}
-                            loadingText="Guardando..."
                             isDisabled={isUpdating || isDeleting}
                         >
-                            Actualizar
+                            {isUpdating ? <><Spinner size="sm" mr={2} />Guardando...</> : 'Actualizar'}
                         </Button>
                     </ButtonGroup>
                 </ModalFooter>

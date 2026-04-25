@@ -11,6 +11,7 @@ import {
     FormControl,
     FormLabel,
     Input,
+    Spinner,
     VStack,
     useColorModeValue,
 } from '@chakra-ui/react';
@@ -93,8 +94,8 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="brand" onClick={createProduct} isLoading={isLoading} loadingText="Guardando..." isDisabled={isLoading}>
-                        Crear Producto
+                    <Button variant="brand" onClick={createProduct} isDisabled={isLoading}>
+                        {isLoading ? <><Spinner size="sm" mr={2} />Guardando...</> : 'Crear Producto'}
                     </Button>
                 </ModalFooter>
             </ModalContent>
