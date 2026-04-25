@@ -93,7 +93,7 @@ const CreateProductModal = ({ isOpen, onClose, onCreate }: CreateProductModalPro
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="brand" onClick={createProduct} isLoading={isLoading} isDisabled={isLoading}>
+                    <Button variant="brand" onClick={createProduct} isLoading={isLoading} loadingText="Guardando..." isDisabled={isLoading}>
                         Crear Producto
                     </Button>
                 </ModalFooter>

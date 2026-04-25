@@ -131,6 +131,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
                                 variant='outline'
                                 onClick={deleteProduct}
                                 isLoading={isDeleting}
+                                loadingText="Eliminando..."
                                 isDisabled={isUpdating || isDeleting}
                             >
                                 Eliminar
@@ -140,6 +141,7 @@ const UpdateProductModal = ({ isOpen, onClose, onUpdate, onDelete, rowData }: Up
                             variant="brand"
                             onClick={updateProduct}
                             isLoading={isUpdating}
+                            loadingText="Guardando..."
                             isDisabled={isUpdating || isDeleting}
                         >
                             Actualizar
