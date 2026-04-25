@@ -429,6 +429,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     };
 
     return (
+        <>
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
@@ -583,38 +584,39 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                         isDisabled={!isFormValid}>Guardar orden</Button>
                 </ModalFooter>
             </ModalContent>
-            <AlertDialog
-                isOpen={isAlertOpen}
-                leastDestructiveRef={cancelRef}
-                onClose={() => setIsAlertOpen(false)}
-            >
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                            Cliente encontrado
-                        </AlertDialogHeader>
-                        <AlertDialogBody>
-                            <Text fontSize="md" fontWeight="thin" mb={{ sm: '5px', md: '8px', lg: '15px' }}> Seleccione una de las direcciones guardadas</Text>
-                            <RadioGroup onChange={setSelectedAddressOption} value={selectedAddressOption}>
-                                <VStack align="start">
-                                    <Radio value="1">{address}</Radio>
-                                    <Radio value="2">{secondAddress}</Radio>
-                                    <Radio value="none">No usar ninguna</Radio>
-                                </VStack>
-                            </RadioGroup>
-                        </AlertDialogBody>
-                        <AlertDialogFooter>
-                            <Button ref={cancelRef} onClick={() => setIsAlertOpen(false)}>
-                                Cancelar
-                            </Button>
-                            <Button colorScheme="blue" onClick={handleAddressSelection} ml={3}>
-                                Aceptar
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
         </Modal>
+        <AlertDialog
+            isOpen={isAlertOpen}
+            leastDestructiveRef={cancelRef}
+            onClose={() => setIsAlertOpen(false)}
+        >
+            <AlertDialogOverlay>
+                <AlertDialogContent>
+                    <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                        Cliente encontrado
+                    </AlertDialogHeader>
+                    <AlertDialogBody>
+                        <Text fontSize="md" fontWeight="thin" mb={{ sm: '5px', md: '8px', lg: '15px' }}> Seleccione una de las direcciones guardadas</Text>
+                        <RadioGroup onChange={setSelectedAddressOption} value={selectedAddressOption}>
+                            <VStack align="start">
+                                <Radio value="1">{address}</Radio>
+                                <Radio value="2">{secondAddress}</Radio>
+                                <Radio value="none">No usar ninguna</Radio>
+                            </VStack>
+                        </RadioGroup>
+                    </AlertDialogBody>
+                    <AlertDialogFooter>
+                        <Button ref={cancelRef} onClick={() => setIsAlertOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button colorScheme="blue" onClick={handleAddressSelection} ml={3}>
+                            Aceptar
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialogOverlay>
+        </AlertDialog>
+    </>
     );
 };
 
