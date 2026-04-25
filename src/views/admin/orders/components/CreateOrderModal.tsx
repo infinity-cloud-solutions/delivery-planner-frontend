@@ -154,16 +154,12 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                     setIsAnExistingId(true);
                     setDiscount(String(clientData.clientDiscount || ''));
                     
-                    // Auto-select first address, only show dialog if second address exists
                     if (clientData.clientSecondAddress) {
                         setSecondAddress(clientData.clientSecondAddress);
                         setSecondAddressLatitude(clientData.clientSecondLatitude ?? null);
                         setSecondAddressLongitude(clientData.clientSecondLongitude ?? null);
-                        // Auto-select first address by default
                         setSelectedAddressOption('1');
-                        // Show dialog only if user explicitly wants to choose different address
-                        // For now, we'll just use the first address automatically
-
+                        setIsAlertOpen(true);
                     }
                 }
                 setIsValidationCompleted(true);
