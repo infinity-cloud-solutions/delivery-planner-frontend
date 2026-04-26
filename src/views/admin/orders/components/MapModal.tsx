@@ -46,6 +46,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
     const [confirmedOrders, setConfirmedOrders] = useState<any[]>([]);
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [mapMounted, setMapMounted] = useState(false);
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const bgColor = useColorModeValue('white', '#2D3748');
@@ -69,6 +70,14 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
         iconSize: [25, 25],
         iconAnchor: [12, 12],
     });
+
+    useEffect(() => {
+        const t = setTimeout(() => setMapMounted(true), 0);
+        return () => {
+            clearTimeout(t);
+            setMapMounted(false);
+        };
+    }, []);
 
     useEffect(() => {
         if (selectedDriver && selectedHours) {
@@ -181,6 +190,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                 <ModalBody>
                     <Box display="flex">
                         <Box flex="1">
+                            {mapMounted && (
                             <MapContainer center={[20.6783825, -103.348088]} zoom={11} style={{ height: '500px', width: '100%' }}>
                                 <MapResizer isOpen={isOpen} />
                                 <TileLayer
@@ -225,6 +235,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                     lineJoin="round"
                                 />
                             </MapContainer>
+                            )}
                         </Box>
                         <VStack spacing="4" flex="1" ml="8">
                             <FormControl>
