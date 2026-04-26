@@ -38,7 +38,7 @@ jobs:
         run: npm run test:e2e
 
       - name: Show Playwright report
-        if: always()
+        if: always() && !env.CI
         run: npm run test:e2e:report
 
       - name: Upload Playwright report
