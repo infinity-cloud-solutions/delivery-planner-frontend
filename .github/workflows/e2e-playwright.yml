@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       chrome-mcp:
-        image: browserless/chrome:1.66-chrome-stable
+        image: browserless/chrome:latest
         ports:
           - 3000:3000
         options: >-
