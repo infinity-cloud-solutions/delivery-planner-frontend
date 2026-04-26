@@ -32,9 +32,13 @@ jobs:
       - name: Install Playwright browsers and deps
         run: npx playwright install --with-deps
 
-      - name: Run Playwright E2E tests (report)
+      - name: Run Playwright E2E tests
         env:
           CI: true
+        run: npm run test:e2e
+
+      - name: Show Playwright report
+        if: always()
         run: npm run test:e2e:report
 
       - name: Upload Playwright report
