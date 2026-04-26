@@ -32,6 +32,7 @@ export interface Order {
   notes?: string | null;
   discount?: string | number | null;
   created_by?: string | null;
+  updated_by?: string | null;
 }
 
 export interface CreateOrderPayload {
@@ -54,6 +55,7 @@ export interface UpdateOrderPayload extends Partial<CreateOrderPayload> {
   delivery_date: string;
   original_date?: string;
   original_driver?: number;
+  updated_by?: string | null;
 }
 
 export interface ConsolidatedProducts {

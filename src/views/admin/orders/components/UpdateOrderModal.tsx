@@ -27,7 +27,7 @@ import {
 } from '@chakra-ui/react';
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
-import { isAdmin, } from 'security';
+import { isAdmin, getEmailFromToken } from 'security';
 import { Order } from 'types/order';
 import { Product } from 'types/product';
 import { UpdateOrderArgs } from 'views/admin/orders/hooks/useOrders';
@@ -154,7 +154,8 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         original_date: rowData.row.delivery_date,
         driver: Number(selectedDriver),
         original_driver: Number(rowData.row.driver),
-        discount: formattedDiscount
+        discount: formattedDiscount,
+        updated_by: getEmailFromToken(),
       },
       rowIndex: rowData.index
     };
