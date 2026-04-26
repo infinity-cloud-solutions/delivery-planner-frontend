@@ -22,6 +22,24 @@ import 'leaflet/dist/leaflet.css';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Order } from 'types/order';
 
+// react-leaflet v3 creates the Leaflet map in a useEffect whose cleanup
+// depends on a `map` state value that hasn't been applied yet when React 18
+// StrictMode runs its synchronous double-invocation. The result: the cleanup
+// is a no-op, _leaflet_id stays on the container, and the second mount throws.
+// Patching _initContainer to clear _leaflet_id before the guard makes
+// initialization idempotent and safe for StrictMode.
+(function patchLeafletForStrictMode() {
+    const proto = L.Map.prototype as any;
+    if (proto._patchedForStrictMode) return;
+    proto._patchedForStrictMode = true;
+    const original = proto._initContainer as (this: L.Map, id: string | HTMLElement) => void;
+    proto._initContainer = function(id: string | HTMLElement) {
+        const el = typeof id === 'string' ? L.DomUtil.get(id) : id as HTMLElement;
+        if (el) delete (el as any)._leaflet_id;
+        original.call(this, id);
+    };
+}());
+
 interface MapModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -46,7 +64,6 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
     const [confirmedOrders, setConfirmedOrders] = useState<any[]>([]);
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
-    const [mapMounted, setMapMounted] = useState(false);
 
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const bgColor = useColorModeValue('white', '#2D3748');
@@ -70,14 +87,6 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
         iconSize: [25, 25],
         iconAnchor: [12, 12],
     });
-
-    useEffect(() => {
-        const t = setTimeout(() => setMapMounted(true), 0);
-        return () => {
-            clearTimeout(t);
-            setMapMounted(false);
-        };
-    }, []);
 
     useEffect(() => {
         if (selectedDriver && selectedHours) {
@@ -190,7 +199,6 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                 <ModalBody>
                     <Box display="flex">
                         <Box flex="1">
-                            {mapMounted && (
                             <MapContainer center={[20.6783825, -103.348088]} zoom={11} style={{ height: '500px', width: '100%' }}>
                                 <MapResizer isOpen={isOpen} />
                                 <TileLayer
@@ -235,7 +243,6 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                     lineJoin="round"
                                 />
                             </MapContainer>
-                            )}
                         </Box>
                         <VStack spacing="4" flex="1" ml="8">
                             <FormControl>
