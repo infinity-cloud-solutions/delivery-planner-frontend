@@ -22,28 +22,39 @@ import 'leaflet/dist/leaflet.css';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Order } from 'types/order';
 
-// react-leaflet v3 creates the Leaflet map in a useEffect whose cleanup
-// depends on a `map` state value that hasn't been applied yet when React 18
-// StrictMode runs its synchronous double-invocation. The result: the cleanup
-// is a no-op, _leaflet_id stays on the container, and the second mount throws.
-// Patching _initContainer to clear _leaflet_id AND remove orphaned Leaflet DOM
-// (panes, controls) makes initialization idempotent and safe for StrictMode.
+// React 18 StrictMode double-invokes effects. react-leaflet v3's cleanup is a
+// no-op on the first invoke (map state not yet committed), leaving an orphaned
+// Leaflet instance with stale DOM and active event handlers on the container.
+// Fix: patch _initContainer to call .remove() on any orphaned instance before
+// re-initializing (properly tears down DOM + event handlers), and store the new
+// instance on the container element so the next invocation can find and clean it up.
 (function patchLeafletForStrictMode() {
     const proto = L.Map.prototype as any;
     if (proto._patchedForStrictMode) return;
     proto._patchedForStrictMode = true;
-    const original = proto._initContainer as (this: L.Map, id: string | HTMLElement) => void;
+
+    type LeafletContainer = HTMLElement & { _leafletMapInstance?: L.Map };
+
+    const originalInitContainer = proto._initContainer as (this: L.Map, id: string | HTMLElement) => void;
+    const originalInitialize = proto.initialize as (this: L.Map, id: string | HTMLElement, opts: any) => void;
+
     proto._initContainer = function(id: string | HTMLElement) {
-        const el = typeof id === 'string' ? L.DomUtil.get(id) : id as HTMLElement;
+        const el = (typeof id === 'string' ? L.DomUtil.get(id) : id) as LeafletContainer;
         if (el) {
+            if (el._leafletMapInstance) {
+                // Properly remove orphaned map: tears down DOM + all event handlers
+                el._leafletMapInstance.remove();
+                delete el._leafletMapInstance;
+            }
             delete (el as any)._leaflet_id;
-            // Remove orphaned Leaflet DOM from the StrictMode no-op cleanup
-            const orphanedPane = el.querySelector('.leaflet-map-pane');
-            const orphanedControls = el.querySelector('.leaflet-control-container');
-            if (orphanedPane) orphanedPane.remove();
-            if (orphanedControls) orphanedControls.remove();
         }
-        original.call(this, id);
+        originalInitContainer.call(this, id);
+    };
+
+    proto.initialize = function(id: string | HTMLElement, opts: any) {
+        originalInitialize.call(this, id, opts);
+        const container = (this as any)._container as LeafletContainer;
+        if (container) container._leafletMapInstance = this;
     };
 }());
 
@@ -57,9 +68,9 @@ interface MapModalProps {
 const MapResizer = ({ isOpen }: { isOpen: boolean }) => {
     const map = useMap();
     useEffect(() => {
-        if (isOpen) {
-            setTimeout(() => map.invalidateSize(), 100);
-        }
+        if (!isOpen) return;
+        const timer = setTimeout(() => map.invalidateSize(), 100);
+        return () => clearTimeout(timer);
     }, [isOpen, map]);
     return null;
 };
