@@ -34,6 +34,7 @@ import { MappedClient } from 'types/client';
 import { CreateOrderPayload } from 'types/order';
 import { Product } from 'types/product';
 import { OrderFormFields } from './OrderFormFields';
+import { getEmailFromToken } from 'security';
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -292,6 +293,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
             order: "Ver detalles",
             notes: formattedNotes,
             discount: formattedDiscount,
+            created_by: getEmailFromToken(),
             geolocation: (deliveryAddressLatitude && deliveryAddressLongitude) ? {
                 latitude: Number(deliveryAddressLatitude),
                 longitude: Number(deliveryAddressLongitude)

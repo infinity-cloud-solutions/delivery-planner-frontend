@@ -31,6 +31,7 @@ export interface Order {
   order?: string;
   notes?: string | null;
   discount?: string | number | null;
+  created_by?: string | null;
 }
 
 export interface CreateOrderPayload {
@@ -45,6 +46,7 @@ export interface CreateOrderPayload {
   driver?: number | null;
   latitude?: number | null;
   longitude?: number | null;
+  created_by?: string | null;
 }
 
 export interface UpdateOrderPayload extends Partial<CreateOrderPayload> {
