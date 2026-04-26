@@ -44,10 +44,6 @@ export const columnsDataOrders = [
     accessor: "created_by",
   },
   {
-    Header: "ACTUALIZADA",
-    accessor: "updated_by",
-  },
-  {
     Header: "STATUS",
     accessor: "status",
   },
