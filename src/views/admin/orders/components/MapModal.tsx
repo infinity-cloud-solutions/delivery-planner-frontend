@@ -26,8 +26,8 @@ import { Order } from 'types/order';
 // depends on a `map` state value that hasn't been applied yet when React 18
 // StrictMode runs its synchronous double-invocation. The result: the cleanup
 // is a no-op, _leaflet_id stays on the container, and the second mount throws.
-// Patching _initContainer to clear _leaflet_id before the guard makes
-// initialization idempotent and safe for StrictMode.
+// Patching _initContainer to clear _leaflet_id AND remove orphaned Leaflet DOM
+// (panes, controls) makes initialization idempotent and safe for StrictMode.
 (function patchLeafletForStrictMode() {
     const proto = L.Map.prototype as any;
     if (proto._patchedForStrictMode) return;
@@ -35,7 +35,14 @@ import { Order } from 'types/order';
     const original = proto._initContainer as (this: L.Map, id: string | HTMLElement) => void;
     proto._initContainer = function(id: string | HTMLElement) {
         const el = typeof id === 'string' ? L.DomUtil.get(id) : id as HTMLElement;
-        if (el) delete (el as any)._leaflet_id;
+        if (el) {
+            delete (el as any)._leaflet_id;
+            // Remove orphaned Leaflet DOM from the StrictMode no-op cleanup
+            const orphanedPane = el.querySelector('.leaflet-map-pane');
+            const orphanedControls = el.querySelector('.leaflet-control-container');
+            if (orphanedPane) orphanedPane.remove();
+            if (orphanedControls) orphanedControls.remove();
+        }
         original.call(this, id);
     };
 }());
@@ -233,9 +240,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 })}
                                 <Polyline
                                     positions={
-                                        (selectedHours === '9 AM - 1 PM'
-                                            ? [[20.7257943, -103.3792193], ...filteredOrders.map(order => [order.latitude, order.longitude])]
-                                            : [...filteredOrders.map(order => [order.latitude, order.longitude]), [20.7257943, -103.3792193]]) as any
+                                        [[20.7257943, -103.3792193], ...filteredOrders.map(order => [order.latitude, order.longitude])] as any
                                     }
                                     color="blue"
                                     weight={2}
