@@ -19,7 +19,7 @@ import {
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Order } from 'types/order';
 
 // React 18 StrictMode double-invokes effects. react-leaflet v3's cleanup is a
