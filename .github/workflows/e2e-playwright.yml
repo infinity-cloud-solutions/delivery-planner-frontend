@@ -10,6 +10,11 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      REACT_APP_CLIENTS_BASE_URL: https://example.test/clients
+      REACT_APP_PRODUCTS_BASE_URL: https://example.test/products
+      REACT_APP_ORDERS_BASE_URL: https://example.test/orders
+      REACT_APP_UPDATE_SEQUENCING_ORDERS_BASE_URL: https://example.test/orders/schedule
     services:
       chrome-mcp:
         image: browserless/chrome:latest
