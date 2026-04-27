@@ -7,6 +7,19 @@ import { test, expect } from '../fixtures';
 import { OrdersPage } from '../pages/orders.page';
 import { mockOrders } from '../data/mocks';
 
+function getNextValidDeliveryDate(): string {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+
+  while (date.getDay() === 0) {
+    date.setDate(date.getDate() + 1);
+  }
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`;
+}
+
 test.describe('Admin — Orders', () => {
   test('orders table renders with mocked data', async ({ page }) => {
     const ordersPage = new OrdersPage(page);
@@ -69,7 +82,7 @@ test.describe('Admin — Orders', () => {
     ).toBeVisible();
   });
 
-  test('phone lookup auto-fills client name and address for existing client', async ({ page }) => {
+  test('phone lookup auto-fills client name and confirms stored address for existing client', async ({ page }) => {
     // Mock the client lookup to return a known client
     const CLIENTS_URL = process.env.REACT_APP_CLIENTS_BASE_URL || '**/clients**';
     await page.route(`${CLIENTS_URL}/**`, (route) => {
@@ -96,6 +109,15 @@ test.describe('Admin — Orders', () => {
 
     // Wait for lookup response to populate fields
     await expect(modal.getByLabel('Nombre')).toHaveValue('Juan Pérez');
+    await expect(
+      modal.getByText('Seleccione una de las direcciones guardadas')
+    ).toBeVisible();
+    await expect(modal.getByRole('radio', { name: /Insurgentes/i })).toBeChecked();
+    await expect(modal.getByLabel('Dirección')).not.toBeVisible();
+
+    await modal.getByRole('button', { name: 'Aceptar' }).click();
+
+    await expect(modal.getByLabel('Dirección')).toBeVisible();
     await expect(modal.getByLabel('Dirección')).toHaveValue(/Insurgentes/);
   });
 
@@ -104,7 +126,10 @@ test.describe('Admin — Orders', () => {
     await ordersPage.goto();
     await ordersPage.openUpdateModal(mockOrders[0].client_name);
 
-    await ordersPage.fillUpdateForm({ payment: 'Efectivo' });
+    await ordersPage.fillUpdateForm({
+      date: getNextValidDeliveryDate(),
+      payment: 'Efectivo',
+    });
     await ordersPage.submitUpdate();
 
     await expect(
