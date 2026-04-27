@@ -11,17 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
+      REACT_APP_COGNITO_USER_POOL_ID: us-east-1_test
+      REACT_APP_COGNITO_CLIENT_ID: test-client-id
+      REACT_APP_COGNITO_ISS: https://cognito-idp.us-east-1.amazonaws.com/test
       REACT_APP_CLIENTS_BASE_URL: https://example.test/clients
       REACT_APP_PRODUCTS_BASE_URL: https://example.test/products
       REACT_APP_ORDERS_BASE_URL: https://example.test/orders
       REACT_APP_UPDATE_SEQUENCING_ORDERS_BASE_URL: https://example.test/orders/schedule
-    services:
-      chrome-mcp:
-        image: browserless/chrome:latest
-        ports:
-          - 3000:3000
-        options: >-
-          --shm-size=1gb
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -4,6 +4,9 @@ import path from 'path';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+const baseURL = process.env.BASE_URL || 'http://localhost:3000';
+const webServerPort = new URL(baseURL).port || '3000';
+
 export default defineConfig({
   testDir: './specs',
   testMatch: '**/*.spec.ts',
@@ -20,7 +23,7 @@ export default defineConfig({
   expect: { timeout: 5_000 },
 
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL,
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
     trace: 'on-first-retry',
@@ -64,9 +67,9 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.CI ? undefined : {
-    command: 'npm run start',
-    url: 'http://localhost:3000',
+  webServer: {
+    command: `PORT=${webServerPort} npm run start`,
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     stdout: 'pipe',
