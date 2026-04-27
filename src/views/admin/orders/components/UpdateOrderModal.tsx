@@ -155,6 +155,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
         driver: Number(selectedDriver),
         original_driver: Number(rowData.row.driver),
         discount: formattedDiscount,
+        created_by: rowData.row.created_by ?? null,
         updated_by: getEmailFromToken(),
       },
       rowIndex: rowData.index
