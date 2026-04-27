@@ -121,36 +121,36 @@ export default function DeliveryCard(props: DeliveryCardProps) {
         );
     };
 
+    const buildOrderPayload = (overrides: Partial<Delivery>): Delivery => ({
+        ...order,
+        total_amount: parseFloat(String(order.total_amount)),
+        latitude: order.latitude != null ? parseFloat(String(order.latitude)) : null,
+        longitude: order.longitude != null ? parseFloat(String(order.longitude)) : null,
+        discount: order.discount != null ? parseFloat(String(order.discount)) : null,
+        delivery_sequence: Number(order.delivery_sequence),
+        driver: Number(order.driver),
+        source: order.source != null ? Number(order.source) : undefined,
+        cooler: Number(cooler),
+        cart_items: order.cart_items.map((item) => ({
+            product: item.product,
+            quantity: Number(item.quantity),
+            price: item.price != null ? Number(item.price) : undefined,
+        })),
+        order: 'Ver detalles',
+        original_date: order.delivery_date,
+        ...overrides,
+    });
+
     const handleAddToDeliveryClick = async () => {
         setLoadingAddToDelivery(true);
-        const updatedOrder: Delivery = {
-            ...order,
-            total_amount: parseFloat(String(order.total_amount)),
-            status: 'En ruta',
-            order: 'Ver detalles',
-            cooler: Number(cooler),
-            source: order.source != null ? Number(order.source) : undefined,
-            original_date: order.delivery_date,
-            delivery_sequence: Number(order.delivery_sequence),
-            driver: Number(order.driver),
-        };
+        const updatedOrder = buildOrderPayload({ status: 'En ruta' });
         await onUpdateDelivery(updatedOrder, updatedOrder.id, 'En ruta');
         setLoadingAddToDelivery(false);
     };
 
     const handleCompleteDeliveryClick = async () => {
         setLoadingCompleteDelivery(true);
-        const updatedOrder: Delivery = {
-            ...order,
-            total_amount: parseFloat(String(order.total_amount)),
-            status: 'Entregada',
-            order: 'Ver detalles',
-            cooler: Number(cooler),
-            source: order.source != null ? Number(order.source) : undefined,
-            original_date: order.delivery_date,
-            delivery_sequence: Number(order.delivery_sequence),
-            driver: Number(order.driver),
-        };
+        const updatedOrder = buildOrderPayload({ status: 'Entregada' });
         await onUpdateDelivery(updatedOrder, updatedOrder.id, 'Entregada');
         setLoadingCompleteDelivery(false);
         setIsCompletedModalOpen(false);
@@ -158,18 +158,10 @@ export default function DeliveryCard(props: DeliveryCardProps) {
 
     const handleRescheduleDeliveryClick = async () => {
         setLoadingRescheduleDelivery(true);
-        const updatedOrder: Delivery = {
-            ...order,
-            total_amount: parseFloat(String(order.total_amount)),
+        const updatedOrder = buildOrderPayload({
             status: 'Reprogramada',
-            order: 'Ver detalles',
-            cooler: Number(cooler),
-            source: order.source != null ? Number(order.source) : undefined,
-            original_date: order.delivery_date,
-            delivery_sequence: Number(order.delivery_sequence),
-            driver: Number(order.driver),
             notes: rescheduleReasonRef.current,
-        };
+        });
         closeRescheduleModal();
         try {
             await onUpdateDelivery(updatedOrder, updatedOrder.id, 'Reprogramada');
