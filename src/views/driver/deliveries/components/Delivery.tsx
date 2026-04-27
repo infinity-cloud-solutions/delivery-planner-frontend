@@ -126,7 +126,7 @@ export default function DeliveryCard(props: DeliveryCardProps) {
         total_amount: parseFloat(String(order.total_amount)),
         latitude: order.latitude != null ? parseFloat(String(order.latitude)) : null,
         longitude: order.longitude != null ? parseFloat(String(order.longitude)) : null,
-        discount: order.discount != null ? parseFloat(String(order.discount)) : null,
+        discount: order.discount ?? null,
         delivery_sequence: Number(order.delivery_sequence),
         driver: Number(order.driver),
         source: order.source != null ? Number(order.source) : undefined,

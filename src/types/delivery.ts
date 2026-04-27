@@ -25,6 +25,6 @@ export interface Delivery {
   created_by?: string;
   errors?: string[];
   notes?: string | null;
-  discount?: number | null;
+  discount?: string | null;
   order?: string;
 }
