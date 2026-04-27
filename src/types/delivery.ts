@@ -19,6 +19,7 @@ export interface Delivery {
   longitude?: number | null;
   // fields used by Delivery.js card component
   cooler?: number | null;
+  source?: number | null;
   original_date?: string;
   created_at?: string;
   created_by?: string;
