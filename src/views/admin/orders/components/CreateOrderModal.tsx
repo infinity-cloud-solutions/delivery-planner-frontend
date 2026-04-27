@@ -172,7 +172,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
 
             isMounted = false;
         };
-    }, [phoneToCheck]); // Remove onClientExistsCheck from dependencies to prevent effect re-running
+    }, [phoneToCheck]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const checkFormValidity = () => {
         const isCartItemsValid = cartItems.length > 1;
