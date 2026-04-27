@@ -17,6 +17,7 @@ export interface Delivery {
   cart_items: CartItem[];
   latitude?: number | null;
   longitude?: number | null;
+  geolocation?: { latitude: number; longitude: number } | null;
   // fields used by Delivery.js card component
   cooler?: number | null;
   source?: number | null;

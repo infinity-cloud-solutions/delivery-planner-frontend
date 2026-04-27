@@ -124,8 +124,9 @@ export default function DeliveryCard(props: DeliveryCardProps) {
     const buildOrderPayload = (overrides: Partial<Delivery>): Delivery => ({
         ...order,
         total_amount: parseFloat(String(order.total_amount)),
-        latitude: order.latitude != null ? parseFloat(String(order.latitude)) : null,
-        longitude: order.longitude != null ? parseFloat(String(order.longitude)) : null,
+        geolocation: (order.latitude != null && order.longitude != null)
+            ? { latitude: parseFloat(String(order.latitude)), longitude: parseFloat(String(order.longitude)) }
+            : null,
         discount: order.discount ?? null,
         delivery_sequence: Number(order.delivery_sequence),
         driver: Number(order.driver),
