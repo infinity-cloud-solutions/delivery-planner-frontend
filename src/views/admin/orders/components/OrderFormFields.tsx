@@ -120,7 +120,7 @@ const OrderFormFields: React.FC<OrderFormFieldsProps> = ({
           <FormControl isRequired isInvalid={phoneTouched && phoneNumber.length !== 10}>
             <FormLabel>Teléfono</FormLabel>
             <Input
-              type="number"
+              type="tel"
               color={textColor}
               borderColor={borderColor}
               placeholder="Si el cliente existe, usaramos la información previamente salvada"

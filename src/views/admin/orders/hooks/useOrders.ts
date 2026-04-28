@@ -106,6 +106,7 @@ export function useOrders(initialDate: string | null): UseOrdersReturn {
         const created: Order = {
           ...payload,
           ...response.data,
+          created_by: response.data.created_by ?? payload.created_by ?? null,
           order: 'Ver detalles',
           delivery_sequence: null,
         };

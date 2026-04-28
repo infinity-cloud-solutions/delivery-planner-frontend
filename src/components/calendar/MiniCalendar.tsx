@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState } from "react";
 import Calendar from "react-calendar";
-import es from 'date-fns/locale/es';
+
 import "react-calendar/dist/Calendar.css";
 import "assets/css/MiniCalendar.css";
 import { Text, Icon } from "@chakra-ui/react";
@@ -33,7 +33,7 @@ export default function MiniCalendar(props) {
         tileContent={<Text color='brand.500'></Text>}
         prevLabel={<Icon as={MdChevronLeft} w='24px' h='24px' mt='4px' />}
         nextLabel={<Icon as={MdChevronRight} w='24px' h='24px' mt='4px' />}
-        locale={es}
+        locale="es"
         formatMonthYear={(locale, date) =>
           capitalizeFirstLetter(
             date.toLocaleDateString(locale, {

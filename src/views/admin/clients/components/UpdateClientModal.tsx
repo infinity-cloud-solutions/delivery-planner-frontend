@@ -206,7 +206,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
             <FormControl isRequired>
               <FormLabel>Teléfono</FormLabel>
               <Input
-                type='number'
+                type='tel'
                 color={textColor}
                 borderColor={borderColor}
                 placeholder='Ingresa el teléfono del cliente'
@@ -268,10 +268,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
             <FormControl>
               <FormLabel>Latitud</FormLabel>
               <Input
-                type='number'
-                color={textColor}
-                borderColor={borderColor}
-                placeholder='Ingresa la latitud de la dirección primaria'
+                type='text'
                 value={clientLatitude}
                 isDisabled={!isUserAdmin}
                 onChange={(e) =>
@@ -283,10 +280,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
             <FormControl>
               <FormLabel>Longitud</FormLabel>
               <Input
-                type='number'
-                color={textColor}
-                borderColor={borderColor}
-                placeholder='Ingresa la longitud del cliente'
+                type='text'
                 value={clientLongitude}
                 isDisabled={!isUserAdmin}
                 onChange={(e) =>
@@ -320,7 +314,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
                 <FormControl>
                   <FormLabel>Latitud Secundaria</FormLabel>
                   <Input
-                    type='number'
+                    type='text'
                     color={textColor}
                     borderColor={borderColor}
                     placeholder='Ingresa la latitud de la dirección secundaria'
@@ -338,7 +332,7 @@ const UpdateClientModal = ({ isOpen, onClose, onUpdate, onDelete, clientData }: 
                 <FormControl>
                   <FormLabel>Longitud Secundaria</FormLabel>
                   <Input
-                    type='number'
+                    type='text'
                     color={textColor}
                     borderColor={borderColor}
                     placeholder='Ingresa la longitud de la dirección secundaria'

@@ -111,7 +111,7 @@ export default function OrdersView() {
           animate={{ x: 0, right: '8px', top: '20%' }}
           exit={{ x: '100%' }}
           transition={{ duration: 0.5 }}
-          style={{ position: 'fixed', zIndex: 1000 }}
+          style={{ position: 'fixed', zIndex: 2000 }}
         >
           <Alert status={alertMessage.type} mb={4}>
             <AlertIcon />
