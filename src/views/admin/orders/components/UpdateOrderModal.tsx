@@ -23,7 +23,8 @@ import {
   Select,
   VStack,
   HStack,
-  useColorModeValue
+  useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
@@ -57,20 +58,15 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   const [deliveryLongitude, setDeliveryLongitude] = useState(lng != null ? String(lng) : '');
   const [phoneNumber, setPhoneNumber] = useState(rowData.row.phone_number || '');
   const [paymentMethod, setPaymentMethod] = useState(rowData.row.payment_method || '')
-  const [cartItemsSelection, setCartItemsSelection] = useState<Array<{product: any; quantity: any; price?: any}>>(
-    (rowData.row.cart_items || []).map((item) => ({
-      product: item.product,
-      quantity: Number(item.quantity),
-      price: Number(item.price),
-    })) || [{ product: null, quantity: null }]
-  );
-
   const [cartItems, setCartItems] = useState<Array<{product: string; quantity: number | string; price: number | string}>>(
-    (rowData.row.cart_items || []).map((item) => ({
-      product: item.product,
-      quantity: Number(item.quantity),
-      price: Number(item.price),
-    })) || [{ product: null, quantity: null }]
+    [
+      ...(rowData.row.cart_items || []).map((item) => ({
+        product: item.product as string,
+        quantity: Number(item.quantity),
+        price: Number(item.price),
+      })),
+      { product: '', quantity: '', price: 0 },
+    ]
   );
   const [dateError, setDateError] = useState<string | null>(null);
   const [selectedDriver, setSelectedDriver] = useState(rowData.row.driver || '');
@@ -96,6 +92,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   let isUserAdmin = false;
   isUserAdmin = isAdmin();
 
+  const toast = useToast();
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   let menuBg = useColorModeValue("white", "navy.900");
@@ -169,6 +166,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
 
     try {
       await onUpdate(updOrder as any);
+      toast({ title: 'Orden actualizada', status: 'success', duration: 3000, isClosable: true });
       setClientName('');
       setDeliveryTime('');
       setDeliveryAddress('');
@@ -196,6 +194,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     setLoadingDeleteRequest(true)
     try {
       await onDelete({ item: rowData.row, rowIndex: rowData.index });
+      toast({ title: 'Orden eliminada', status: 'success', duration: 3000, isClosable: true });
       setClientName('');
       setDeliveryTime('');
       setDeliveryAddress('');
@@ -220,7 +219,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude, dateError, apiError, discount]);
 
   const checkFormValidity = () => {
-    const isCartItemsValid = cartItems.length >= 1;
+    const isCartItemsValid = cartItems.filter(item => item.product).length >= 1;
     const isClientNameValid = clientName.trim() !== '';
     const isDeliveryAddressValid = deliveryAddress.trim() !== '';
     const isPhoneNumberValid = phoneNumber.trim() !== '';
@@ -233,76 +232,30 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
   };
 
   const addCartItem = () => {
-    const isProductSelected = cartItemsSelection.every(item => item.product !== null);
-    const isQuantitySelected = cartItemsSelection.every(item => item.quantity !== null);
-
-    if (isProductSelected && isQuantitySelected) {
-      const newCartItem = {
-        product: cartItemsSelection[0].product.value || cartItemsSelection[0].product,
-        quantity: cartItemsSelection[0].quantity,
-        price: cartItemsSelection[0].product.price || cartItemsSelection[0].price || 0,
-      };
-
-      // Check if the product already exists in cartItems
-      const existingCartItemIndex = cartItems.findIndex(item => item.product === newCartItem.product);
-
-      if (existingCartItemIndex !== -1) {
-        // Update the existing item in cartItems
-        setCartItems(prevCartItems => {
-          const updatedCartItems = [...prevCartItems];
-          updatedCartItems[existingCartItemIndex] = newCartItem;
-          return updatedCartItems;
-        });
-      } else {
-        // Add the newCartItem to cartItems
-        setCartItems(prevCartItems => [...prevCartItems, newCartItem]);
-      }
-
-      setCartItemsSelection((prevCartItemsSelection) => [
-        { product: null, quantity: null, price: null },
-        ...prevCartItemsSelection
-      ]);
-      calculateTotalAmount();
-      checkFormValidity();
-    }
+    setCartItems(prev => [...prev, { product: '', quantity: '', price: 0 }]);
   };
 
-  const removeCartItem = (index: any) => {
-    setCartItems((prevCartItems) => {
-      const updatedCartItems = [...prevCartItems];
-      updatedCartItems.splice(index, 1);
-      return updatedCartItems;
-    });
-
-    setCartItemsSelection((prevCartItemsSelection) => {
-      const updatedCartItemsSelection = [...prevCartItemsSelection];
-      updatedCartItemsSelection.splice(index, 1);
-      return updatedCartItemsSelection;
-    });
-
-    calculateTotalAmount();
+  const removeCartItem = (index: number) => {
+    setCartItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleProductSelect = (selectedOption: any, index: any) => {
-    setCartItemsSelection((prevCartItemsSelection) => {
-      const updatedCartItemsSelection = [...prevCartItemsSelection];
-      updatedCartItemsSelection[index] = {
-        ...updatedCartItemsSelection[index],
+  const handleProductSelect = (selectedOption: any, index: number) => {
+    setCartItems(prev => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
         product: selectedOption.value || selectedOption.label || selectedOption,
-        price: Number(selectedOption.price)
+        price: Number(selectedOption.price || 0),
       };
-      return updatedCartItemsSelection;
+      return updated;
     });
   };
 
-  const handleQuantityChange = (index: any, newQuantity: any) => {
-    setCartItemsSelection((prevCartItemsSelection) => {
-      const updatedCartItemsSelection = [...prevCartItemsSelection];
-      updatedCartItemsSelection[index] = {
-        ...updatedCartItemsSelection[index],
-        quantity: newQuantity,
-      };
-      return updatedCartItemsSelection;
+  const handleQuantityChange = (index: number, newQuantity: number) => {
+    setCartItems(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], quantity: newQuantity };
+      return updated;
     });
   };
 
@@ -312,8 +265,9 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
     };
 
     let totalAmount = 0;
-    if (cartItems.length > 0) {
-      totalAmount = cartItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+    const filledItems = cartItems.filter(item => item.product);
+    if (filledItems.length > 0) {
+      totalAmount = filledItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
       if (discount && Object.prototype.hasOwnProperty.call(discountMultipliers, String(discount))) {
         totalAmount *= discountMultipliers[String(discount)];
       }
@@ -328,30 +282,18 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
 
   const validateDate = (selectedDate: any) => {
     const selectedDateObj = new Date(selectedDate + 'T00:00:00');
-
     selectedDateObj.setHours(0, 0, 0, 0);
 
-    const currentDate = new Date();
-    const currentTime = currentDate.getTime();
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
 
-    const nineAMTimestamp = new Date(currentDate);
-    nineAMTimestamp.setHours(9, 0, 0, 0);
-
-    const nextDayTimestamp = new Date(currentDate);
-    nextDayTimestamp.setDate(nextDayTimestamp.getDate() + 1);
-    nextDayTimestamp.setHours(0, 0, 0, 0);
-
-    if (selectedDateObj.toDateString() === currentDate.toDateString()) {
-      if (currentTime > nineAMTimestamp.getTime()) {
-        setDateError('No se puede crear orden después de las 9 am');
-        checkFormValidity();
-        return;
-      }
-    } else if (selectedDateObj.getTime() < currentDate.getTime()) {
+    if (selectedDateObj.getTime() < todayMidnight.getTime()) {
       setDateError('No se puede programar una orden en el pasado');
       checkFormValidity();
       return;
-    } else if (selectedDateObj.getDay() === 0) {
+    }
+
+    if (selectedDateObj.getDay() === 0) {
       setDateError('No hay entregas los domingos');
       checkFormValidity();
       return;
@@ -538,7 +480,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
             />
 
             <FormLabel>Lista de productos en pedido</FormLabel>
-            {cartItemsSelection.map((item, index) => (
+            {cartItems.map((item, index) => (
               <HStack key={index} spacing="4">
                 <FormControl isRequired>
                   <FormLabel>Producto</FormLabel>
@@ -548,8 +490,7 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                     options={productsAvailable as any}
                     placeholder="Buscar producto"
                     noOptionsMessage={() => "No hay opción"}
-                    isDisabled={index !== 0}
-                    value={{ label: cartItemsSelection[index]?.product, value: cartItemsSelection[index] }}
+                    value={item.product ? { label: item.product, value: item.product } : null}
                     onChange={(selectedOption) => handleProductSelect(selectedOption, index)}
                   />
                 </FormControl>
@@ -560,14 +501,13 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                     placeholder="Ingresa la cantidad"
                     color={textColor}
                     borderColor={borderColor}
-                    value={cartItemsSelection[index]?.quantity ?? ''}
-                    isDisabled={index !== 0}
+                    value={item.quantity ?? ''}
                     onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}
                   />
                 </FormControl>
                 <FormControl>
                   <FormLabel>Acción</FormLabel>
-                  <Button variant="outline" onClick={() => removeCartItem(index)} isDisabled={cartItems[index]?.product === ""} leftIcon={<FaTrash />}>
+                  <Button variant="outline" onClick={() => removeCartItem(index)} isDisabled={!item.product} leftIcon={<FaTrash />}>
                   </Button>
                 </FormControl>
               </HStack>

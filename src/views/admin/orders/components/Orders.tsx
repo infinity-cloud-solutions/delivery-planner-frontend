@@ -48,7 +48,7 @@ function Orders({
   const [selectedRowData, setSelectedRowData] = useState<{ row: Order; index: number } | null>(null);
 
   const isButtonDisabled = () => {
-    return data.length === 0 || data.some((row) => row.status !== "Creada" || row.errors.length > 0);
+    return data.length === 0 || !data.some((row) => row.status === "Creada" && row.errors.length === 0);
   };
 
   const onOrderScheduledCallback = async () => {

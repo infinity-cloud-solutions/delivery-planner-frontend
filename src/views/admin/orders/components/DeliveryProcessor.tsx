@@ -4,7 +4,9 @@ export const DeliveryProcessor = (selectedDrivers: any, ordersForToday: any) => 
 
     const selectOrdersByDeliveryRangeTime = (orderRecords: any, deliveryTimeToMatch: any, driverToMatch: any) => {
         return orderRecords.filter((order: any) =>
-            order.delivery_time === deliveryTimeToMatch && Number(order.driver) === driverToMatch
+            order.delivery_time === deliveryTimeToMatch &&
+            Number(order.driver) === driverToMatch &&
+            order.status !== "Programada"
         );
     };
 

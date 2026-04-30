@@ -110,7 +110,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
         if (selectedDriver && selectedHours) {
             const filtered = orders.filter(order =>
                 Number(order.driver) === Number(selectedDriver) &&
-                order.delivery_time === selectedHours
+                order.delivery_time === selectedHours &&
+                order.status !== "Programada"
             );
 
             const sorted = filtered.sort((a: any, b: any) => (a.delivery_sequence ?? 0) - (b.delivery_sequence ?? 0));
@@ -146,28 +147,19 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
     const confirmRoute = async () => {
         setLoadingRequest(true);
         try {
-            const updatedOrders = orders.map(order => {
-                const matchingOrder = confirmedOrders.find(filteredOrder => filteredOrder.id === order.id);
-                if (matchingOrder) {
+            const finalOrders = orders
+                .filter(order => order.status !== "Programada")
+                .map(order => {
+                    const confirmed = confirmedOrders.find(co => co.id === order.id);
+                    const source = confirmed ?? order;
                     return {
-                        id: order.id,
-                        delivery_date: order.delivery_date,
+                        id: source.id,
+                        delivery_date: source.delivery_date,
                         status: "Programada",
-                        driver: Number(matchingOrder.driver),
-                        delivery_sequence: Number(matchingOrder.delivery_sequence),
+                        driver: Number(source.driver),
+                        delivery_sequence: Number(source.delivery_sequence),
                     };
-                }
-                return order;
-            })
-            const finalOrders = updatedOrders.map(order => {
-                return {
-                    id: order.id,
-                    delivery_date: order.delivery_date,
-                    status: "Programada",
-                    driver: Number(order.driver),
-                    delivery_sequence: Number(order.delivery_sequence),
-                };
-            });
+                });
             await onConfirmRoute(finalOrders as any);
             onClose();
         } catch (error) {
@@ -213,7 +205,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
             <ModalOverlay />
             <ModalContent bg={bgColor}>
                 <ModalHeader>Mapa de entregas por repartidor</ModalHeader>
-                <ModalCloseButton />
+                <ModalCloseButton onKeyDown={(e: React.KeyboardEvent) => { if (e.key === ' ') e.preventDefault(); }} />
                 <ModalBody>
                     <Box display="flex">
                         <Box flex="1">
@@ -268,8 +260,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                     value={selectedDriver ?? undefined}
                                     onChange={(e) => setSelectedDriver(e.target.value)}
                                 >
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
+                                    <option value="1">Repartidor 1</option>
+                                    <option value="2">Repartidor 2</option>
                                 </Select>
                             </FormControl>
 

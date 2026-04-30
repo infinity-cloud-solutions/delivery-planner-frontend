@@ -173,6 +173,7 @@ export default function DeliveryCard(props: DeliveryCardProps) {
     };
 
     const closeRescheduleModal = () => {
+        rescheduleReasonRef.current = '';
         setIsRescheduleModalOpen(false);
     };
 
@@ -374,7 +375,7 @@ export default function DeliveryCard(props: DeliveryCardProps) {
                                     <Tr key={index}>
                                         <Td fontSize={{ base: 'sm', md: 'md' }} p={{ base: '1', md: '2' }}>{item.product}</Td>
                                         <Td fontSize={{ base: 'sm', md: 'md' }} textAlign={{ base: 'center', md: 'center' }} p={{ base: '1', md: '2' }}>{item.quantity}</Td>
-                                        <Td fontSize={{ base: 'sm', md: 'md' }} textAlign={{ base: 'center', md: 'center' }} p={{ base: '1', md: '2' }}>{`$${item.price}.00`}</Td>
+                                        <Td fontSize={{ base: 'sm', md: 'md' }} textAlign={{ base: 'center', md: 'center' }} p={{ base: '1', md: '2' }}>{item.price != null ? formatter.format(item.price) : '—'}</Td>
                                     </Tr>
                                 ))}
                             </Tbody>

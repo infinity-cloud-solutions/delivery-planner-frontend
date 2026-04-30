@@ -26,7 +26,8 @@ import {
     Radio,
     VStack,
     HStack,
-    useColorModeValue
+    useColorModeValue,
+    useToast,
 } from '@chakra-ui/react';
 import ReactSelect from 'react-select'
 import { FaTrash } from 'react-icons/fa';
@@ -60,7 +61,6 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [phoneNumber, setPhoneNumber] = useState('');
     const [deliveryDate, setDeliveryDate] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('')
-    const [cartItemsSelection, setCartItemsSelection] = useState<Array<{product: any; quantity: any}>>([{ product: null, quantity: null }]);
     const [cartItems, setCartItems] = useState<Array<{product: string; quantity: number | string; price: number | string}>>([{ product: '', quantity: '', price: '' }]);
     const [dateError, setDateError] = useState<string | null>(null);
     const [totalAmountDisplay, setTotalAmountDisplay] = useState("0.00");
@@ -86,6 +86,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     const [phoneToCheck, setPhoneToCheck] = useState<string | null>(null);
 
 
+    const toast = useToast();
     const textColor = useColorModeValue("secondaryGray.900", "white");
     const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
     let menuBg = useColorModeValue("white", "navy.900");
@@ -175,7 +176,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     }, [phoneToCheck]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const checkFormValidity = () => {
-        const isCartItemsValid = cartItems.length > 1;
+        const isCartItemsValid = cartItems.filter(item => item.product).length >= 1;
         const isClientNameValid = clientName.trim() !== '';
         const isDeliveryAddressValid = deliveryAddress.trim() !== '';
         const isPhoneNumberValid = phoneNumber.trim() !== '';
@@ -187,66 +188,30 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
     };
 
     const addCartItem = () => {
-        const isProductSelected = cartItemsSelection.every(item => item.product !== null);
-        const isQuantitySelected = cartItemsSelection.every(item => item.quantity !== null);
+        setCartItems(prev => [...prev, { product: '', quantity: '', price: '' }]);
+    };
 
-        if (isProductSelected && isQuantitySelected) {
-            const newCartItem = {
-                product: cartItemsSelection[0].product.value,
-                quantity: Number(cartItemsSelection[0].quantity),
-                price: Number(cartItemsSelection[0].product.price) || 0,
+    const removeCartItem = (index: number) => {
+        setCartItems(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleProductSelect = (selectedOption: any, index: number) => {
+        setCartItems(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                product: selectedOption.value || selectedOption.label || selectedOption,
+                price: Number(selectedOption.price || 0),
             };
-
-            setCartItems(prevCartItems => [...prevCartItems, newCartItem]);
-
-            setCartItemsSelection(prevCartItemsSelection => [
-                { product: null, quantity: null },
-                ...prevCartItemsSelection
-            ]);
-
-            calculateTotalAmount();
-            checkFormValidity();
-        }
-    };
-
-    const removeCartItem = (index: any) => {
-        setCartItems((prevCartItems) => {
-            const updatedCartItems = [...prevCartItems];
-            updatedCartItems.splice(index, 1);
-            return updatedCartItems;
-        });
-
-        setCartItemsSelection((prevCartItemsSelection) => {
-            const updatedCartItemsSelection = [...prevCartItemsSelection];
-            const currentSelection = updatedCartItemsSelection[index]?.product;
-
-            const isObjectProduct = currentSelection && typeof currentSelection === 'object' && currentSelection.label && currentSelection.value;
-
-            if (isObjectProduct) {
-                updatedCartItemsSelection.splice(index, 1);
-            } else {
-                updatedCartItemsSelection.splice(index - 1, 1);
-            }
-
-            return updatedCartItemsSelection;
-        });
-
-        calculateTotalAmount();
-    };
-
-    const handleProductSelect = (selectedOption: any, index: any) => {
-        setCartItemsSelection(prevCartItemsSelection => {
-            const updatedCartItemsSelection = [...prevCartItemsSelection];
-            updatedCartItemsSelection[index] = { ...updatedCartItemsSelection[index], product: selectedOption };
-            return updatedCartItemsSelection;
+            return updated;
         });
     };
 
-    const handleQuantityChange = (index: any, newQuantity: any) => {
-        setCartItemsSelection(prevCartItemsSelection => {
-            const updatedCartItemsSelection = [...prevCartItemsSelection];
-            updatedCartItemsSelection[index] = { ...updatedCartItemsSelection[index], quantity: newQuantity };
-            return updatedCartItemsSelection;
+    const handleQuantityChange = (index: number, newQuantity: number) => {
+        setCartItems(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], quantity: newQuantity };
+            return updated;
         });
     };
 
@@ -260,8 +225,9 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         };
 
         let totalAmount = 0;
-        if (cartItems.length > 0) {
-            totalAmount = cartItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+        const filledItems = cartItems.filter(item => item.product);
+        if (filledItems.length > 0) {
+            totalAmount = filledItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
 
             if (discount && discountMultipliers.hasOwnProperty(discount)) {
                 totalAmount *= discountMultipliers[discount];
@@ -307,6 +273,7 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
         });
         try {
             await onCreate(newOrder as any);
+            toast({ title: 'Orden creada', status: 'success', duration: 3000, isClosable: true });
             setClientName('');
             setDeliveryTime('');
             setDeliveryAddress('');
@@ -570,11 +537,10 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                             <ReactSelect
                                                 isSearchable={true}
                                                 styles={customStyles}
-                                                options={productsAvailable}
+                                                options={productsAvailable as any}
                                                 placeholder="Buscar producto"
                                                 noOptionsMessage={() => "No hay opción"}
-                                                value={cartItemsSelection[index]?.product || null}
-                                                isDisabled={index !== 0}
+                                                value={item.product ? { label: item.product, value: item.product } : null}
                                                 onChange={(selectedOption) => handleProductSelect(selectedOption, index)}
                                             />
                                         </FormControl>
@@ -585,14 +551,13 @@ const CreateOrderModal = ({ isOpen, onClose, onCreate, productsAvailable, onClie
                                                 placeholder="Ingresa la cantidad"
                                                 color={textColor}
                                                 borderColor={borderColor}
-                                                value={cartItemsSelection[index]?.quantity ?? ''}
-                                                isDisabled={index !== 0}
+                                                value={item.quantity ?? ''}
                                                 onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}
                                             />
                                         </FormControl>
                                         <FormControl>
                                             <FormLabel>Acción</FormLabel>
-                                            <Button variant="outline" onClick={() => removeCartItem(index)} isDisabled={cartItems[index]?.product === ""} leftIcon={<FaTrash />}>
+                                            <Button variant="outline" onClick={() => removeCartItem(index)} isDisabled={!item.product} leftIcon={<FaTrash />}>
                                             </Button>
                                         </FormControl>
                                     </HStack>
