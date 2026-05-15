@@ -16,6 +16,7 @@ interface ScheduleButtonProps {
   isToday: boolean;
   isDisabled: boolean;
   isScheduling: boolean;
+  availableDriverIds: number[];
   selectedAvailableDrivers: number[];
   onDriverChange: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   onSchedule: () => void;
@@ -25,6 +26,7 @@ function ScheduleButton({
   isToday,
   isDisabled,
   isScheduling,
+  availableDriverIds,
   selectedAvailableDrivers,
   onDriverChange,
   onSchedule,
@@ -52,8 +54,9 @@ function ScheduleButton({
                       onChange={onDriverChange}
                       placeholder="Elegir a un repartidor"
                     >
-                      <option value="1">Repartidor 1</option>
-                      <option value="2">Repartidor 2</option>
+                      {availableDriverIds.map(id => (
+                        <option key={id} value={String(id)}>Repartidor {id}</option>
+                      ))}
                     </Select>
                   </FormControl>
                 </AccordionPanel>
@@ -70,7 +73,7 @@ function ScheduleButton({
         isLoading={isScheduling}
         spinnerPlacement="end"
       >
-        {selectedAvailableDrivers.length === 2
+        {selectedAvailableDrivers.length === availableDriverIds.length
           ? "Crear ruta sugerida"
           : `Crear ruta sugerida usando repartidor ${selectedAvailableDrivers[0]}`}
       </Button>

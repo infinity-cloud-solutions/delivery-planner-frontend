@@ -48,7 +48,7 @@ export default defineConfig({
     {
       name: 'admin',
       testDir: './specs',
-      testMatch: '{orders,products,clients}.spec.ts',
+      testMatch: '{orders,products,clients,driver-assignment}.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         storageState: '.auth/admin.json',
