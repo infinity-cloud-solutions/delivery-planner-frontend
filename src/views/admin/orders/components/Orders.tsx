@@ -11,7 +11,7 @@ import ConsolidatedModal from "./ConsolidatedModal";
 import MapModal from "./MapModal";
 import OrdersTable from "./OrdersTable";
 import ScheduleButton from "./ScheduleButton";
-import { useQueryParam, getDateAsQueryParam } from "utils/Utility";
+import { useQueryParam, getDateAsQueryParam, getAvailableDriverIds } from "utils/Utility";
 import { UpdateOrderArgs, DeleteOrderArgs } from "views/admin/orders/hooks/useOrders";
 import { CreateOrderPayload, Order, ConsolidatedProducts } from "types/order";
 import { Product } from "types/product";
@@ -38,9 +38,10 @@ function Orders({
 }: OrdersProps) {
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
+  const availableDriverIds = useMemo(() => getAvailableDriverIds(), []);
   const [isScheduling, setIsScheduling] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{ type: AlertStatus; text: string } | null>(null);
-  const [selectedAvailableDrivers, setSelectedAvailableDrivers] = useState([1, 2]);
+  const [selectedAvailableDrivers, setSelectedAvailableDrivers] = useState(() => getAvailableDriverIds());
   const [isConsolidatedModalOpen, setIsConsolidatedModalOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -60,7 +61,7 @@ function Orders({
       setIsScheduling(false);
     }
     setIsScheduling(false);
-    setSelectedAvailableDrivers([1, 2]);
+    setSelectedAvailableDrivers(availableDriverIds);
   };
 
   const openUpdateModal = (row: Order, rowIndex: number) => {
@@ -92,7 +93,7 @@ function Orders({
     if (event.target.value) {
       setSelectedAvailableDrivers([Number(event.target.value)]);
     } else {
-      setSelectedAvailableDrivers([1, 2]);
+      setSelectedAvailableDrivers(availableDriverIds);
     }
   };
 
@@ -192,6 +193,7 @@ function Orders({
             onDelete={onOrderDeleted}
             productsAvailable={productsAvailable}
             rowData={selectedRowData!}
+            availableDriverIds={availableDriverIds}
           />
         )}
         {isCreateModalOpen && (
@@ -216,12 +218,14 @@ function Orders({
             onClose={closeMapModal}
             onConfirmRoute={onRouteSelected}
             orders={data}
+            availableDriverIds={availableDriverIds}
           />
         )}
         <ScheduleButton
           isToday={isToday()}
           isDisabled={isButtonDisabled()}
           isScheduling={isScheduling}
+          availableDriverIds={availableDriverIds}
           selectedAvailableDrivers={selectedAvailableDrivers}
           onDriverChange={handleAvailableDriversChange}
           onSchedule={onOrderScheduledCallback}

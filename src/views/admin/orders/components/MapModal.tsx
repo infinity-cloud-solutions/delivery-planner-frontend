@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Modal,
     ModalOverlay,
@@ -12,6 +12,8 @@ import {
     FormLabel,
     Select,
     VStack,
+    HStack,
+    Checkbox,
     useColorModeValue,
     Box,
     Text,
@@ -42,7 +44,6 @@ import { Order } from 'types/order';
         const el = (typeof id === 'string' ? L.DomUtil.get(id) : id) as LeafletContainer;
         if (el) {
             if (el._leafletMapInstance) {
-                // Properly remove orphaned map: tears down DOM + all event handlers
                 el._leafletMapInstance.remove();
                 delete el._leafletMapInstance;
             }
@@ -58,11 +59,20 @@ import { Order } from 'types/order';
     };
 }());
 
+function normalizeSequences(orders: Order[], driver: number, time: string): Order[] {
+    const group = orders
+        .filter(o => Number(o.driver) === driver && o.delivery_time === time && o.status !== "Programada")
+        .sort((a, b) => (a.delivery_sequence ?? 0) - (b.delivery_sequence ?? 0));
+    const updates = new Map<any, number>(group.map((o, idx) => [o.id, idx + 1]));
+    return orders.map(o => updates.has(o.id) ? { ...o, delivery_sequence: updates.get(o.id)! } : o);
+}
+
 interface MapModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirmRoute: (orders: Order[]) => Promise<void>;
   orders: Order[];
+  availableDriverIds: number[];
 }
 
 const MapResizer = ({ isOpen }: { isOpen: boolean }) => {
@@ -75,11 +85,12 @@ const MapResizer = ({ isOpen }: { isOpen: boolean }) => {
     return null;
 };
 
-const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) => {
+const MapModal = ({ isOpen, onClose, onConfirmRoute, orders, availableDriverIds }: MapModalProps) => {
     const [selectedDriver, setSelectedDriver] = useState<string | null>(null);
     const [selectedHours, setSelectedHours] = useState<string | null>(null);
-    const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
-    const [confirmedOrders, setConfirmedOrders] = useState<any[]>([]);
+    const [draftOrders, setDraftOrders] = useState<Order[]>([]);
+    const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+    const [moveTargetDriver, setMoveTargetDriver] = useState('');
     const [loadingRequest, setLoadingRequest] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
@@ -106,60 +117,87 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
         iconAnchor: [12, 12],
     });
 
+    // Initialize draft on open; intentionally excludes `orders` to avoid clobbering edits
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
-        if (selectedDriver && selectedHours) {
-            const filtered = orders.filter(order =>
-                Number(order.driver) === Number(selectedDriver) &&
-                order.delivery_time === selectedHours &&
-                order.status !== "Programada"
-            );
-
-            const sorted = filtered.sort((a: any, b: any) => (a.delivery_sequence ?? 0) - (b.delivery_sequence ?? 0));
-            setFilteredOrders(sorted);
+        if (isOpen) {
+            setDraftOrders(orders);
+            setSelectedOrderIds([]);
+            setMoveTargetDriver('');
+            setSelectedDriver(null);
+            setSelectedHours(null);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedDriver, selectedHours]);
+    }, [isOpen]);
+
+    const visibleOrders = useMemo(() => {
+        if (!selectedDriver || !selectedHours) return [];
+        return draftOrders
+            .filter(o =>
+                Number(o.driver) === Number(selectedDriver) &&
+                o.delivery_time === selectedHours &&
+                o.status !== "Programada"
+            )
+            .sort((a: any, b: any) => (a.delivery_sequence ?? 0) - (b.delivery_sequence ?? 0));
+    }, [draftOrders, selectedDriver, selectedHours]);
+
+    const allVisibleSelected =
+        visibleOrders.length > 0 &&
+        visibleOrders.every(o => selectedOrderIds.includes(String(o.id)));
 
     const onDragEnd = (result: any) => {
         if (!result.destination) return;
 
-        const reorderedOrders = Array.from(filteredOrders);
-        const [movedOrder] = reorderedOrders.splice(result.source.index, 1);
-        reorderedOrders.splice(result.destination.index, 0, movedOrder);
+        const reordered = Array.from(visibleOrders);
+        const [moved] = reordered.splice(result.source.index, 1);
+        reordered.splice(result.destination.index, 0, moved);
 
-        const updatedOrders = reorderedOrders.map((order, index) => ({
-            ...order,
-            delivery_sequence: index + 1,
-        }));
-        setFilteredOrders(updatedOrders);
+        const updated = reordered.map((o, idx) => ({ ...o, delivery_sequence: idx + 1 }));
+        const updateMap = new Map(updated.map(o => [o.id, o]));
+        setDraftOrders(prev => prev.map(o => updateMap.has(o.id) ? updateMap.get(o.id)! : o));
+    };
 
-        const combined = [...confirmedOrders, ...updatedOrders].reduce((acc, current) => {
-            const x = acc.find((item: any) => item.id === current.id);
-            if (x) {
-                return acc.map((item: any) => item.id === current.id ? current : item);
-            } else {
-                return [...acc, current];
-            }
-        }, []);
-        setConfirmedOrders(combined);
+    const toggleOrderSelection = (id: string) => {
+        setSelectedOrderIds(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        if (allVisibleSelected) {
+            const visibleIds = visibleOrders.map(o => String(o.id));
+            setSelectedOrderIds(prev => prev.filter(id => !visibleIds.includes(id)));
+        } else {
+            const visibleIds = visibleOrders.map(o => String(o.id));
+            setSelectedOrderIds(prev => [...new Set([...prev, ...visibleIds])]);
+        }
+    };
+
+    const moveSelectedToDriver = () => {
+        if (!moveTargetDriver || selectedOrderIds.length === 0 || !selectedHours || !selectedDriver) return;
+
+        let updated = draftOrders.map(o =>
+            selectedOrderIds.includes(String(o.id)) ? { ...o, driver: Number(moveTargetDriver) } : o
+        );
+        updated = normalizeSequences(updated, Number(selectedDriver), selectedHours);
+        updated = normalizeSequences(updated, Number(moveTargetDriver), selectedHours);
+
+        setDraftOrders(updated);
+        setSelectedOrderIds([]);
+        setMoveTargetDriver('');
     };
 
     const confirmRoute = async () => {
         setLoadingRequest(true);
         try {
-            const finalOrders = orders
-                .filter(order => order.status !== "Programada")
-                .map(order => {
-                    const confirmed = confirmedOrders.find(co => co.id === order.id);
-                    const source = confirmed ?? order;
-                    return {
-                        id: source.id,
-                        delivery_date: source.delivery_date,
-                        status: "Programada",
-                        driver: Number(source.driver),
-                        delivery_sequence: Number(source.delivery_sequence),
-                    };
-                });
+            const finalOrders = draftOrders
+                .filter(o => o.status !== "Programada")
+                .map(o => ({
+                    id: o.id,
+                    delivery_date: o.delivery_date,
+                    status: "Programada",
+                    driver: Number(o.driver),
+                    delivery_sequence: Number(o.delivery_sequence),
+                }));
             await onConfirmRoute(finalOrders as any);
             onClose();
         } catch (error) {
@@ -200,6 +238,8 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
         );
     };
 
+    const moveTargetOptions = availableDriverIds.filter(id => String(id) !== selectedDriver);
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="6xl">
             <ModalOverlay />
@@ -216,7 +256,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 />
                                 <Marker position={[20.7257943, -103.3792193] as any} icon={yellowStarIcon} />
 
-                                {filteredOrders.map((position, idx) => {
+                                {visibleOrders.map((position, idx) => {
                                     const defaultIcon = L.icon({
                                         iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
                                         iconSize: [18, 27],
@@ -243,7 +283,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 })}
                                 <Polyline
                                     positions={
-                                        [[20.7257943, -103.3792193], ...filteredOrders.map(order => [order.latitude, order.longitude])] as any
+                                        [[20.7257943, -103.3792193], ...visibleOrders.map(order => [order.latitude, order.longitude])] as any
                                     }
                                     color="blue"
                                     weight={2}
@@ -258,10 +298,15 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 <Select
                                     placeholder="Selecciona un repartidor"
                                     value={selectedDriver ?? undefined}
-                                    onChange={(e) => setSelectedDriver(e.target.value)}
+                                    onChange={(e) => {
+                                        setSelectedDriver(e.target.value);
+                                        setSelectedOrderIds([]);
+                                        setMoveTargetDriver('');
+                                    }}
                                 >
-                                    <option value="1">Repartidor 1</option>
-                                    <option value="2">Repartidor 2</option>
+                                    {availableDriverIds.map(id => (
+                                        <option key={id} value={String(id)}>Repartidor {id}</option>
+                                    ))}
                                 </Select>
                             </FormControl>
 
@@ -270,12 +315,44 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                 <Select
                                     placeholder="Selecciona el horario"
                                     value={selectedHours ?? undefined}
-                                    onChange={(e) => setSelectedHours(e.target.value)}
+                                    onChange={(e) => {
+                                        setSelectedHours(e.target.value);
+                                        setSelectedOrderIds([]);
+                                        setMoveTargetDriver('');
+                                    }}
                                 >
                                     <option value="9 AM - 1 PM">9 AM - 1 PM</option>
                                     <option value="1 PM - 5 PM">1 PM - 5 PM</option>
                                 </Select>
                             </FormControl>
+
+                            {visibleOrders.length > 0 && availableDriverIds.length > 1 && (
+                                <FormControl>
+                                    <FormLabel>Mover seleccionados a</FormLabel>
+                                    <HStack>
+                                        <Select
+                                            placeholder="Elegir repartidor"
+                                            value={moveTargetDriver}
+                                            onChange={(e) => setMoveTargetDriver(e.target.value)}
+                                            flex="1"
+                                        >
+                                            {moveTargetOptions.map(id => (
+                                                <option key={id} value={String(id)}>Repartidor {id}</option>
+                                            ))}
+                                        </Select>
+                                        <Button
+                                            variant="brand"
+                                            isDisabled={!moveTargetDriver || selectedOrderIds.length === 0}
+                                            onClick={moveSelectedToDriver}
+                                            flexShrink={0}
+                                        >
+                                            Mover ({selectedOrderIds.filter(id =>
+                                                visibleOrders.some(o => String(o.id) === id)
+                                            ).length})
+                                        </Button>
+                                    </HStack>
+                                </FormControl>
+                            )}
 
                             <Box w="full" mt="4">
                                 <DragDropContext onDragEnd={onDragEnd}>
@@ -284,19 +361,28 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                             <table {...provided.droppableProps} ref={provided.innerRef} style={{ width: '100%' }}>
                                                 <thead>
                                                     <tr>
+                                                        <th>
+                                                            <Checkbox
+                                                                isChecked={allVisibleSelected}
+                                                                isIndeterminate={
+                                                                    !allVisibleSelected &&
+                                                                    visibleOrders.some(o => selectedOrderIds.includes(String(o.id)))
+                                                                }
+                                                                onChange={toggleSelectAll}
+                                                            />
+                                                        </th>
                                                         <th>#</th>
                                                         <th>Dirección</th>
                                                         <th></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {filteredOrders.map((order, index) => (
+                                                    {visibleOrders.map((order, index) => (
                                                         <Draggable key={order.id} draggableId={order.id.toString()} index={index}>
                                                             {(provided: any, snapshot: any) => (
                                                                 <tr
                                                                     ref={provided.innerRef}
                                                                     {...provided.draggableProps}
-                                                                    {...provided.dragHandleProps}
                                                                     style={{
                                                                         ...provided.draggableProps.style,
                                                                         backgroundColor: snapshot.isDragging ? draggingColor : rowBgColor,
@@ -306,16 +392,24 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders }: MapModalProps) =>
                                                                     }}
                                                                 >
                                                                     {snapshot.isDragging ? (
-                                                                        <td colSpan={3}>{order.delivery_address}</td>
+                                                                        <td colSpan={4}>{order.delivery_address}</td>
                                                                     ) : (
                                                                         <>
+                                                                            <td style={{ padding: '8px' }}>
+                                                                                <Checkbox
+                                                                                    isChecked={selectedOrderIds.includes(String(order.id))}
+                                                                                    onChange={() => toggleOrderSelection(String(order.id))}
+                                                                                />
+                                                                            </td>
                                                                             <td style={{
                                                                                 borderRight: '1px solid',
                                                                                 borderRightColor: rowBgColor,
                                                                                 padding: '8px',
                                                                             }}>{index + 1}</td>
                                                                             <td style={{ padding: '8px' }}>{order.delivery_address}</td>
-                                                                            <td style={{ padding: '8px' }}><Text as="span">&#x2630;</Text></td>
+                                                                            <td style={{ padding: '8px' }} {...provided.dragHandleProps}>
+                                                                                <Text as="span">&#x2630;</Text>
+                                                                            </td>
                                                                         </>
                                                                     )}
                                                                 </tr>

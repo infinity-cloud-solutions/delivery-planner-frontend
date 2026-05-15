@@ -46,9 +46,10 @@ interface UpdateOrderModalProps {
   onUpdate: (args: UpdateOrderArgs) => Promise<void>;
   onDelete: (args: { item: Order; rowIndex: number }) => Promise<void>;
   productsAvailable: Product[];
+  availableDriverIds: number[];
 }
 
-const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, productsAvailable }: UpdateOrderModalProps) => {
+const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, productsAvailable, availableDriverIds }: UpdateOrderModalProps) => {
   const [clientName, setClientName] = useState(rowData.row.client_name || '');
   const [deliveryTime, setDeliveryTime] = useState(rowData.row.delivery_time || '');
   const [deliveryAddress, setDeliveryAddress] = useState(rowData.row.delivery_address || '');
@@ -421,8 +422,9 @@ const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, produc
                 value={selectedDriver}
                 onChange={(e) => setSelectedDriver(Number(e.target.value))}
                 placeholder='Elegir a un repartidor'>
-                <option value="1">Repartidor 1</option>
-                <option value="2">Repartidor 2</option>
+                {availableDriverIds.map(id => (
+                  <option key={id} value={String(id)}>Repartidor {id}</option>
+                ))}
               </Select>
             </FormControl>
 
