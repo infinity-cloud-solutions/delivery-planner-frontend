@@ -127,6 +127,7 @@ const MapModal = ({ isOpen, onClose, onConfirmRoute, orders, availableDriverIds 
             setSelectedDriver(null);
             setSelectedHours(null);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const visibleOrders = useMemo(() => {
