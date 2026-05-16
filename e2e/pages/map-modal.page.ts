@@ -35,6 +35,14 @@ export class MapModalPage {
     return this.modal.getByRole('checkbox').first();
   }
 
+  // Chakra's checkbox <input> is visually hidden with clip/absolute positioning
+  // that puts it outside Playwright's viewport bounds. evaluate() calls the
+  // browser's native .click() directly, bypassing all actionability checks
+  // while still triggering React's event system via native event delegation.
+  async clickSelectAll() {
+    await this.selectAllCheckbox.evaluate(el => (el as HTMLElement).click());
+  }
+
   async selectDriver(driverId: string) {
     await this.driverSelect.selectOption(driverId);
   }
