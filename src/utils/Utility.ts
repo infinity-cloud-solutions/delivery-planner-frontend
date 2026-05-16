@@ -13,3 +13,13 @@ export const getDateAsQueryParam = (): string => {
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
+
+export const getAvailableDriverIds = (): number[] => {
+    try {
+        const raw = process.env.REACT_APP_DRIVERS_MAP ?? '{}';
+        const map: Record<string, number> = JSON.parse(raw);
+        return [...new Set(Object.values(map))].sort((a, b) => a - b);
+    } catch {
+        return [1, 2];
+    }
+};

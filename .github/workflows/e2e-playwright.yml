@@ -16,6 +16,7 @@ jobs:
       REACT_APP_PRODUCTS_BASE_URL: https://example.test/products
       REACT_APP_ORDERS_BASE_URL: https://example.test/orders
       REACT_APP_UPDATE_SEQUENCING_ORDERS_BASE_URL: https://example.test/orders/schedule
+      REACT_APP_DRIVERS_MAP: '{"driver1@test.com":1,"driver2@test.com":2,"driver3@test.com":3}'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
