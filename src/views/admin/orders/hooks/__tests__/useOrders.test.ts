@@ -92,3 +92,109 @@ describe('useOrders', () => {
     expect(result.current.consolidatedProducts['1']['Berry']).toBe(2);
   });
 });
+
+describe('useOrders — created_by / updated_by invariants', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  const createPayload = {
+    delivery_date: '2024-01-15',
+    delivery_time: '9 AM - 1 PM',
+    delivery_address: 'Calle 1',
+    client_name: 'Test',
+    phone_number: '123',
+    total_amount: 100,
+    payment_method: 'Efectivo',
+    cart_items: [],
+  };
+
+  it('createOrder — POST payload includes created_by and omits updated_by', async () => {
+    mockAxios.get.mockResolvedValueOnce({ data: [] });
+    mockAxios.post.mockResolvedValueOnce({ data: { ...mockOrder, id: 'new-id', created_by: 'admin@test.com' } });
+    const { result } = renderHook(() => useOrders('2024-01-15'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.createOrder({ ...createPayload, created_by: 'admin@test.com' });
+    });
+
+    const posted = mockAxios.post.mock.calls[0][1] as Record<string, unknown>;
+    expect(posted.created_by).toBe('admin@test.com');
+    expect(posted).not.toHaveProperty('updated_by');
+  });
+
+  it('createOrder — stored order uses server-returned created_by over payload value', async () => {
+    mockAxios.get.mockResolvedValueOnce({ data: [] });
+    mockAxios.post.mockResolvedValueOnce({ data: { ...mockOrder, id: 'new-id', created_by: 'server@test.com' } });
+    const { result } = renderHook(() => useOrders('2024-01-15'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.createOrder({ ...createPayload, created_by: 'client@test.com' });
+    });
+
+    expect(result.current.orders[0].created_by).toBe('server@test.com');
+  });
+
+  it('createOrder — falls back to payload created_by when server omits it', async () => {
+    mockAxios.get.mockResolvedValueOnce({ data: [] });
+    // Server response has no created_by field
+    mockAxios.post.mockResolvedValueOnce({ data: { ...mockOrder, id: 'new-id' } });
+    const { result } = renderHook(() => useOrders('2024-01-15'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.createOrder({ ...createPayload, created_by: 'admin@test.com' });
+    });
+
+    expect(result.current.orders[0].created_by).toBe('admin@test.com');
+  });
+
+  it('updateOrder — PUT payload preserves created_by and includes updated_by', async () => {
+    const existing = { ...mockOrder, created_by: 'original@test.com', updated_by: null };
+    mockAxios.get.mockResolvedValueOnce({ data: [existing] });
+    mockAxios.put.mockResolvedValueOnce({ data: { ...existing, delivery_time: '1 PM - 5 PM' } });
+    const { result } = renderHook(() => useOrders('2024-01-15'));
+    await waitFor(() => expect(result.current.orders).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.updateOrder({
+        item: {
+          ...existing,
+          delivery_time: '1 PM - 5 PM',
+          original_date: '2024-01-15',
+          created_by: 'original@test.com',
+          updated_by: 'editor@test.com',
+        },
+        rowIndex: 0,
+      });
+    });
+
+    const put = mockAxios.put.mock.calls[0][1] as Record<string, unknown>;
+    expect(put.created_by).toBe('original@test.com');
+    expect(put.updated_by).toBe('editor@test.com');
+  });
+
+  it('updateOrder — created_by in state is not overwritten after a successful update', async () => {
+    const existing = { ...mockOrder, created_by: 'original@test.com' };
+    mockAxios.get.mockResolvedValueOnce({ data: [existing] });
+    // Server echoes back the same created_by (normal scenario)
+    mockAxios.put.mockResolvedValueOnce({ data: { ...existing, delivery_time: '1 PM - 5 PM', created_by: 'original@test.com' } });
+    const { result } = renderHook(() => useOrders('2024-01-15'));
+    await waitFor(() => expect(result.current.orders).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.updateOrder({
+        item: {
+          ...existing,
+          delivery_time: '1 PM - 5 PM',
+          original_date: '2024-01-15',
+          created_by: 'original@test.com',
+          updated_by: 'editor@test.com',
+        },
+        rowIndex: 0,
+      });
+    });
+
+    expect(result.current.orders[0].created_by).toBe('original@test.com');
+  });
+});
