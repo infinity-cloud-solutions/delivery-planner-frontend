@@ -159,7 +159,7 @@ test.describe('Admin — Driver Assignment (Driver 3 patch)', () => {
     await expect(page.getByRole('cell', { name: /Juárez/i })).toBeVisible();
 
     // Select all visible orders and move to driver 3
-    await mapModal.selectAllCheckbox.click();
+    await mapModal.clickSelectAll();
     await mapModal.moveToSelect.selectOption('3');
     await mapModal.moveButton.click();
 
@@ -178,7 +178,7 @@ test.describe('Admin — Driver Assignment (Driver 3 patch)', () => {
     // Move driver 1's order to driver 3
     await mapModal.selectDriver('1');
     await mapModal.selectTime('9 AM - 1 PM');
-    await mapModal.selectAllCheckbox.click();
+    await mapModal.clickSelectAll();
     await mapModal.moveToSelect.selectOption('3');
     await mapModal.moveButton.click();
 
@@ -236,7 +236,7 @@ test.describe('Admin — Driver Assignment (Driver 3 patch)', () => {
     // Move driver 1's stop to driver 3
     await mapModal.selectDriver('1');
     await mapModal.selectTime('9 AM - 1 PM');
-    await mapModal.selectAllCheckbox.click();
+    await mapModal.clickSelectAll();
     await mapModal.moveToSelect.selectOption('3');
     await mapModal.moveButton.click();
 
