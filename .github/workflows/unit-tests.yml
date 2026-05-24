@@ -1,0 +1,35 @@
+name: Unit Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      REACT_APP_COGNITO_USER_POOL_ID: us-east-1_test
+      REACT_APP_COGNITO_CLIENT_ID: test-client-id
+      REACT_APP_COGNITO_ISS: https://cognito-idp.us-east-1.amazonaws.com/test
+      REACT_APP_CLIENTS_BASE_URL: https://example.test/clients
+      REACT_APP_PRODUCTS_BASE_URL: https://example.test/products
+      REACT_APP_ORDERS_BASE_URL: https://example.test/orders
+      REACT_APP_UPDATE_SEQUENCING_ORDERS_BASE_URL: https://example.test/orders/schedule
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run unit tests
+        env:
+          CI: true
+        run: npm test -- --watchAll=false

@@ -1,0 +1,588 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Accordion,
+  AccordionIcon,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  Box,
+  Button,
+  ButtonGroup,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  Text,
+  Select,
+  VStack,
+  HStack,
+  useColorModeValue,
+  useToast,
+} from '@chakra-ui/react';
+import ReactSelect from 'react-select'
+import { FaTrash } from 'react-icons/fa';
+import { isAdmin, getEmailFromToken } from 'security';
+import { Order } from 'types/order';
+import { Product } from 'types/product';
+import { UpdateOrderArgs } from 'views/admin/orders/hooks/useOrders';
+import { OrderFormFields } from './OrderFormFields';
+
+interface SelectedRowData {
+  row: Order;
+  index: number;
+}
+
+interface UpdateOrderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  rowData: SelectedRowData;
+  onUpdate: (args: UpdateOrderArgs) => Promise<void>;
+  onDelete: (args: { item: Order; rowIndex: number }) => Promise<void>;
+  productsAvailable: Product[];
+  availableDriverIds: number[];
+}
+
+const UpdateOrderModal = ({ isOpen, onClose, rowData, onUpdate, onDelete, productsAvailable, availableDriverIds }: UpdateOrderModalProps) => {
+  const [clientName, setClientName] = useState(rowData.row.client_name || '');
+  const [deliveryTime, setDeliveryTime] = useState(rowData.row.delivery_time || '');
+  const [deliveryAddress, setDeliveryAddress] = useState(rowData.row.delivery_address || '');
+  const lat = rowData.row.latitude;
+  const lng = rowData.row.longitude;
+  const [deliveryLatitude, setDeliveryLatitude] = useState(lat != null ? String(lat) : '');
+  const [deliveryLongitude, setDeliveryLongitude] = useState(lng != null ? String(lng) : '');
+  const [phoneNumber, setPhoneNumber] = useState(rowData.row.phone_number || '');
+  const [paymentMethod, setPaymentMethod] = useState(rowData.row.payment_method || '')
+  const [cartItems, setCartItems] = useState<Array<{product: string; quantity: number | string; price: number | string}>>(
+    [
+      ...(rowData.row.cart_items || []).map((item) => ({
+        product: item.product as string,
+        quantity: Number(item.quantity),
+        price: Number(item.price),
+      })),
+      { product: '', quantity: '', price: 0 },
+    ]
+  );
+  const [dateError, setDateError] = useState<string | null>(null);
+  const [selectedDriver, setSelectedDriver] = useState(rowData.row.driver || '');
+  const [totalAmountDisplay, setTotalAmountDisplay] = useState(rowData.row.total_amount || "0.00");
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [loadingUpdateRequest, setLoadingUpdateRequest] = useState(false);
+  const [loadingDeleteRequest, setLoadingDeleteRequest] = useState(false);
+  const [availableDeliveryTimes, setAvailableDeliveryTimes] = useState<string[]>([]);
+  const [discount, setDiscount] = useState(rowData.row.discount || '');
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [deliveryAddressTouched, setDeliveryAddressTouched] = useState(false);
+  const [deliveryDateTouched, setDeliveryDateTouched] = useState(false);
+  const [deliveryTimeTouched, setDeliveryTimeTouched] = useState(false);
+  const [paymentMethodTouched, setPaymentMethodTouched] = useState(false);
+
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const [deliveryDate, setDeliveryDate] = useState(rowData.row.delivery_date || '');
+  const [deliveryNotes, setDeliveryNotes] = useState(rowData.row.notes || '');
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+
+  let isUserAdmin = false;
+  isUserAdmin = isAdmin();
+
+  const toast = useToast();
+  const textColor = useColorModeValue("secondaryGray.900", "white");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  let menuBg = useColorModeValue("white", "navy.900");
+  const bgColor = useColorModeValue('white', '#2D3748');
+
+  const customStyles = {
+    control: (provided: any) => ({
+      ...provided,
+      borderColor: borderColor,
+      boxShadow: 'none',
+      backgroundColor: menuBg,
+      width: '200px',
+      maxWidth: '200px'
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isFocused ? 'rgba(0, 0, 0, 0.1)' : bgColor,
+      color: state.isFocused ? textColor : 'grey',
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      backgroundColor: bgColor,
+    }),
+    input: (provided: any) => ({
+      ...provided,
+      color: textColor,
+    }),
+    singleValue: (provided: any) => ({
+      ...provided,
+      color: textColor,
+    }),
+  };
+
+  const updateOrder = async () => {
+    setLoadingUpdateRequest(true)
+    const formattedNotes = deliveryNotes === "" ? null : deliveryNotes;
+    const formattedDiscount = discount === "" ? null : discount;
+    const updOrder = {
+      item: {
+        id: rowData.row.id,
+        client_name: clientName,
+        delivery_address: deliveryAddress,
+        geolocation: (deliveryLatitude && deliveryLongitude) ? {
+          latitude: Number(deliveryLatitude),
+          longitude: Number(deliveryLongitude)
+        } : null,
+        delivery_date: deliveryDate,
+        delivery_time: deliveryTime,
+        phone_number: phoneNumber,
+        total_amount: parseFloat(String(totalAmountDisplay).replace(/[^\d.]/g, '')),
+        cart_items: cartItems,
+        payment_method: paymentMethod,
+        notes: formattedNotes,
+        status: "Creada",
+        order: "Ver detalles",
+        original_date: rowData.row.delivery_date,
+        driver: Number(selectedDriver),
+        original_driver: Number(rowData.row.driver),
+        discount: formattedDiscount,
+        created_by: rowData.row.created_by ?? null,
+        updated_by: getEmailFromToken(),
+      },
+      rowIndex: rowData.index
+    };
+    updOrder.item.cart_items = updOrder.item.cart_items.filter(item => item.product !== "");
+    updOrder.item.cart_items.forEach(item => {
+      if (item.price !== undefined) {
+        item.price = Number(item.price) || 0;
+      }
+    });
+
+    try {
+      await onUpdate(updOrder as any);
+      toast({ title: 'Orden actualizada', status: 'success', duration: 3000, isClosable: true });
+      setClientName('');
+      setDeliveryTime('');
+      setDeliveryAddress('');
+      setPhoneNumber('');
+      setTotalAmountDisplay('');
+      setPaymentMethod('');
+      setDeliveryNotes('');
+      setSelectedDriver('');
+      setDiscount('');
+      setLoadingUpdateRequest(false)
+      onClose();
+    } catch (error) {
+      const responseData = (error as any).response.data;
+      const responseBody = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+      const errorMessage = responseBody.message;
+
+      if (errorMessage === "Order could not be processed due: No drivers available") {
+        setApiError("No hay repartidores disponible para esta fecha/hora. Intenta cambiar de día de entrega u horario.");
+      }
+      setLoadingUpdateRequest(false)
+    }
+  };
+
+  const deleteOrder = async () => {
+    setLoadingDeleteRequest(true)
+    try {
+      await onDelete({ item: rowData.row, rowIndex: rowData.index });
+      toast({ title: 'Orden eliminada', status: 'success', duration: 3000, isClosable: true });
+      setClientName('');
+      setDeliveryTime('');
+      setDeliveryAddress('');
+      setPhoneNumber('');
+      setTotalAmountDisplay('');
+      setPaymentMethod('');
+      setDeliveryNotes('');
+      setSelectedDriver('');
+      setLoadingDeleteRequest(false)
+      onClose();
+    } catch (error) {
+      setLoadingDeleteRequest(false)
+    }
+  };
+
+  useEffect(() => {
+    validateDate(deliveryDate);
+    setScheduleTimesBasedOnDate(deliveryDate);
+    calculateTotalAmount();
+    checkFormValidity(); // Check form validity whenever cart items or other relevant fields change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems, clientName, deliveryAddress, phoneNumber, deliveryDate, deliveryTime, paymentMethod, deliveryLongitude, deliveryLatitude, dateError, apiError, discount]);
+
+  const checkFormValidity = () => {
+    const isCartItemsValid = cartItems.filter(item => item.product).length >= 1;
+    const isClientNameValid = clientName.trim() !== '';
+    const isDeliveryAddressValid = deliveryAddress.trim() !== '';
+    const isPhoneNumberValid = phoneNumber.trim() !== '';
+    const isLatitudeValid = deliveryLatitude.trim() !== '';
+    const isLongitudeValid = deliveryLongitude.trim() !== '';
+    const isDeliveryDateValid = !dateError;
+    const isApiRequestValid = !apiError;
+
+    setIsFormValid(isCartItemsValid && isClientNameValid && isDeliveryAddressValid && isPhoneNumberValid && isDeliveryDateValid && isLatitudeValid && isLongitudeValid && isApiRequestValid);
+  };
+
+  const addCartItem = () => {
+    setCartItems(prev => [...prev, { product: '', quantity: '', price: 0 }]);
+  };
+
+  const removeCartItem = (index: number) => {
+    setCartItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleProductSelect = (selectedOption: any, index: number) => {
+    setCartItems(prev => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        product: selectedOption.value || selectedOption.label || selectedOption,
+        price: Number(selectedOption.price || 0),
+      };
+      return updated;
+    });
+  };
+
+  const handleQuantityChange = (index: number, newQuantity: number) => {
+    setCartItems(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], quantity: newQuantity };
+      return updated;
+    });
+  };
+
+  const calculateTotalAmount = () => {
+    const discountMultipliers: Record<string, number> = {
+      "5": 0.95, "10": 0.90, "15": 0.85, "20": 0.80, "100": 0.00,
+    };
+
+    let totalAmount = 0;
+    const filledItems = cartItems.filter(item => item.product);
+    if (filledItems.length > 0) {
+      totalAmount = filledItems.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
+      if (discount && Object.prototype.hasOwnProperty.call(discountMultipliers, String(discount))) {
+        totalAmount *= discountMultipliers[String(discount)];
+      }
+    }
+    const calculatedTotalAmount = totalAmount.toLocaleString('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+    });
+
+    setTotalAmountDisplay(calculatedTotalAmount);
+  };
+
+  const validateDate = (selectedDate: any) => {
+    const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+    selectedDateObj.setHours(0, 0, 0, 0);
+
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+
+    if (selectedDateObj.getTime() < todayMidnight.getTime()) {
+      setDateError('No se puede programar una orden en el pasado');
+      checkFormValidity();
+      return;
+    }
+
+    if (selectedDateObj.getDay() === 0) {
+      setDateError('No hay entregas los domingos');
+      checkFormValidity();
+      return;
+    }
+
+    setDateError(null);
+    checkFormValidity();
+  };
+
+  const setScheduleTimesBasedOnDate = (selectedDate: any) => {
+    const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+    const dayOfWeek = selectedDateObj.getDay();
+    if (dayOfWeek === 6) { // saturday
+      setAvailableDeliveryTimes(["9 AM - 1 PM"]);
+    } else if (dayOfWeek === 0) { // sunday
+      setAvailableDeliveryTimes([]);
+    } else { // mon-fri
+      setAvailableDeliveryTimes(["9 AM - 1 PM", "1 PM - 5 PM"]);
+    }
+  }
+
+  const handleDateChange = (selectedDate: any) => {
+    setDeliveryDate(selectedDate);
+    setApiError(null)
+    validateDate(selectedDate);
+    setScheduleTimesBasedOnDate(selectedDate);
+  };
+
+  const handleDiscount = (selectedDiscount: any) => {
+    setDiscount(selectedDiscount)
+    calculateTotalAmount();
+  }
+
+  const ConfirmationModal = () => {
+    return (
+      <Modal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirmar Acción</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar esta orden?
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="brand"
+              mr={3}
+              onClick={() => {
+                setIsConfirmationModalOpen(false);
+                deleteOrder();
+              }}
+            >
+              Confirmar
+            </Button>
+            <Button variant="ghost" onClick={() => setIsConfirmationModalOpen(false)}>
+              Cancelar
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    );
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Editar orden</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <VStack spacing="4">
+            <OrderFormFields
+              part="A"
+              discountSlot={
+                <FormControl>
+                  <FormLabel>Descuento</FormLabel>
+                  <Select
+                    placeholder="Selecciona un descuento"
+                    value={discount}
+                    onChange={(e) => handleDiscount(e.target.value)}
+                  >
+                    <option value="0">Sin descuento</option>
+                    <option value="5">5% de descuento</option>
+                    <option value="10">10% de descuento</option>
+                    <option value="15">15% de descuento</option>
+                    <option value="100">100% de descuento</option>
+                  </Select>
+                </FormControl>
+              }
+              phoneNumber={phoneNumber}
+              onPhoneNumberChange={setPhoneNumber}
+              onPhoneNumberBlur={() => setPhoneTouched(true)}
+              phoneTouched={phoneTouched}
+              clientName={clientName}
+              onClientNameChange={setClientName}
+              onClientNameBlur={() => setNameTouched(true)}
+              nameTouched={nameTouched}
+              deliveryAddress={deliveryAddress}
+              onDeliveryAddressChange={setDeliveryAddress}
+              onDeliveryAddressBlur={() => setDeliveryAddressTouched(true)}
+              deliveryAddressTouched={deliveryAddressTouched}
+              deliveryDate={deliveryDate}
+              onDeliveryDateChange={handleDateChange}
+              onDeliveryDateBlur={() => setDeliveryDateTouched(true)}
+              deliveryDateTouched={deliveryDateTouched}
+              dateError={dateError}
+              apiError={apiError}
+              availableDeliveryTimes={availableDeliveryTimes}
+              deliveryTime={deliveryTime}
+              onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(null); }}
+              onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
+              deliveryTimeTouched={deliveryTimeTouched}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              onPaymentMethodBlur={() => setPaymentMethodTouched(true)}
+              paymentMethodTouched={paymentMethodTouched}
+            />
+
+            <FormControl isRequired>
+              <FormLabel>Repartidor</FormLabel>
+              <Select
+                value={selectedDriver}
+                onChange={(e) => setSelectedDriver(Number(e.target.value))}
+                placeholder='Elegir a un repartidor'>
+                {availableDriverIds.map(id => (
+                  <option key={id} value={String(id)}>Repartidor {id}</option>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Latitud</FormLabel>
+              <Textarea
+                color={textColor}
+                rows={1}
+                borderColor={borderColor}
+                value={deliveryLatitude}
+                isDisabled={!isUserAdmin}
+                onChange={(e) => setDeliveryLatitude(e.target.value)} />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Longitud</FormLabel>
+              <Textarea
+                color={textColor}
+                rows={1}
+                borderColor={borderColor}
+                value={deliveryLongitude}
+                isDisabled={!isUserAdmin}
+                onChange={(e) => setDeliveryLongitude(e.target.value)} />
+            </FormControl>
+
+            <OrderFormFields
+              part="B"
+              phoneNumber={phoneNumber}
+              onPhoneNumberChange={setPhoneNumber}
+              onPhoneNumberBlur={() => setPhoneTouched(true)}
+              phoneTouched={phoneTouched}
+              clientName={clientName}
+              onClientNameChange={setClientName}
+              onClientNameBlur={() => setNameTouched(true)}
+              nameTouched={nameTouched}
+              deliveryAddress={deliveryAddress}
+              onDeliveryAddressChange={setDeliveryAddress}
+              onDeliveryAddressBlur={() => setDeliveryAddressTouched(true)}
+              deliveryAddressTouched={deliveryAddressTouched}
+              deliveryDate={deliveryDate}
+              onDeliveryDateChange={handleDateChange}
+              onDeliveryDateBlur={() => setDeliveryDateTouched(true)}
+              deliveryDateTouched={deliveryDateTouched}
+              dateError={dateError}
+              apiError={apiError}
+              availableDeliveryTimes={availableDeliveryTimes}
+              deliveryTime={deliveryTime}
+              onDeliveryTimeChange={(v) => { setDeliveryTime(v); setApiError(null); }}
+              onDeliveryTimeBlur={() => setDeliveryTimeTouched(true)}
+              deliveryTimeTouched={deliveryTimeTouched}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              onPaymentMethodBlur={() => setPaymentMethodTouched(true)}
+              paymentMethodTouched={paymentMethodTouched}
+            />
+
+            <FormLabel>Lista de productos en pedido</FormLabel>
+            {cartItems.map((item, index) => (
+              <HStack key={index} spacing="4">
+                <FormControl isRequired>
+                  <FormLabel>Producto</FormLabel>
+                  <ReactSelect
+                    isSearchable={true}
+                    styles={customStyles}
+                    options={productsAvailable as any}
+                    placeholder="Buscar producto"
+                    noOptionsMessage={() => "No hay opción"}
+                    value={item.product ? { label: item.product, value: item.product } : null}
+                    onChange={(selectedOption) => handleProductSelect(selectedOption, index)}
+                  />
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel>Cantidad</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="Ingresa la cantidad"
+                    color={textColor}
+                    borderColor={borderColor}
+                    value={item.quantity ?? ''}
+                    onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Acción</FormLabel>
+                  <Button variant="outline" onClick={() => removeCartItem(index)} isDisabled={!item.product} leftIcon={<FaTrash />}>
+                  </Button>
+                </FormControl>
+              </HStack>
+            ))}
+
+            <Button variant="outline" onClick={addCartItem}>Agregar más al carrito</Button>
+
+            <FormControl>
+              <Accordion allowToggle>
+                <AccordionItem>
+                  <h2>
+                    <AccordionButton>
+                      <Box flex="1" textAlign="left">
+                        {deliveryNotes ? "Ver notas" : "Agregar notas"}
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={4}>
+                    <Textarea
+                      color={textColor}
+                      rows={1}
+                      borderColor={borderColor}
+                      placeholder="Instrucciones para la entrega"
+                      value={deliveryNotes}
+                      onChange={(e) => setDeliveryNotes(e.target.value)}
+                    />
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+            </FormControl>
+
+            <Text
+              color={textColor}
+              fontSize='18px'
+              fontWeight='700'
+              lineHeight='100%'>
+              Monto total: {totalAmountDisplay}
+            </Text>
+
+          </VStack>
+        </ModalBody>
+
+        <ModalFooter>
+          <ButtonGroup spacing='6'>
+            {isUserAdmin && (
+              <Button
+                colorScheme='red'
+                variant='outline'
+                onClick={() => setIsConfirmationModalOpen(true)}
+                isLoading={loadingDeleteRequest}
+                loadingText='Eliminando'
+                spinnerPlacement='end'
+              >
+                Eliminar
+              </Button>
+            )}
+            <Button
+              variant="brand"
+              onClick={updateOrder}
+              isLoading={loadingUpdateRequest}
+              loadingText='Actualizando'
+              spinnerPlacement='end'
+              isDisabled={!isFormValid}
+            >
+              Actualizar
+            </Button>
+          </ButtonGroup>
+        </ModalFooter>
+      </ModalContent>
+      <ConfirmationModal />
+    </Modal>
+  );
+};
+
+export default UpdateOrderModal;
