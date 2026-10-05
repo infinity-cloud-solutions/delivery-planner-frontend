@@ -39,8 +39,10 @@ export function useClientLookup(): UseClientLookupReturn {
           clientDiscount: data.discount,
         };
       } catch (error) {
+        // 404 means the client doesn't exist; anything else is a real failure the caller must handle
+        if (axios.isAxiosError(error) && error.response?.status === 404) return null;
         console.error('API error:', error);
-        return null;
+        throw error;
       }
     },
     [jwtToken]

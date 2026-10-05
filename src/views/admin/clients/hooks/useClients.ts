@@ -50,8 +50,10 @@ export function useClients(): UseClientsReturn {
           return mapClientResponse(response.data as Record<string, unknown>);
         }
         return null;
-      } catch {
-        return null;
+      } catch (error) {
+        // 404 means the client doesn't exist; anything else is a real failure the caller must handle
+        if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+        throw error;
       }
     },
     [authHeaders, jwtToken]
