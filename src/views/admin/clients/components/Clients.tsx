@@ -34,6 +34,7 @@ function Clients(props: ClientsProps) {
   const [isSearchButtonEnable, setIsSearchButtonEnable] = useState(false);
   const [loadingSearchForClient, setLoadingSearchForClient] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [searchErrorMessage, setSearchErrorMessage] = useState('Cliente no encontrado.');
 
   const textColor = useColorModeValue('navy.700', 'white');
 
@@ -63,15 +64,22 @@ function Clients(props: ClientsProps) {
 
   const handleSearch = async () => {
     setLoadingSearchForClient(true);
-    const clientData = await onClientFetched(searchQuery);
-    if (clientData) {
-      openUpdateModal(clientData);
-      setSearchQuery('');
-      setIsError(false);
-    } else {
+    try {
+      const clientData = await onClientFetched(searchQuery);
+      if (clientData) {
+        openUpdateModal(clientData);
+        setSearchQuery('');
+        setIsError(false);
+      } else {
+        setSearchErrorMessage('Cliente no encontrado.');
+        setIsError(true);
+      }
+    } catch {
+      setSearchErrorMessage('Error al buscar el cliente. Intenta de nuevo.');
       setIsError(true);
+    } finally {
+      setLoadingSearchForClient(false);
     }
-    setLoadingSearchForClient(false);
   };
 
   const onClientExistsCheckCallback = async (phoneNumber: string): Promise<MappedClient | null> => {
@@ -121,7 +129,7 @@ function Clients(props: ClientsProps) {
                 Ingresa el número que deseas buscar en la base de datos
               </FormHelperText>
             ) : (
-              <FormErrorMessage>Cliente no encontrado.</FormErrorMessage>
+              <FormErrorMessage>{searchErrorMessage}</FormErrorMessage>
             )}
             <ButtonGroup>
               <Button
