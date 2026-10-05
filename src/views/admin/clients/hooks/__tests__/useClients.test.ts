@@ -9,6 +9,12 @@ jest.mock('security', () => ({ getAccessToken: jest.fn() }));
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedGetAccessToken = getAccessToken as jest.Mock;
 
+const axiosError = (status: number) =>
+  Object.assign(new Error(`Request failed with status code ${status}`), {
+    isAxiosError: true,
+    response: { status },
+  });
+
 const mockClientResponse = {
   phone_number: '1234567890',
   name: 'John Doe',
@@ -39,6 +45,9 @@ describe('useClients', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedGetAccessToken.mockReturnValue('test-token');
+    (mockedAxios.isAxiosError as unknown as jest.Mock).mockImplementation(
+      (error: { isAxiosError?: boolean }) => Boolean(error?.isAxiosError)
+    );
   });
 
   describe('fetchClient', () => {
@@ -74,8 +83,8 @@ describe('useClients', () => {
       expect(client).toBeNull();
     });
 
-    it('should return null on API error', async () => {
-      mockedAxios.get.mockRejectedValueOnce(new Error('Network error'));
+    it('should return null when the client is not found (404)', async () => {
+      mockedAxios.get.mockRejectedValueOnce(axiosError(404));
       const { result } = renderHook(() => useClients());
 
       let client;
@@ -84,6 +93,15 @@ describe('useClients', () => {
       });
 
       expect(client).toBeNull();
+    });
+
+    it('should throw on server errors so callers can show an error', async () => {
+      mockedAxios.get.mockRejectedValueOnce(axiosError(500));
+      const { result } = renderHook(() => useClients());
+
+      await expect(result.current.fetchClient('1234567890')).rejects.toThrow(
+        'Request failed with status code 500'
+      );
     });
   });
 

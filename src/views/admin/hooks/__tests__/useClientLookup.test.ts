@@ -7,6 +7,12 @@ jest.mock('security', () => ({ getAccessToken: () => 'mock-token' }));
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 
+const axiosError = (status: number) =>
+  Object.assign(new Error(`Request failed with status code ${status}`), {
+    isAxiosError: true,
+    response: { status },
+  });
+
 const mockClientData = {
   phone_number: '5551234567',
   name: 'John Doe',
@@ -21,7 +27,12 @@ const mockClientData = {
 };
 
 describe('useClientLookup', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (mockAxios.isAxiosError as unknown as jest.Mock).mockImplementation(
+      (error: { isAxiosError?: boolean }) => Boolean(error?.isAxiosError)
+    );
+  });
 
   it('should return mapped client when found', async () => {
     mockAxios.get.mockResolvedValueOnce({ data: mockClientData });
@@ -58,8 +69,8 @@ describe('useClientLookup', () => {
     expect(client).toBeNull();
   });
 
-  it('should return null on API error', async () => {
-    mockAxios.get.mockRejectedValueOnce(new Error('Network error'));
+  it('should return null when the client is not found (404)', async () => {
+    mockAxios.get.mockRejectedValueOnce(axiosError(404));
     const { result } = renderHook(() => useClientLookup());
 
     let client;
@@ -68,6 +79,22 @@ describe('useClientLookup', () => {
     });
 
     expect(client).toBeNull();
+  });
+
+  it('should throw on server errors so callers can show an error', async () => {
+    mockAxios.get.mockRejectedValueOnce(axiosError(500));
+    const { result } = renderHook(() => useClientLookup());
+
+    await expect(result.current.lookupClient('5551234567')).rejects.toThrow(
+      'Request failed with status code 500'
+    );
+  });
+
+  it('should throw on network errors', async () => {
+    mockAxios.get.mockRejectedValueOnce(new Error('Network error'));
+    const { result } = renderHook(() => useClientLookup());
+
+    await expect(result.current.lookupClient('5551234567')).rejects.toThrow('Network error');
   });
 
   it('should return null when no auth token', async () => {
